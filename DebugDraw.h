@@ -28,9 +28,12 @@ public:
 
 	void finalize()
 	{
+		// draw triangles
 		triangles.resize(triangles_index);
-		lines.resize(lines_index);
 		target.draw(triangles, states);
+
+		// draw lines
+		lines.resize(lines_index);
 		target.draw(lines, states);
 	}
 

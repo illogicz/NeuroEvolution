@@ -7,11 +7,7 @@
 #include "DebugDraw.h"
 #include <vector>
 #include "State.h"
-#include "sWorld.h"
-#include "sRectangle.h"
-#include "sEdgeRectangle.h"
-#include "sConvexPolygon.h"
-#include "sConcavePolygon.h"
+#include "sPhysics\sPhysics.h"
 #include <random>
 
 using namespace std;
@@ -137,12 +133,14 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	sf::Clock clck;
 
-
+	vector<b2Vec2> points;
 	
 	double dt = 1000.f/60.f;
 	double accumulator = 0;
 	int frameCounter = 0;
 	int lastTime =  clck.getElapsedTime().asMilliseconds();
+
+	bool mouse_mode = true;
 
 	int renderTime = 0;
 	int physicsTime = 0;
@@ -154,16 +152,19 @@ int _tmain(int argc, _TCHAR* argv[])
 				window.close();
 			} else if(e.type == sf::Event::MouseButtonPressed){
 				if(e.mouseButton.button == sf::Mouse::Left){
-					b2Vec2 mp = getMousePosition(window);
-					b2Body * body = getBodyAt(world.__world, mp.x, mp.y);
-					if(body != nullptr){
-						mjd.bodyB = body;
-						mjd.target = mp;
-						mjd.collideConnected = true;
-						mj = (b2MouseJoint*)world.__world.CreateJoint(&mjd);
-						isDragging = true;
+					if(mouse_mode){
+						b2Vec2 mp = getMousePosition(window);
+						b2Body * body = getBodyAt(world.__world, mp.x, mp.y);
+						if(body != nullptr){
+							mjd.bodyB = body;
+							mjd.target = mp;
+							mjd.collideConnected = true;
+							mj = (b2MouseJoint*)world.__world.CreateJoint(&mjd);
+							isDragging = true;
+						}
+					} else {
+						points.push_back(getMousePosition(window));
 					}
-
 
 				}
 			} else if(e.type == sf::Event::MouseButtonReleased){
@@ -181,6 +182,17 @@ int _tmain(int argc, _TCHAR* argv[])
 					state.save();
 				} else if(e.key.code == sf::Keyboard::F6){
 					state.apply();
+				} else if(e.key.code == sf::Keyboard::F2){
+					if(!mouse_mode){
+						//  create shape
+						sConcavePolygon *poly = new sConcavePolygon;
+						poly->set(points);
+						world.add(poly);
+
+					} else {
+						points.clear();
+					}
+					mouse_mode = !mouse_mode;
 				}
 			}
 		}

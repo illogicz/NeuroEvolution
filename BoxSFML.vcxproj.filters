@@ -51,40 +51,43 @@
     <ClInclude Include="State.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sBody.h">
+    <ClInclude Include="sPhysics\sRectangle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sJoint.h">
+    <ClInclude Include="sPhysics\sSimpleBody.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sRectangle.h">
+    <ClInclude Include="sPhysics\sEdgeRectangle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sCircle.h">
+    <ClInclude Include="sPhysics\sJoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sSimpleBody.h">
+    <ClInclude Include="sPhysics\sObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sWorld.h">
+    <ClInclude Include="sPhysics\sConvexPolygon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sContainer.h">
+    <ClInclude Include="sPhysics\sContainer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sObject.h">
+    <ClInclude Include="sPhysics\sConcavePolygon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sComposite.h">
+    <ClInclude Include="sPhysics\sComposite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sEdgeRectangle.h">
+    <ClInclude Include="sPhysics\sCircle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sConvexPolygon.h">
+    <ClInclude Include="sPhysics\sBody.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sConcavePolygon.h">
+    <ClInclude Include="sPhysics\sWorld.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sPhysics\sPhysics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -96,9 +99,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DebugDraw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sRectangle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -92,26 +92,26 @@
     <ClInclude Include="Genes\LimbGene.h" />
     <ClInclude Include="Genes\MuscleGene.h" />
     <ClInclude Include="Genome.h" />
-    <ClInclude Include="sComposite.h" />
-    <ClInclude Include="sConcavePolygon.h" />
-    <ClInclude Include="sConvexPolygon.h" />
-    <ClInclude Include="sEdgeRectangle.h" />
-    <ClInclude Include="sObject.h" />
-    <ClInclude Include="sBody.h" />
-    <ClInclude Include="sContainer.h" />
-    <ClInclude Include="sCircle.h" />
-    <ClInclude Include="sJoint.h" />
-    <ClInclude Include="sRectangle.h" />
-    <ClInclude Include="sSimpleBody.h" />
+    <ClInclude Include="sPhysics\sComposite.h" />
+    <ClInclude Include="sPhysics\sConcavePolygon.h" />
+    <ClInclude Include="sPhysics\sConvexPolygon.h" />
+    <ClInclude Include="sPhysics\sEdgeRectangle.h" />
+    <ClInclude Include="sPhysics\sObject.h" />
+    <ClInclude Include="sPhysics\sBody.h" />
+    <ClInclude Include="sPhysics\sContainer.h" />
+    <ClInclude Include="sPhysics\sCircle.h" />
+    <ClInclude Include="sPhysics\sJoint.h" />
+    <ClInclude Include="sPhysics\sPhysics.h" />
+    <ClInclude Include="sPhysics\sRectangle.h" />
+    <ClInclude Include="sPhysics\sSimpleBody.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="sWorld.h" />
+    <ClInclude Include="sPhysics\sWorld.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoxSFML.cpp" />
     <ClCompile Include="DebugDraw.cpp" />
-    <ClCompile Include="sRectangle.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
