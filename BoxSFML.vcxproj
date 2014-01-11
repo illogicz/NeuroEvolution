@@ -92,10 +92,12 @@
     <ClInclude Include="Genes\LimbGene.h" />
     <ClInclude Include="Genes\MuscleGene.h" />
     <ClInclude Include="Genome.h" />
+    <ClInclude Include="Car.h" />
     <ClInclude Include="sPhysics\sComposite.h" />
     <ClInclude Include="sPhysics\sConcavePolygon.h" />
     <ClInclude Include="sPhysics\sConvexPolygon.h" />
     <ClInclude Include="sPhysics\sEdgeRectangle.h" />
+    <ClInclude Include="sPhysics\sMouseJoint.h" />
     <ClInclude Include="sPhysics\sObject.h" />
     <ClInclude Include="sPhysics\sBody.h" />
     <ClInclude Include="sPhysics\sContainer.h" />
@@ -104,6 +106,7 @@
     <ClInclude Include="sPhysics\sPhysics.h" />
     <ClInclude Include="sPhysics\sRectangle.h" />
     <ClInclude Include="sPhysics\sSimpleBody.h" />
+    <ClInclude Include="sPhysics\sWheelJoint.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="sPhysics\sWorld.h" />

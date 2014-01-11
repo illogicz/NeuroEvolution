@@ -14,10 +14,15 @@ public:
 		m_density = 1.0f;
 		m_isSensor = false;
 	}
-
-
-
-
+	sSimpleBody(sSimpleBody &body) : sBody(body)
+	{
+		_copy(body);
+	}
+	virtual void copy(sSimpleBody &body)
+	{
+		sBody::copy(body);
+		_copy(body);
+	}
 
 	void setDensity(float32 density)
 	{
@@ -86,4 +91,16 @@ protected:
 	float32 m_restitution;
 	b2Filter m_filter;
 	bool m_isSensor;
+
+private:
+
+	void _copy(sSimpleBody &body)
+	{
+		m_density = body.m_density;
+		m_friction = body.m_friction;
+		m_restitution = body.m_restitution;
+		m_filter = body.m_filter;
+		m_isSensor = body.m_isSensor;
+	}
+
 };

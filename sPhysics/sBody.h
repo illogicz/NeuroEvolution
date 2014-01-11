@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include "sObject.h"
-#include "sJoint.h"
 
 using std::vector;
 
@@ -24,7 +23,7 @@ enum sBodyType
 
 class sBody : public sObject
 {
-	friend class sJoint;
+	//friend class sJoint;
 
 public:
 
@@ -33,7 +32,10 @@ public:
 		m_density = 1;
 		m_bodyType = DYNAMIC_BODY;
 	}
-
+	sBody(sBody &body) : sObject(body)
+	{
+		_copy(body);
+	}
 
 
 	~sBody()
@@ -43,13 +45,21 @@ public:
 		}
 	}
 
+	void copy(sBody &body)
+	{
+		sObject::copy(body);
+		_copy(body);
+	}
 
 
 
 
 	void setType(sBodyType type)
 	{
+
 		m_bodyType = type;
+		if(m_inWorld)m_body->SetType(b2BodyType(type));
+
 	}
 	sBodyType setType()
 	{
@@ -178,13 +188,22 @@ protected:
 
 	sBodyType m_bodyType;
 	float32 m_density;
-
-
 	BodyState m_state;
-	
 	b2BodyDef *m_bodyDef;                // Body definition pointer, must be set by deriving class
 	vector<b2FixtureDef*> m_fixtureDefs;
 	vector<b2Fixture*> m_fixtures;
 
+private :
+
+	void _copy(sBody &body)
+	{
+		m_density = body.m_density;
+		m_bodyType = body.m_bodyType;
+		m_fixtureDefs = body.m_fixtureDefs;
+		m_bodyDef = body.m_bodyDef;
+		setState(body.getState());
+		printf("sBody._copy(), density = %f bodytype = %i\n", m_density, m_bodyType);
+
+	}
 	
 };

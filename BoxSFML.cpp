@@ -8,13 +8,14 @@
 #include <vector>
 #include "State.h"
 #include "sPhysics\sPhysics.h"
+#include "Car.h"
 #include <random>
 
 using namespace std;
 
 int width = 800, height = 600;
 const float renderScale = 10.f;
-float scale = 0.1f;
+float scale = 0.2f;
 
 class QueryCallback : public b2QueryCallback
 {
@@ -81,21 +82,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	room.setSize(scale * width / renderScale, scale * height / renderScale);
 	world.add(&room);
 
-	sConcavePolygon poly;
-	poly.add(-0.8, -0.8);
-	poly.add(-0.7, 0.1);
-	poly.add(-0.9, 0.9);
-	poly.add(0, 0.5);
-	poly.add(0.9, 0.9);
-	poly.add(0.7f, 0);
-	poly.add(0.9, -0.9);
-	poly.add(0.2, -0.6);
-	poly.finalizeShape();
-	world.add(&poly);
-
-	sRectangle rect;
-	rect.setSize(0.2, 0.2);
-	//world.add(&rect);
+	Car car;
+	world.add(&car);
 
 	b2MouseJointDef mjd;
 	mjd.bodyA = room.m_body;

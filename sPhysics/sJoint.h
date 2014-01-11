@@ -2,16 +2,16 @@
 #include <Box2D\Box2D.h>
 #include "sBody.h"
 
-
-class sBody;
-
 class sJoint : public sObject
 {
 	friend class sWorld; // world must send destruction event
 public:
 
 
-	sJoint() : sObject(JOINT_OBJECT) {}
+	sJoint() : sObject(JOINT_OBJECT)
+	{
+		m_collideConnected = false;
+	}
 
 	void setBodies(sBody *bodyA, sBody *bodyB)
 	{
@@ -19,6 +19,11 @@ public:
 
 		m_bodyA = bodyA;
 		m_bodyB = bodyB;
+	}
+
+	void setCollideConnected(bool collideConnected)
+	{
+		m_collideConnected = collideConnected;
 	}
 
 
@@ -30,13 +35,14 @@ protected:
 		sObject::addToWorld(world);
 
 		// Objects must be added first
-		assert(m_bodyA->m_inWorld && m_bodyA->m_inWorld);
+		//assert(m_bodyA->m_inWorld && m_bodyA->m_inWorld);
 
 
-		//m_jointDef->bodyA = m_bodyA->m_body;
-		//m_jointDef->bodyB = m_bodyB->m_body;
+		m_jointDef->bodyA = m_bodyA->m_body;
+		m_jointDef->bodyB = m_bodyB->m_body;
 		m_jointDef->userData = this;
-
+		m_jointDef->collideConnected = m_collideConnected;
+		
 		m_joint = world.CreateJoint(m_jointDef);
 	}
 
@@ -57,6 +63,7 @@ protected:
 	sBody *m_bodyA;
 	sBody *m_bodyB;
 
+	bool m_collideConnected;
 	
 
 };

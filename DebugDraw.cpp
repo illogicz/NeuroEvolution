@@ -74,22 +74,25 @@ void DebugDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& 
 
 void DebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color)
 {
+
+
 	sf::CircleShape circle(radius, 64);
 	circle.setPosition(center.x-radius, center.y-radius);
 	circle.setFillColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0x60));
 	circle.setOutlineThickness(1.f/20);
 	circle.setOutlineColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF));
 	target.draw(circle, states);
-	/*
-	va.resize(2);
-	va[0].position.x = center.x;
-	va[0].position.y = center.y;
-	va[0].color = sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF);
-	va[1].position.x = axis.x+center.x;
-	va[1].position.y = axis.y+center.y;
-	va[1].color = sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF);
-	target.draw(va, states);
-	*/
+
+	allocate(lines, lines_index, 2);
+	lines[lines_index].position.x = center.x;
+	lines[lines_index].position.y = center.y;
+	lines[lines_index].color = sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF);
+	lines_index++;
+	lines[lines_index].position.x = center.x + axis.x * radius;
+	lines[lines_index].position.y = center.y + axis.y * radius;
+	lines[lines_index].color = sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF);
+	lines_index++;
+
 }
 
 void DebugDraw::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color)
