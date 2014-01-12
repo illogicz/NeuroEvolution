@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "sObject.h"
+#include "sWorld.h"
 
 using std::vector;
 
@@ -159,39 +160,8 @@ public:
 protected:
 	
 
-	virtual void addToWorld(b2World &world)
-	{
-		sObject::addToWorld(world);
-
-		// Set initial state
-		m_bodyDef->position = m_state.position;
-		m_bodyDef->angle = m_state.angle;
-		m_bodyDef->linearVelocity = m_state.linearVelocity;
-		m_bodyDef->angularVelocity = m_state.angularVelocity;
-		// set type
-		m_bodyDef->type = (b2BodyType)m_bodyType;
-
-		// Add body to world
-		m_body = world.CreateBody(m_bodyDef);
-		m_body->SetUserData(this);
-		
-		// Add fixtures to body
-		int n_fixtures = m_fixtureDefs.size();
-		m_fixtures.resize(n_fixtures);
-		for(int i = 0; i < n_fixtures; i++){
-			m_fixtures[i] = m_body->CreateFixture(m_fixtureDefs[i]);
-		}
-	}
-
-	virtual void removeFromWorld(b2World &world)
-	{
-		// Saves state
-		m_state = getState();
-		sObject::removeFromWorld(world);
-
-		// Remove from world
-		world.DestroyBody(m_body);
-	}
+	virtual void addToWorld(sWorld &world);
+	virtual void removeFromWorld(sWorld &world);
 
 	sBodyType m_bodyType;
 	float32 m_density;

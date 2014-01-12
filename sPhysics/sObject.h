@@ -1,6 +1,8 @@
 #pragma once
 #include <Box2D\Box2D.h>
+//#include "sWorld.h"
 
+class sWorld;
 
 enum sObjectType
 {
@@ -29,13 +31,13 @@ protected:
 	{
 	}
 
-	virtual void addToWorld(b2World &world)
+	virtual void addToWorld(sWorld &world)
 	{
 		assert(!m_inWorld);
 		m_inWorld = true;
 		m_world = &world;
 	}
-	virtual void removeFromWorld(b2World &world)
+	virtual void removeFromWorld(sWorld &world)
 	{
 		assert(m_inWorld);
 		m_inWorld = false;
@@ -43,7 +45,7 @@ protected:
 
 	const sObjectType m_type;
 	bool m_inWorld;
-	b2World *m_world;
+	sWorld *m_world;
 
 private:
 

@@ -30,27 +30,9 @@ public:
 protected:
 
 
-	void addToWorld(b2World &world)
-	{
-		sObject::addToWorld(world);
+	void addToWorld(sWorld &world);
+	void removeFromWorld(sWorld &world);
 
-		// Objects must be added first
-		//assert(m_bodyA->m_inWorld && m_bodyA->m_inWorld);
-
-
-		m_jointDef->bodyA = m_bodyA->m_body;
-		m_jointDef->bodyB = m_bodyB->m_body;
-		m_jointDef->userData = this;
-		m_jointDef->collideConnected = m_collideConnected;
-		
-		m_joint = world.CreateJoint(m_jointDef);
-	}
-
-	void removeFromWorld(b2World &world)
-	{
-		sObject::removeFromWorld(world);
-		world.DestroyJoint(m_joint);
-	}
 
 	void jointDestroyed()
 	{

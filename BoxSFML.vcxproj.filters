@@ -104,13 +104,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BoxSFML.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DebugDraw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sPhysics\sJoint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sPhysics\sBody.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

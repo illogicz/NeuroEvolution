@@ -1,9 +1,13 @@
 #pragma once
-#include "sBody.h"
-#include "sJoint.h"
+#include "sObject.h"
+//#include "sBody.h"
+//#include "sJoint.h"
+//#include "sWorld.h"
 #include <set>
 
 using std::set;
+
+class sWorld;
 
 class sContainer : public sObject
 {
@@ -32,7 +36,7 @@ public:
 protected:
 
 
-	virtual void addToWorld(b2World &world)
+	virtual void addToWorld(sWorld &world)
 	{
 		sObject::addToWorld(world);
 		// Add bodies and containers first
@@ -50,7 +54,7 @@ protected:
 		}
 	}
 
-	virtual void removeFromWorld(b2World &world)
+	virtual void removeFromWorld(sWorld &world)
 	{
 		sObject::removeFromWorld(world);
 		for(set<sObject*>::iterator i = m_children.begin(); i != m_children.end(); ++i){

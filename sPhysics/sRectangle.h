@@ -39,7 +39,7 @@ public:
 
 protected:
 
-	void addToWorld(b2World &world)
+	void addToWorld(sWorld &world)
 	{
 		printf("rectanle add to world \n");
 		s_shape.SetAsBox(m_size.x, m_size.y);		

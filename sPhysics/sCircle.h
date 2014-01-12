@@ -32,7 +32,7 @@ public:
 		_copy(circle);
 	}
 
-	void addToWorld(b2World &world)
+	void addToWorld(sWorld &world)
 	{
 		s_shape.m_radius = m_radius;
 		sUniformBody::addToWorld(world);

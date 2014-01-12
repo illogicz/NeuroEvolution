@@ -45,7 +45,7 @@ public:
 protected:
 
 	// 
-	void addToWorld(b2World &world)
+	void addToWorld(sWorld &world)
 	{
 		
 		//sJoint::addToWorld(world);

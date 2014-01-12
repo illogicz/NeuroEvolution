@@ -49,7 +49,7 @@ public:
 
 protected:
 
-	void addToWorld(b2World &world)
+	void addToWorld(sWorld &world)
 	{
 
 		_jointDef.Initialize(m_bodyA->m_body, m_bodyB->m_body, m_localAnchorA, m_axis);

@@ -74,7 +74,7 @@ public:
 
 protected:
 
-	void addToWorld(b2World &world)
+	void addToWorld(sWorld &world)
 	{	
 		for(int i=0; i < m_fixtureDefs.size(); i++){
 			m_fixtureDefs[i]->density = m_density;

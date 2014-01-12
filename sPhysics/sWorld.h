@@ -1,8 +1,27 @@
 #pragma once
+#include <Box2D\Box2D.h>
 #include <set>
+#include <vector>
+#include "sBody.h"
 #include "sContainer.h"
 
 using std::set;
+using std::vector;
+class sBody;
+
+class sContactListener
+{
+public:
+	virtual void onBeginContact(){}
+	virtual void onEndContact(){}
+};
+
+class sStepListener
+{
+public:
+	virtual void onBeforeStep(){}
+	virtual void onAfterStep(){}
+};
 
 class sWorld : public sContainer
 {
@@ -12,14 +31,14 @@ public:
 
 	sWorld():gravity(0.0f, -9.8f), b2world(gravity)
 	{
-		m_world = &b2world;
-		b2world.SetDestructionListener(&m_destructionListener);
+		m_world = this; //&b2world;
+		//b2world.SetDestructionListener(&m_destructionListener);
 
 		//b2world.SetContactListener();
 		timeStep = 1.f/60.f;
 		velocityIterations = 8;
 		positionIterations = 3;
-
+		b2world.SetGravity(b2Vec2(0.0f, -9.8f));
 		// Set to true, because this is the world itself
 		m_inWorld = true;
 	}
@@ -28,7 +47,7 @@ public:
 	void step()
 	{
 		//dispatchStepEvent(true);
-		m_world->Step(timeStep, velocityIterations, positionIterations);
+		b2world.Step(timeStep, velocityIterations, positionIterations);
 		//dispatchStepEvent(true);
 	}
 
@@ -40,7 +59,7 @@ public:
 	b2Vec2 gravity;
 
 	
-
+	
 	// Gets bodies under a specified point
 	vector<b2Body*> getBodiesAt(b2Vec2 position)
 	{
@@ -49,14 +68,14 @@ public:
 		aabb.upperBound.Set(position.x, position.y);
 
 		PointQueryCallback cb(position);
-		m_world->QueryAABB(&cb, aabb);
+		b2world.QueryAABB(&cb, aabb);
 		return cb.bodies;
 	}
+	
 
 
 
-
-	/*
+	
 	// Manage listener for physics step events
 	void addStepListener(sStepListener &listener)
 	{
@@ -96,7 +115,7 @@ public:
 	{
 
 	}
-	*/
+	
 	 //temp public
 protected:
 
@@ -108,7 +127,7 @@ private:
 	sContainer::removeFromWorld;  // disable
 
 
-
+	
 	class DestructionListener : public b2DestructionListener
 	{
 		void SayGoodbye(b2Joint * joint)
@@ -140,7 +159,7 @@ private:
 		vector<b2Body*> bodies;
 		b2Vec2 m_position;
 	};
-
+	
 	//class GlobalContactListener : public b2ContactListener
 	//{
 	//public:
@@ -152,7 +171,7 @@ private:
 
 
 	
-	/*
+	
 	set<sStepListener*> m_stepListeners;
 	void dispatchStepEvent(bool before = true)
 	{
@@ -165,23 +184,11 @@ private:
 			}
 		}
 	}
-	*/
+	
 
 
 };
 
 
 
-class sContactListener
-{
-public:
-	virtual void onBeginContact(){}
-	virtual void onEndContact(){}
-};
 
-class sStepListener
-{
-public:
-	virtual void onBeforeStep(){}
-	virtual void onAfterStep(){}
-};

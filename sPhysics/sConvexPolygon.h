@@ -39,7 +39,7 @@ public:
 
 protected:
 
-	void addToWorld(b2World &world)
+	void addToWorld(sWorld &world)
 	{
 		int n = m_vertices.size();
 		b2Vec2 *verts = new b2Vec2[n];
