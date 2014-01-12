@@ -25,20 +25,20 @@ public:
 		//m_wheel2.setPosition(b2Vec2(1.5, 0.5));
 		//add(&m_wheel2);
 
-		m_car.add(2, 0);
-		m_car.add(2, -0.5);
-		m_car.add(1.5, -0.6);
-		m_car.add(1, -1);
-		m_car.add(-1, -1);
-		m_car.add(-1.5, -0.6);
-		m_car.add(-2, -0.5);
-		m_car.add(-2, 0);
+		m_car.add(2.f, 0.f);
+		m_car.add(2.f, -0.5f);
+		m_car.add(1.5f, -0.6f);
+		m_car.add(1.f, -1.f);
+		m_car.add(-1.f, -1.f);
+		m_car.add(-1.5f, -0.6f);
+		m_car.add(-2.f, -0.5f);
+		m_car.add(-2.f, 0.f);
 		m_car.finalizeShape();
 		add(&m_car);
 
 
-		b2Vec2 anchor1(-1.5, 0);
-		b2Vec2 anchor2( 1.5, 0);
+		b2Vec2 anchor1(-1.5f, 0.f);
+		b2Vec2 anchor2( 1.5f, 0.f);
 
 		m_wheelJoint1.setBodies(&m_car, &m_wheel1);
 		m_wheelJoint1.setAnchorA(m_wheel1.getPosition());

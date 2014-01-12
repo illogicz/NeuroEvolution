@@ -9,15 +9,15 @@ struct b2AABB;
 
 // This class implements debug drawing callbacks that are invoked
 // inside b2World::Step.
-class DebugDraw : public b2Draw
+// 
+class sDebugDraw : public b2Draw
 {
 public:
 
-	DebugDraw(sf::RenderTarget &t) : target(t)
+	sDebugDraw(sf::RenderTarget &renderTarget) : target(renderTarget)
 	{
 		triangles.setPrimitiveType(sf::PrimitiveType::Triangles);
 		lines.setPrimitiveType(sf::PrimitiveType::Lines);
-
 	}
 
 
@@ -38,9 +38,9 @@ public:
 	}
 
 
-	void setTransform(sf::Transform _transform)
+	void setTransform(sf::Transform transform)
 	{
-		states.transform = _transform;
+		states.transform = transform;
 	}
 
 	void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);

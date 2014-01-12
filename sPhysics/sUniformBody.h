@@ -76,7 +76,7 @@ protected:
 
 	void addToWorld(sWorld &world)
 	{	
-		for(int i=0; i < m_fixtureDefs.size(); i++){
+		for(unsigned int i=0; i < m_fixtureDefs.size(); i++){
 			m_fixtureDefs[i]->density = m_density;
 			m_fixtureDefs[i]->friction = m_friction;
 			m_fixtureDefs[i]->restitution = m_restitution;

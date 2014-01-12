@@ -3,12 +3,6 @@
 
 using std::map;
 
-struct UserData
-{
-	void *userData;
-	uint32 id;
-};
-
 
 class State
 {

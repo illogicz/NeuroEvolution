@@ -16,8 +16,8 @@ class sObject
 
 	friend class sContainer;
 
-protected:
 
+public:
 	sObject(sObjectType type) : m_type(type)
 	{
 		m_inWorld = false;
@@ -31,6 +31,7 @@ protected:
 	{
 	}
 
+protected:
 	virtual void addToWorld(sWorld &world)
 	{
 		assert(!m_inWorld);
@@ -43,7 +44,9 @@ protected:
 		m_inWorld = false;
 	}
 
+	// Object type. can't be changed
 	const sObjectType m_type;
+	
 	bool m_inWorld;
 	sWorld *m_world;
 

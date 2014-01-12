@@ -63,10 +63,16 @@ public:
 
 
 
+	//-------------------------------------------------------------------------------
+	// Getters & Setters
+	//-------------------------------------------------------------------------------
+
 
 	void setType(sBodyType type)
 	{
 		m_bodyType = type;
+
+		// TODO: needs testing to see if it actually works
 		if(m_inWorld)m_body->SetType(b2BodyType(type));
 	}
 	sBodyType getType()
@@ -74,6 +80,7 @@ public:
 		return m_bodyType;
 	}
 
+	// TODO: possibly change this so that deriving classes can use derived states
 	BodyState getState()
 	{
 		if(m_inWorld){
@@ -166,8 +173,13 @@ protected:
 	sBodyType m_bodyType;
 	float32 m_density;
 	BodyState m_state;
-	b2BodyDef *m_bodyDef;                // Body definition pointer, must be set by deriving class
+
+	// Body definition pointer, must be set by deriving class
+	// This is pointer, so that many instances can share the same definition
+	b2BodyDef *m_bodyDef;               
 	vector<b2FixtureDef*> m_fixtureDefs;
+
+
 	vector<b2Fixture*> m_fixtures;
 
 private :

@@ -29,7 +29,7 @@ class sWorld : public sContainer
 public:
 
 
-	sWorld():gravity(0.0f, -9.8f), b2world(gravity)
+	sWorld():gravity(0.0f, 9.8f), b2world(gravity)
 	{
 		m_world = this; //&b2world;
 		//b2world.SetDestructionListener(&m_destructionListener);
@@ -38,7 +38,7 @@ public:
 		timeStep = 1.f/60.f;
 		velocityIterations = 8;
 		positionIterations = 3;
-		b2world.SetGravity(b2Vec2(0.0f, -9.8f));
+		b2world.SetGravity(b2Vec2(0.0f, 9.8f));
 		// Set to true, because this is the world itself
 		m_inWorld = true;
 	}
@@ -61,7 +61,7 @@ public:
 	
 	
 	// Gets bodies under a specified point
-	vector<b2Body*> getBodiesAt(b2Vec2 position)
+	vector<sBody*> getBodiesAt(b2Vec2 position)
 	{
 		b2AABB aabb;
 		aabb.lowerBound.Set(position.x, position.y);
@@ -151,12 +151,12 @@ private:
 		}
 		bool ReportFixture(b2Fixture* fixture){
 			if(fixture->TestPoint(m_position)){
-				bodies.push_back(fixture->GetBody());
+				bodies.push_back((sBody*)fixture->GetBody()->GetUserData());
 				return false;
 			}
 			return true;
 		}
-		vector<b2Body*> bodies;
+		vector<sBody*> bodies;
 		b2Vec2 m_position;
 	};
 	

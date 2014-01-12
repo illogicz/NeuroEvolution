@@ -64,7 +64,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -85,7 +85,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DebugDraw.h" />
+    <ClInclude Include="sGraphics\sDebugDraw.h" />
     <ClInclude Include="Genes\BaseGene.h" />
     <ClInclude Include="Genes\BodyGene.h" />
     <ClInclude Include="Genes\JointGene.h" />
@@ -108,13 +108,12 @@
     <ClInclude Include="sPhysics\sUniformBody.h" />
     <ClInclude Include="sPhysics\sWheelJoint.h" />
     <ClInclude Include="State.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="sPhysics\sWorld.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoxSFML.cpp" />
-    <ClCompile Include="DebugDraw.cpp" />
+    <ClCompile Include="sGraphics\sDebugDraw.cpp" />
     <ClCompile Include="sPhysics\sBody.cpp" />
     <ClCompile Include="sPhysics\sJoint.cpp" />
   </ItemGroup>

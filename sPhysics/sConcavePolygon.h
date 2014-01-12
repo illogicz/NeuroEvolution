@@ -55,7 +55,7 @@ public:
 
 		for(int i = 0; i < n_parts; i++){
 			printf("--\n");
-			for(int j = 0; j < m_parts[i].size(); j++){
+			for(unsigned int j = 0; j < m_parts[i].size(); j++){
 				printf("%f %f \n", m_parts[i][j].x, m_parts[i][j].y);
 			}
 			__shapes[i].Set(&m_parts[i][0], m_parts[i].size());
@@ -114,7 +114,6 @@ protected:
 			printf("split() overflow");
 			return;
 		}
-		float32 a1, a2, da;
 		int n_verts = vertices.size();
 		for(int i = 0; i < n_verts; i++){
 

@@ -1,11 +1,12 @@
 // BoxSFML.cpp : Defines the entry point for the console application.
 #include <sfml.h>
 #include <Box2D\Box2D.h>
-#include "DebugDraw.h"
 #include <vector>
 #include "State.h"
 #include "sPhysics\sPhysics.h"
+#include "sGraphics\sDebugDraw.h"
 #include "Car.h"
+
 #include <random>
 
 using namespace std;
@@ -14,57 +15,16 @@ int width = 800, height = 600;
 const float renderScale = 10.f;
 float scale = 0.2f;
 
-class QueryCallback : public b2QueryCallback
-{
-public:
-	QueryCallback(b2World &w, float x, float y) : world(w){
-		p.x = x;
-		p.y = y;
-		found = false;
-		body = nullptr;
-	}
-	bool ReportFixture(b2Fixture* fixture){
-		if(fixture->TestPoint(p)){
-			found = true;
-			if(fixture->GetBody()->GetType() == b2BodyType::b2_dynamicBody){
-				body = fixture->GetBody();
-				return false;
-			}		
-			
-		}
-		return true;
-	}
-
-	bool found;
-	b2Body * body;
-
-private:
-	b2World &world;
-	b2Vec2 p;
-};
-
-b2Body * getBodyAt(b2World &world, float x, float y)
-{
-	b2AABB aabb;
-	aabb.lowerBound.Set(x, y);
-	aabb.upperBound.Set(x, y);
-
-	QueryCallback cb(world, x, y);
-	world.QueryAABB(&cb, aabb);
-
-	return cb.body;
-
-}
 
 
 b2Vec2 getMousePosition(sf::RenderWindow &window)
 {
-	sf::Vector2i mp = sf::Mouse::getPosition(window);
+	sf::Vector2f mp = sf::Vector2f(sf::Mouse::getPosition(window));
 	mp.x -= width / 2;
 	mp.y -= height / 2;
 	mp.x += window.getView().getCenter().x;
 	mp.y += window.getView().getCenter().y;
-	return b2Vec2(mp.x /  (renderScale / scale), -mp.y / (renderScale / scale));
+	return b2Vec2(mp.x /  (renderScale / scale), mp.y / (renderScale / scale));
 }
 
 int main()
@@ -82,10 +42,9 @@ int main()
 	Car car;
 	world.add(&car);
 
-	b2MouseJointDef mjd;
-	mjd.bodyA = room.m_body;
-	mjd.maxForce = 10000;
-	b2MouseJoint * mj = nullptr;// = (b2MouseJoint*)world.CreateJoint(&mjd);
+	sMouseJoint mouseJoint;
+	mouseJoint.setBodyA(&room);
+	world.add(&mouseJoint);
 
 	srand(time(NULL));
 
@@ -101,14 +60,14 @@ int main()
 	window.setVerticalSyncEnabled(true);
 	
 	
-	DebugDraw debugDraw(window);
+	sDebugDraw debugDraw(window);
 
 	sf::Transform trans;
 	//trans.translate(0.5f, -150.f);
-	trans.scale(renderScale/scale, -renderScale/scale);
+	trans.scale(renderScale/scale, renderScale/scale);
 
 	debugDraw.setTransform(trans);
-	debugDraw.SetFlags(DebugDraw::e_shapeBit | DebugDraw::e_jointBit);
+	debugDraw.SetFlags(sDebugDraw::e_shapeBit | sDebugDraw::e_jointBit);
 	
 	world.b2world.SetDebugDraw(&debugDraw);
 
@@ -138,25 +97,15 @@ int main()
 			} else if(e.type == sf::Event::MouseButtonPressed){
 				if(e.mouseButton.button == sf::Mouse::Left){
 					if(mouse_mode){
-						b2Vec2 mp = getMousePosition(window);
-						b2Body * body = getBodyAt(world.b2world, mp.x, mp.y);
-						if(body != nullptr){
-							mjd.bodyB = body;
-							mjd.target = mp;
-							mjd.collideConnected = true;
-							mj = (b2MouseJoint*)world.b2world.CreateJoint(&mjd);
-							isDragging = true;
-						}
+						mouseJoint.pressed(getMousePosition(window));
 					} else {
 						points.push_back(getMousePosition(window));
 					}
 
 				}
 			} else if(e.type == sf::Event::MouseButtonReleased){
-				if(e.mouseButton.button == sf::Mouse::Left && mj != nullptr){
-					world.b2world.DestroyJoint(mj);
-					mj = nullptr;
-					isDragging = false;
+				if(e.mouseButton.button == sf::Mouse::Left){
+					mouseJoint.released();
 				}
 			} else if(e.type == sf::Event::Resized){
 				width = window.getSize().x;
@@ -195,11 +144,7 @@ int main()
 			//step = false;
 		}
 
-		if(isDragging){
-			b2Vec2 mp = getMousePosition(window);
-			mj->SetTarget(mp);
-			
-		}
+		mouseJoint.setPosition(getMousePosition(window));
 
 		int t2 = clck.getElapsedTime().asMilliseconds();
 		//accumulator += t2 - oldt2;

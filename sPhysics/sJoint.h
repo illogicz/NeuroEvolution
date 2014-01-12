@@ -15,9 +15,16 @@ public:
 
 	void setBodies(sBody *bodyA, sBody *bodyB)
 	{
-		assert(!m_inWorld);
-
 		m_bodyA = bodyA;
+		m_bodyB = bodyB;
+	}
+
+	void setBodyA(sBody *bodyA)
+	{
+		m_bodyA = bodyA;
+	}
+	void setBodyB(sBody *bodyB)
+	{
 		m_bodyB = bodyB;
 	}
 
@@ -30,8 +37,10 @@ public:
 protected:
 
 
-	void addToWorld(sWorld &world);
-	void removeFromWorld(sWorld &world);
+	virtual void addToWorld(sWorld &world);
+	void _addToWorld(sWorld &world);
+	virtual void removeFromWorld(sWorld &world);
+	void _removeFromWorld(sWorld &world);
 
 
 	void jointDestroyed()

@@ -19,18 +19,15 @@
     <Filter Include="Header Files\sPhysics">
       <UniqueIdentifier>{6b5bc3dd-cb9d-4b28-af80-6192fb54a7eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\sGraphics">
+      <UniqueIdentifier>{12a55bda-7a44-4f7e-8620-539ef53e0bd5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugDraw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Genome.h">
@@ -102,18 +99,21 @@
     <ClInclude Include="sPhysics\sUniformBody.h">
       <Filter>Header Files\sPhysics</Filter>
     </ClInclude>
+    <ClInclude Include="sGraphics\sDebugDraw.h">
+      <Filter>Header Files\sGraphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoxSFML.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DebugDraw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="sPhysics\sJoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="sPhysics\sBody.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sGraphics\sDebugDraw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

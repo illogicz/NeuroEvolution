@@ -4,11 +4,11 @@
 void sJoint::addToWorld(sWorld &world)
 {
 	sObject::addToWorld(world);
+	_addToWorld(world);
+}
 
-	// Objects must be added first
-	//assert(m_bodyA->m_inWorld && m_bodyA->m_inWorld);
-
-
+void sJoint::_addToWorld(sWorld &world)
+{
 	m_jointDef->bodyA = m_bodyA->m_body;
 	m_jointDef->bodyB = m_bodyB->m_body;
 	m_jointDef->userData = this;
@@ -20,5 +20,10 @@ void sJoint::addToWorld(sWorld &world)
 void sJoint::removeFromWorld(sWorld &world)
 {
 	sObject::removeFromWorld(world);
+	_removeFromWorld(world);
+}
+
+void sJoint::_removeFromWorld(sWorld &world)
+{
 	world.b2world.DestroyJoint(m_joint);
 }
