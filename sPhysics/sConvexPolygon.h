@@ -1,10 +1,10 @@
 #pragma once
 #include <vector>
-#include "sSimpleBody.h"
+#include "sUniformBody.h"
 
 using std::vector;
 
-class sConvexPolygon : public sSimpleBody
+class sConvexPolygon : public sUniformBody
 {
 
 private:
@@ -48,7 +48,7 @@ protected:
 		}
 		s_shape.Set(verts, n);
 
-		sSimpleBody::addToWorld(world);
+		sUniformBody::addToWorld(world);
 	}
 
 	vector<b2Vec2> m_vertices;

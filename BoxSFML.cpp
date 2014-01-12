@@ -1,7 +1,4 @@
 // BoxSFML.cpp : Defines the entry point for the console application.
-//
-
-#include "stdafx.h"
 #include <sfml.h>
 #include <Box2D\Box2D.h>
 #include "DebugDraw.h"
@@ -70,13 +67,13 @@ b2Vec2 getMousePosition(sf::RenderWindow &window)
 	return b2Vec2(mp.x /  (renderScale / scale), -mp.y / (renderScale / scale));
 }
 
-int _tmain(int argc, _TCHAR* argv[])
+int main()
 {
 
 
 
 	sWorld world;
-	State state(world.__world);
+	State state(world.b2world);
 
 	sEdgeRectangle room;
 	room.setSize(scale * width / renderScale, scale * height / renderScale);
@@ -113,7 +110,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	debugDraw.setTransform(trans);
 	debugDraw.SetFlags(DebugDraw::e_shapeBit | DebugDraw::e_jointBit);
 	
-	world.__world.SetDebugDraw(&debugDraw);
+	world.b2world.SetDebugDraw(&debugDraw);
 
 
 
@@ -142,12 +139,12 @@ int _tmain(int argc, _TCHAR* argv[])
 				if(e.mouseButton.button == sf::Mouse::Left){
 					if(mouse_mode){
 						b2Vec2 mp = getMousePosition(window);
-						b2Body * body = getBodyAt(world.__world, mp.x, mp.y);
+						b2Body * body = getBodyAt(world.b2world, mp.x, mp.y);
 						if(body != nullptr){
 							mjd.bodyB = body;
 							mjd.target = mp;
 							mjd.collideConnected = true;
-							mj = (b2MouseJoint*)world.__world.CreateJoint(&mjd);
+							mj = (b2MouseJoint*)world.b2world.CreateJoint(&mjd);
 							isDragging = true;
 						}
 					} else {
@@ -157,7 +154,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				}
 			} else if(e.type == sf::Event::MouseButtonReleased){
 				if(e.mouseButton.button == sf::Mouse::Left && mj != nullptr){
-					world.__world.DestroyJoint(mj);
+					world.b2world.DestroyJoint(mj);
 					mj = nullptr;
 					isDragging = false;
 				}
@@ -215,7 +212,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		window.clear();
 		debugDraw.prepare();
-		world.__world.DrawDebugData();
+		world.b2world.DrawDebugData();
 		debugDraw.finalize();
 		window.display();
 

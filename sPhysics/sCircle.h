@@ -1,8 +1,8 @@
 #pragma once
-#include "sSimpleBody.h"
+#include "sUniformBody.h"
 
 
-class sCircle : public sSimpleBody
+class sCircle : public sUniformBody
 {
 
 private:
@@ -19,7 +19,7 @@ public:
 		setRadius(radius);
 		setPosition(b2Vec2(x, y));
 	}
-	sCircle(sCircle &circle) : sSimpleBody(circle)
+	sCircle(sCircle &circle) : sUniformBody(circle)
 	{
 
 		_copy(circle);
@@ -28,14 +28,14 @@ public:
 	void copy(sCircle &circle)
 	{
 		
-		sSimpleBody::copy(circle);
+		sUniformBody::copy(circle);
 		_copy(circle);
 	}
 
 	void addToWorld(b2World &world)
 	{
 		s_shape.m_radius = m_radius;
-		sSimpleBody::addToWorld(world);
+		sUniformBody::addToWorld(world);
 	}
 
 	void setRadius(float32 radius)

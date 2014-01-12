@@ -6,14 +6,23 @@ using std::vector;
 
 
 
+
+
 struct BodyState
 {
 	float32 angle;
 	float32 angularVelocity;
 	b2Vec2 position;
 	b2Vec2 linearVelocity;
+
+	BodyState interpolate(BodyState state)
+	{
+
+	}
+
 };
 
+// Body types, matched to box2d types for convenience
 enum sBodyType
 {
 	STATIC_BODY = b2_staticBody,
@@ -23,7 +32,6 @@ enum sBodyType
 
 class sBody : public sObject
 {
-	//friend class sJoint;
 
 public:
 
@@ -31,20 +39,21 @@ public:
 	{
 		m_density = 1;
 		m_bodyType = DYNAMIC_BODY;
+		m_state.angle = 0;
+		m_state.angularVelocity = 0;
+		m_state.position = b2Vec2(0,0);
+		m_state.linearVelocity = b2Vec2(0,0);
 	}
 	sBody(sBody &body) : sObject(body)
 	{
 		_copy(body);
 	}
-
-
 	~sBody()
 	{
 		if(m_inWorld){
 			removeFromWorld(*m_world);
 		}
 	}
-
 	void copy(sBody &body)
 	{
 		sObject::copy(body);
@@ -56,12 +65,10 @@ public:
 
 	void setType(sBodyType type)
 	{
-
 		m_bodyType = type;
 		if(m_inWorld)m_body->SetType(b2BodyType(type));
-
 	}
-	sBodyType setType()
+	sBodyType getType()
 	{
 		return m_bodyType;
 	}
@@ -202,8 +209,6 @@ private :
 		m_fixtureDefs = body.m_fixtureDefs;
 		m_bodyDef = body.m_bodyDef;
 		setState(body.getState());
-		printf("sBody._copy(), density = %f bodytype = %i\n", m_density, m_bodyType);
-
 	}
 	
 };

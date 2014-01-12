@@ -10,7 +10,8 @@ class sContainer : public sObject
 
 public:
 
-	sContainer() : sObject(CONTAINER_OBJECT) {}
+	sContainer() : sObject(CONTAINER_OBJECT){}
+
 
 	void add(sObject *object)
 	{

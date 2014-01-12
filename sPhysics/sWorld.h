@@ -10,26 +10,30 @@ class sWorld : public sContainer
 public:
 
 
-	sWorld():gravity(0.0f, -9.8f), __world(gravity)
+	sWorld():gravity(0.0f, -9.8f), b2world(gravity)
 	{
-		m_world = &__world;
-		__world.SetDestructionListener(&m_destructionListener);
-		//__world.SetContactListener();
+		m_world = &b2world;
+		b2world.SetDestructionListener(&m_destructionListener);
 
+		//b2world.SetContactListener();
 		timeStep = 1.f/60.f;
 		velocityIterations = 8;
 		positionIterations = 3;
+
+		// Set to true, because this is the world itself
 		m_inWorld = true;
 	}
 
 
 	void step()
 	{
+		//dispatchStepEvent(true);
 		m_world->Step(timeStep, velocityIterations, positionIterations);
+		//dispatchStepEvent(true);
 	}
 
 
-
+	b2World b2world;
 	float32 timeStep;
 	int32 velocityIterations;
 	int32 positionIterations;
@@ -50,7 +54,50 @@ public:
 	}
 
 
-	b2World __world; //temp public
+
+
+	/*
+	// Manage listener for physics step events
+	void addStepListener(sStepListener &listener)
+	{
+		if(m_stepListeners.find(&listener) != m_stepListeners.end()){
+			printf("Warning: sWorld::addStepListener(), listener already added\n");
+		} else {
+			m_stepListeners.insert(&listener);
+		}
+	}
+	void removeStepListener(sStepListener &listener)
+	{
+		if(m_stepListeners.find(&listener) != m_stepListeners.end()){
+			m_stepListeners.erase(&listener);
+		} else {
+			printf("Warning: sWorld::removeStepListener(), listener not found\n");
+		}
+	}
+
+
+	// Manage listener for contact events
+	// If the last argument is omitted, contact with any other body will fire
+	void addContactListsner(sContactListener &listener, sBody *body1, sBody *body2 = NULL)
+	{
+
+	}
+	void removeContactListener(sContactListener &listener, sBody *body1, sBody *body2 = NULL)
+	{
+
+	}
+
+	// TODO: Bad, exposes box2d interface.
+	void addContactListsner(sContactListener &listener, b2FixtureDef *body1, b2FixtureDef *body2 = NULL)
+	{
+
+	}
+	void removeContactListener(sContactListener &listener, b2FixtureDef *body1, b2FixtureDef *b2FixtureDef = NULL)
+	{
+
+	}
+	*/
+	 //temp public
 protected:
 
 
@@ -94,11 +141,31 @@ private:
 		b2Vec2 m_position;
 	};
 
-	//class ContactListener : public b2ContactListener
+	//class GlobalContactListener : public b2ContactListener
 	//{
 	//public:
 		
 	//}
+
+
+	// map<sBody*, map<sBody*, set<sContactListener*>>> m_contactListeners;
+
+
+	
+	/*
+	set<sStepListener*> m_stepListeners;
+	void dispatchStepEvent(bool before = true)
+	{
+		set<sStepListener*>::iterator i;
+		for(i = m_stepListeners.begin(); i != m_stepListeners.end(); ++i){
+			if(before){
+				(*i)->onBeforeStep();
+			} else {
+				(*i)->onAfterStep();
+			}
+		}
+	}
+	*/
 
 
 };
@@ -112,7 +179,7 @@ public:
 	virtual void onEndContact(){}
 };
 
-class sStepistener
+class sStepListener
 {
 public:
 	virtual void onBeforeStep(){}

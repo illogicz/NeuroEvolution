@@ -22,7 +22,6 @@ protected:
 	}
 	sObject(sObject &object) : m_type(object.m_type)
 	{
-		printf("object copy constructor\n");
 		m_inWorld = false;
 	}
 

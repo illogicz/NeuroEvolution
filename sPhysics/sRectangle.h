@@ -1,8 +1,8 @@
 #pragma once
-#include "sSimpleBody.h"
+#include "sUniformBody.h"
 
 
-class sRectangle : public sSimpleBody
+class sRectangle : public sUniformBody
 {
 
 private:
@@ -43,7 +43,7 @@ protected:
 	{
 		printf("rectanle add to world \n");
 		s_shape.SetAsBox(m_size.x, m_size.y);		
-		sSimpleBody::addToWorld(world);
+		sUniformBody::addToWorld(world);
 	}
 
 	b2Vec2 m_size;

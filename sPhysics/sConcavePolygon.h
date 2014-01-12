@@ -1,10 +1,10 @@
 #pragma once
 #include <vector>
-#include "sSimpleBody.h"
+#include "sUniformBody.h"
 
 using std::vector;
 
-class sConcavePolygon : public sSimpleBody
+class sConcavePolygon : public sUniformBody
 {
 
 private:
@@ -201,10 +201,10 @@ protected:
 		m_parts.push_back(vertices);
 	}
 
-	void addToWorld(b2World &world)
-	{
-		sSimpleBody::addToWorld(world);
-	}
+	//void addToWorld(sWorld &world)
+	//{
+	//	sUniformBody::addToWorld(world);
+	//}
 	vector<vector<b2Vec2>> m_parts;
 	vector<b2Vec2> m_vertices;
 

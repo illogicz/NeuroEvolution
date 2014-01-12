@@ -47,7 +47,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>SFML_STATIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -105,7 +105,7 @@
     <ClInclude Include="sPhysics\sJoint.h" />
     <ClInclude Include="sPhysics\sPhysics.h" />
     <ClInclude Include="sPhysics\sRectangle.h" />
-    <ClInclude Include="sPhysics\sSimpleBody.h" />
+    <ClInclude Include="sPhysics\sUniformBody.h" />
     <ClInclude Include="sPhysics\sWheelJoint.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="stdafx.h" />

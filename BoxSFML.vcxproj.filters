@@ -87,9 +87,6 @@
     <ClInclude Include="sPhysics\sRectangle.h">
       <Filter>Header Files\sPhysics</Filter>
     </ClInclude>
-    <ClInclude Include="sPhysics\sSimpleBody.h">
-      <Filter>Header Files\sPhysics</Filter>
-    </ClInclude>
     <ClInclude Include="sPhysics\sWorld.h">
       <Filter>Header Files\sPhysics</Filter>
     </ClInclude>
@@ -100,6 +97,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sPhysics\sMouseJoint.h">
+      <Filter>Header Files\sPhysics</Filter>
+    </ClInclude>
+    <ClInclude Include="sPhysics\sUniformBody.h">
       <Filter>Header Files\sPhysics</Filter>
     </ClInclude>
   </ItemGroup>
