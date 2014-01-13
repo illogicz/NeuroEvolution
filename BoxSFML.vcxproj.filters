@@ -102,6 +102,21 @@
     <ClInclude Include="sGraphics\sDebugDraw.h">
       <Filter>Header Files\sGraphics</Filter>
     </ClInclude>
+    <ClInclude Include="sGraphics\sDisplayObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sGraphics\sDisplayContainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sGraphics\sSprite.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sGraphics\sResourceManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sPhysics\sChain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoxSFML.cpp">

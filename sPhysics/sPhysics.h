@@ -10,4 +10,5 @@
 #include "sConvexPolygon.h"
 #include "sConcavePolygon.h"
 #include "sEdgeRectangle.h"
+#include "sChain.h"
 #include "sMouseJoint.h"

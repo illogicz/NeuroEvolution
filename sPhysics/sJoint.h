@@ -12,13 +12,21 @@ public:
 	{
 		m_collideConnected = false;
 	}
+	sJoint(sJoint &joint) : sObject(joint)
+	{
+		_copy(joint);
+	}
+	virtual void copy(sJoint &joint)
+	{
+		sObject::copy(joint);
+		_copy(joint);
+	}
 
 	void setBodies(sBody *bodyA, sBody *bodyB)
 	{
 		m_bodyA = bodyA;
 		m_bodyB = bodyB;
 	}
-
 	void setBodyA(sBody *bodyA)
 	{
 		m_bodyA = bodyA;
@@ -27,7 +35,6 @@ public:
 	{
 		m_bodyB = bodyB;
 	}
-
 	void setCollideConnected(bool collideConnected)
 	{
 		m_collideConnected = collideConnected;
@@ -55,7 +62,16 @@ protected:
 	sBody *m_bodyB;
 
 	bool m_collideConnected;
+
+private:
 	
+	void _copy(sJoint &joint)
+	{
+		m_bodyA = joint.m_bodyA;
+		m_bodyB = joint.m_bodyB;
+		m_collideConnected = joint.m_collideConnected;
+		m_jointDef = joint.m_jointDef;
+	}
 
 };
 

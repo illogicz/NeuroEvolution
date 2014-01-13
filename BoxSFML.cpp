@@ -5,6 +5,8 @@
 #include "State.h"
 #include "sPhysics\sPhysics.h"
 #include "sGraphics\sDebugDraw.h"
+#include "sGraphics\sDisplayContainer.h"
+
 #include "Car.h"
 
 #include <random>
@@ -37,16 +39,47 @@ int main()
 
 	sEdgeRectangle room;
 	room.setSize(scale * width / renderScale, scale * height / renderScale);
-	world.add(&room);
+	//world.add(&room);
 
 	Car car;
 	world.add(&car);
 
-	sMouseJoint mouseJoint;
-	mouseJoint.setBodyA(&room);
-	world.add(&mouseJoint);
+
 
 	srand(time(NULL));
+
+
+	sDisplayContainer container, container2, container3;
+	container.setPosition(0,0);
+	container2.setPosition(-100,0);
+	container3.setPosition(100,0);
+
+	sDisplayObject circle1, circle2, circle3, circle4;
+	circle1.setPosition(-30, 0);
+	circle2.setPosition(30, 0);
+	circle3.setPosition(-30, 0);
+	circle4.setPosition(30, 0);
+
+
+
+	container.addChild(&container2);
+	container.addChild(&container3);
+
+	container2.addChild(&circle1);
+	container2.addChild(&circle2);
+	container3.addChild(&circle3);
+	container3.addChild(&circle4);
+
+	sChain chain;
+	for(float32 x = -width/100; x <= width/10; x += 1.f){
+		chain.addVertex(x, 1.0 * float(rand())/RAND_MAX + 3.f);
+	}
+	chain.setFriction(1);
+	world.add(&chain);
+
+	sMouseJoint mouseJoint;
+	mouseJoint.setBodyA(&chain);
+	world.add(&mouseJoint);
 
 
 	sf::Event e;
@@ -58,7 +91,7 @@ int main()
 	view.setCenter(0.5f, -0.5f);
 	window.setFramerateLimit(60);
 	window.setVerticalSyncEnabled(true);
-	
+	sf::RenderStates renderState;
 	
 	sDebugDraw debugDraw(window);
 
@@ -131,6 +164,8 @@ int main()
 			}
 		}
 		bool step = true;
+		b2Vec2 p = car.m_car.getPosition();
+		view.setCenter(p.x * 50, p.y * 50);
 		window.setView(view);
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space)){
 
@@ -139,31 +174,44 @@ int main()
 			rec->setPosition(b2Vec2(0,0));
 			world.add(rec);
 
-		} else if(sf::Keyboard::isKeyPressed(sf::Keyboard::F7)){
+		}
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::F7)){
 			state.interpolate(0.5);
 			//step = false;
 		}
-
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
+			car.setAccelerator(1);
+		} else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
+			car.setAccelerator(-1);
+		} else {
+			car.setAccelerator(0);
+		}
 		mouseJoint.setPosition(getMousePosition(window));
 
 		int t2 = clck.getElapsedTime().asMilliseconds();
-		//accumulator += t2 - oldt2;
-		//oldt2 = t2;
-		//if(accumulator >= dt){
-		//	world.Step(dt / 1000.f, velocityIterations, positionIterations);
-		//	accumulator -= dt;
-		//}
 		if(step)world.step();
-
+		physicsTime += clck.getElapsedTime().asMilliseconds() - t2;
 		window.clear();
+
+		t2 = clck.getElapsedTime().asMilliseconds();
 		debugDraw.prepare();
 		world.b2world.DrawDebugData();
 		debugDraw.finalize();
+
+		container.setRotation(container.getRotation() + 1.f);
+		container2.setRotation(container2.getRotation() + 1.f);
+		container3.setRotation(container3.getRotation() + 1.f);
+		container.draw(window, renderState);
+
 		window.display();
+		renderTime += clck.getElapsedTime().asMilliseconds() - t2;
+
+		
 
 		frameCounter++;
 		t2 = clck.getElapsedTime().asMilliseconds();
 		if(t2 - lastTime > 999){
+			window.setTitle(to_string(frameCounter) + "fps " + to_string(renderTime) + ":" + to_string(physicsTime));
 			frameCounter = 0;
 			lastTime = t2;
 			physicsTime = renderTime = 0;

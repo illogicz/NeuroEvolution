@@ -12,8 +12,15 @@ public:
 	{
 		m_jointDef = &_jointDef;
 	}
-
-
+	sWheelJoint(sWheelJoint &joint) : sJoint(joint)
+	{
+		_copy(joint);
+	}
+	void copy(sWheelJoint &joint)
+	{
+		sJoint::copy(joint);
+		_copy(joint);
+	}
 
 	void setAxis(b2Vec2 axis)
 	{
@@ -45,17 +52,28 @@ public:
 	void setEnableMotor(bool enableMotor)
 	{
 		_jointDef.enableMotor = enableMotor;
+		if(m_inWorld)_joint->EnableMotor(enableMotor);
+	}
+
+	void setFrequencyHz(float32 frequencyHz)
+	{
+		_jointDef.frequencyHz = frequencyHz;
+		if(m_inWorld)_joint->SetSpringFrequencyHz(frequencyHz);
+	}
+
+	void setDampingRatio(float32 dampingRatio)
+	{
+		_jointDef.dampingRatio = dampingRatio;
+		if(m_inWorld)_joint->SetSpringDampingRatio(dampingRatio);
 	}
 
 protected:
 
 	void addToWorld(sWorld &world)
 	{
-
 		_jointDef.Initialize(m_bodyA->m_body, m_bodyB->m_body, m_localAnchorA, m_axis);
-		_jointDef.frequencyHz = 10;
 		sJoint::addToWorld(world);
-		_joint = (b2WheelJoint*)&m_joint;
+		_joint = (b2WheelJoint*)m_joint;
 	}
 
 
@@ -66,6 +84,19 @@ protected:
 	b2WheelJoint *_joint;
 	b2WheelJointDef _jointDef;
 
+private:
 
+	void _copy(sWheelJoint &joint)
+	{
+		//m_jointDef = &_jointDef;
+		_jointDef.maxMotorTorque = joint._jointDef.maxMotorTorque;
+		_jointDef.motorSpeed = joint._jointDef.motorSpeed;
+		_jointDef.enableMotor = joint._jointDef.enableMotor;
+		_jointDef.frequencyHz = joint._jointDef.frequencyHz;
+		_jointDef.dampingRatio = joint._jointDef.dampingRatio;
+		m_axis = joint.m_axis;
+		m_localAnchorB = joint.m_localAnchorB;
+		m_localAnchorA = joint.m_localAnchorA;
+	}
 
 };

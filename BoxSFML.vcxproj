@@ -93,6 +93,11 @@
     <ClInclude Include="Genes\MuscleGene.h" />
     <ClInclude Include="Genome.h" />
     <ClInclude Include="Car.h" />
+    <ClInclude Include="sGraphics\sDisplayContainer.h" />
+    <ClInclude Include="sGraphics\sDisplayObject.h" />
+    <ClInclude Include="sGraphics\sResourceManager.h" />
+    <ClInclude Include="sGraphics\sSprite.h" />
+    <ClInclude Include="sPhysics\sChain.h" />
     <ClInclude Include="sPhysics\sComposite.h" />
     <ClInclude Include="sPhysics\sConcavePolygon.h" />
     <ClInclude Include="sPhysics\sConvexPolygon.h" />

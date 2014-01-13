@@ -1,5 +1,6 @@
 #include <Box2D\Box2D.h>
 #include <map>
+#include "sPhysics\sBody.h"
 
 using std::map;
 
@@ -15,15 +16,14 @@ public:
 	{
 		b2Body *body = m_world.GetBodyList();
 
+		m_bodyStates.clear();
+
 		while(body != NULL)
 		{
 			if(body->GetType() == b2BodyType::b2_dynamicBody)
 			{
-				BodyState &bodyState = m_bodyStates[body];
-				bodyState.angle = body->GetAngle();
-				bodyState.angularVelocity = body->GetAngularVelocity();
-				bodyState.position = body->GetPosition();
-				bodyState.linearVelocity = body->GetLinearVelocity();
+				sBody &sbody = *(sBody*)body->GetUserData();
+				m_bodyStates[body] = sbody.getState();
 			}
 			body = body->GetNext();
 		}
@@ -40,10 +40,8 @@ public:
 			{
 				if(m_bodyStates.find(body) != m_bodyStates.end())
 				{
-					BodyState &bodyState = m_bodyStates[body];	
-					body->SetAngularVelocity(bodyState.angularVelocity);
-					body->SetLinearVelocity(bodyState.linearVelocity);
-					body->SetTransform(bodyState.position, bodyState.angle);
+					sBody &sbody = *(sBody*)body->GetUserData();
+					sbody.setState(m_bodyStates[body]);
 				}
 			}
 			body = body->GetNext();
@@ -59,17 +57,9 @@ public:
 			{
 				if(m_bodyStates.find(body) != m_bodyStates.end())
 				{
-					BodyState &bodyState = m_bodyStates[body];	
+					sBody &sbody = *(sBody*)body->GetUserData();
+					sbody.setState(sbody.getState().interpolate(m_bodyStates[body], t));
 
-					float32 dav = bodyState.angularVelocity - body->GetAngularVelocity();
-					body->SetAngularVelocity(body->GetAngularVelocity() + dav * t);
-
-					b2Vec2 dv = bodyState.linearVelocity - body->GetLinearVelocity();
-					body->SetLinearVelocity(body->GetLinearVelocity() + t * dv);
-
-					b2Vec2 dp = bodyState.position - body->GetPosition();
-					float32 da = bodyState.angle - body->GetAngle();
-					body->SetTransform(body->GetPosition() + t * dp, body->GetAngle() + t * da);
 				}
 			}
 			body = body->GetNext();
@@ -79,16 +69,7 @@ public:
 private:
 
 
-	struct BodyState
-	{
-		float32 angle;
-		float32 angularVelocity;
-		b2Vec2 position;
-		b2Vec2 linearVelocity;
-	};
-
-
-	map<b2Body*, BodyState> m_bodyStates;
+	map<b2Body*, sBodyState> m_bodyStates;
 
 
 

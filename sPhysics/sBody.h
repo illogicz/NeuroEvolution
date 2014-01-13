@@ -9,16 +9,29 @@ using std::vector;
 
 
 
-struct BodyState
+struct sBodyState
 {
 	float32 angle;
 	float32 angularVelocity;
 	b2Vec2 position;
 	b2Vec2 linearVelocity;
 
-	BodyState interpolate(BodyState state)
+	sBodyState interpolate(sBodyState state, float32 t)
 	{
+		sBodyState result;
+		result.angle = angle + (state.angle - angle) * t;
+		result.angularVelocity = angularVelocity + (state.angularVelocity - angularVelocity) * t;
+		result.position = position + t * (state.position - position);
+		result.linearVelocity = linearVelocity + t * (state.linearVelocity - linearVelocity);
+		return result;
+	}
 
+	void copy(sBodyState &state)
+	{
+		angle = state.angle;
+		angularVelocity = state.angularVelocity;
+		position = state.position;
+		linearVelocity = state.linearVelocity;
 	}
 
 };
@@ -81,10 +94,10 @@ public:
 	}
 
 	// TODO: possibly change this so that deriving classes can use derived states
-	BodyState getState()
+	sBodyState getState()
 	{
 		if(m_inWorld){
-			BodyState state;
+			sBodyState state;
 			state.position = m_body->GetPosition();
 			state.angle = m_body->GetAngle();
 			state.angularVelocity = m_body->GetAngularVelocity();
@@ -93,7 +106,7 @@ public:
 		}
 		return m_state;
 	}
-	void setState(BodyState state)
+	void setState(sBodyState state)
 	{
 		if(m_inWorld){
 			m_body->SetTransform(state.position, state.angle);
@@ -172,7 +185,7 @@ protected:
 
 	sBodyType m_bodyType;
 	float32 m_density;
-	BodyState m_state;
+	sBodyState m_state;
 
 	// Body definition pointer, must be set by deriving class
 	// This is pointer, so that many instances can share the same definition
