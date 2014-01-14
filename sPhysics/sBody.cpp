@@ -10,13 +10,15 @@ void sBody::addToWorld(sWorld &world)
 	m_bodyDef->angle = m_state.angle;
 	m_bodyDef->linearVelocity = m_state.linearVelocity;
 	m_bodyDef->angularVelocity = m_state.angularVelocity;
+	m_bodyDef->linearDamping = m_linearDamping;
+	m_bodyDef->angularDamping = m_angularDamping;
 	// set type
 	m_bodyDef->type = (b2BodyType)m_bodyType;
 
 	// Add body to world
 	m_body = world.b2world.CreateBody(m_bodyDef);
 	m_body->SetUserData(this);
-		
+	//m_body->
 	// Add fixtures to body
 	int n_fixtures = m_fixtureDefs.size();
 	m_fixtures.resize(n_fixtures);

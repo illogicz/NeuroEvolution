@@ -9,6 +9,14 @@ void sJoint::addToWorld(sWorld &world)
 
 void sJoint::_addToWorld(sWorld &world)
 {
+	if(m_bodyA == nullptr || m_bodyB == nullptr){
+		printf("Error: sJoint::addToWorld() joint requires 2 bodies to be set\n");
+		return;
+	}
+	if(!m_bodyA->isInWorld() || !m_bodyB->isInWorld()){
+		printf("Error: sJoint::addToWorld() bodies of this joint are not all active\n");
+		return;
+	}
 	m_jointDef->bodyA = m_bodyA->m_body;
 	m_jointDef->bodyB = m_bodyB->m_body;
 	m_jointDef->userData = this;

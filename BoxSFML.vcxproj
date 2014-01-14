@@ -85,6 +85,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="sGraphics\sAnimation.h" />
     <ClInclude Include="sGraphics\sDebugDraw.h" />
     <ClInclude Include="Genes\BaseGene.h" />
     <ClInclude Include="Genes\BodyGene.h" />

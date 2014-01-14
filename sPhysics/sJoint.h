@@ -10,6 +10,7 @@ public:
 
 	sJoint() : sObject(JOINT_OBJECT)
 	{
+		m_bodyA = m_bodyB = nullptr;
 		m_collideConnected = false;
 	}
 	sJoint(sJoint &joint) : sObject(joint)

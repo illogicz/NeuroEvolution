@@ -3,7 +3,7 @@
 
 #include <Box2D/Box2D.h>
 #include <sfml.h>
-
+#include "../sPhysics/sWorld.h"
 
 struct b2AABB;
 
@@ -43,6 +43,17 @@ public:
 		states.transform = transform;
 	}
 
+	void setView(sf::View v)
+	{
+		view_size = 0.5f * states.transform.getInverse().transformPoint(v.getSize());
+		view_center = states.transform.getInverse().transformPoint(v.getCenter());
+	}
+
+	void DrawDebugData(sWorld &world);
+	void DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color& color);
+	void DrawJoint(b2Joint* joint);
+
+
 	void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
 
 	void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
@@ -66,8 +77,13 @@ public:
 private:
 
 	void allocate(sf::VertexArray &va, int i, int n);
+	void addTriangle(const b2Vec2 &v1, const b2Vec2 &v2, const b2Vec2 &v3, const sf::Color &c);
+	void addLine(const b2Vec2 &v1, const b2Vec2 &v2, const sf::Color &c);
 
 
+
+	sf::Vector2f view_center;
+	sf::Vector2f view_size;
 	sf::RenderStates states;
 	sf::RenderTarget &target;
 	sf::VertexArray triangles;
@@ -76,6 +92,16 @@ private:
 	int triangles_index;
 	int lines_index;
 
+	class AABBQueryCallback : public b2QueryCallback
+	{
+	public:
+		bool ReportFixture(b2Fixture* fixture){
+			fixtures.push_back(fixture);
+			return true;
+		}
+		vector<b2Fixture*> fixtures;
+	};
+	
 	//sf::View *view;
 };
 

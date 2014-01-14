@@ -9,5 +9,6 @@ class sSprite
 
 
 
+	sf::Texture m_texture;
 
 }

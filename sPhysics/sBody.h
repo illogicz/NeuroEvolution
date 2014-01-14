@@ -15,6 +15,8 @@ struct sBodyState
 	float32 angularVelocity;
 	b2Vec2 position;
 	b2Vec2 linearVelocity;
+	int32 body_id;
+	void *userData;
 
 	sBodyState interpolate(sBodyState state, float32 t)
 	{
@@ -35,6 +37,7 @@ struct sBodyState
 	}
 
 };
+
 
 // Body types, matched to box2d types for convenience
 enum sBodyType
@@ -57,6 +60,8 @@ public:
 		m_state.angularVelocity = 0;
 		m_state.position = b2Vec2(0,0);
 		m_state.linearVelocity = b2Vec2(0,0);
+		m_linearDamping = 0.1f;
+		m_angularDamping = 0.1f;
 	}
 	sBody(sBody &body) : sObject(body)
 	{
@@ -173,7 +178,40 @@ public:
 		return m_inWorld ? m_body->GetAngle() : m_state.angle;
 	}
 
+	void setLinearDamping(float32 damping)
+	{
+		m_linearDamping = damping;
+		if(m_inWorld)m_body->SetLinearDamping(damping);
+	}
+	float32 getLinearDamping()
+	{
+		return m_linearDamping;
+	}
 
+	void setAngularDamping(float32 damping)
+	{
+		m_angularDamping = damping;
+		if(m_inWorld)m_body->SetAngularDamping(damping);
+	}
+	float32 getAngularDamping()
+	{
+		return m_angularDamping;
+	}
+
+	bool isAwake()
+	{
+		if(!m_inWorld) return false;
+		return m_body->IsAwake();
+	}
+	void setAwake(bool awake)
+	{
+		if(!m_inWorld) return;
+		m_body->SetAwake(awake);
+	}
+	bool isInWorld()
+	{
+		return m_inWorld;
+	}
 
 	b2Body *m_body;  // temp public
 
@@ -187,12 +225,13 @@ protected:
 	float32 m_density;
 	sBodyState m_state;
 
+	float32 m_linearDamping;
+	float32 m_angularDamping;
+
 	// Body definition pointer, must be set by deriving class
 	// This is pointer, so that many instances can share the same definition
 	b2BodyDef *m_bodyDef;               
 	vector<b2FixtureDef*> m_fixtureDefs;
-
-
 	vector<b2Fixture*> m_fixtures;
 
 private :
@@ -203,6 +242,8 @@ private :
 		m_bodyType = body.m_bodyType;
 		m_fixtureDefs = body.m_fixtureDefs;
 		m_bodyDef = body.m_bodyDef;
+		m_angularDamping = body.m_angularDamping;
+		m_linearDamping = body.m_linearDamping;
 		setState(body.getState());
 	}
 	

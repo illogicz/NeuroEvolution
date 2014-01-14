@@ -4,7 +4,6 @@
 
 using std::map;
 
-
 class State
 {
 

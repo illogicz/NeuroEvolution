@@ -63,6 +63,6 @@ protected:
 	}
 
 	set<sObject*> m_children;
-
+	//set<sBody*> m_bodies;
 
 };

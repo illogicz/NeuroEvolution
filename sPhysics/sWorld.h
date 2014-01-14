@@ -71,7 +71,12 @@ public:
 		b2world.QueryAABB(&cb, aabb);
 		return cb.bodies;
 	}
-	
+	vector<sBody*> getBodiesAABB(b2AABB aabb)
+	{
+		AABBQueryCallback cb;
+		b2world.QueryAABB(&cb, aabb);
+		return cb.bodies;
+	}
 
 
 
@@ -152,12 +157,23 @@ private:
 		bool ReportFixture(b2Fixture* fixture){
 			if(fixture->TestPoint(m_position)){
 				bodies.push_back((sBody*)fixture->GetBody()->GetUserData());
-				return false;
+				//return false;
 			}
 			return true;
 		}
 		vector<sBody*> bodies;
 		b2Vec2 m_position;
+	};
+
+	
+	class AABBQueryCallback : public b2QueryCallback
+	{
+	public:
+		bool ReportFixture(b2Fixture* fixture){
+			bodies.push_back((sBody*)fixture->GetBody()->GetUserData());
+			return true;
+		}
+		vector<sBody*> bodies;
 	};
 	
 	//class GlobalContactListener : public b2ContactListener

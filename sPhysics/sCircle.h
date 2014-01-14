@@ -12,7 +12,6 @@ public:
 
 	sCircle(float32 radius = 1, float32 x = 0, float32 y = 0)
 	{
-		printf("circle default constructor");
 		m_fixtureDefs.push_back(&s_fixtureDef);
 		s_fixtureDef.shape = &s_shape;
 		m_bodyDef = &s_bodyDef;

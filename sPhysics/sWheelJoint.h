@@ -88,7 +88,7 @@ private:
 
 	void _copy(sWheelJoint &joint)
 	{
-		//m_jointDef = &_jointDef;
+		m_jointDef = &_jointDef;
 		_jointDef.maxMotorTorque = joint._jointDef.maxMotorTorque;
 		_jointDef.motorSpeed = joint._jointDef.motorSpeed;
 		_jointDef.enableMotor = joint._jointDef.enableMotor;

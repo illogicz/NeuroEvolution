@@ -4,7 +4,7 @@
 
 using std::vector;
 
-class Car : public sContainer
+class Car : public sContainer, public sStepListener
 {
 
 public:
@@ -12,78 +12,110 @@ public:
 	Car()
 	{
 
-		m_wheel1.setRadius(0.5);
-		m_wheel1.setPosition(b2Vec2(-1.5, 0.5));
-		m_wheel1.setFriction(1);
-		m_wheel1.setRestitution(0.0f);
-		add(&m_wheel1);
-
-		m_wheel2.copy(m_wheel1);
-		m_wheel2.setPosition(b2Vec2(1.5, 0.5));
-		m_wheel2.setFriction(1);
-		m_wheel2.setRestitution(0.0f);
-		add(&m_wheel2);
-
-		m_car.add(2.f, 0.f);
-		m_car.add(2.f, -0.5f);
-		m_car.add(1.5f, -0.6f);
-		m_car.add(1.f, -1.f);
-		m_car.add(-1.f, -1.f);
-		m_car.add(-1.5f, -0.6f);
-		m_car.add(-2.f, -0.5f);
-		m_car.add(-2.f, 0.f);
-		m_car.finalizeShape();
-		m_car.setDensity(1);
-		add(&m_car);
+		b2Filter filter;
+		filter.categoryBits = 0x02;
+		filter.maskBits = 0x01;
 
 
-		b2Vec2 anchor1(-1.5f, 0.f);
-		b2Vec2 anchor2( 1.5f, 0.f);
+		maxMotorTorque = 20.f;
+		maxMotorSpeed = 20.f;
+		frontAnchor.Set(-1.5f, 0.f);
+		rearAnchor.Set( 1.5f, 0.f);
 
-		m_wheelJoint1.setBodies(&m_car, &m_wheel1);
-		m_wheelJoint1.setAnchorA(m_wheel1.getPosition());
-		m_wheelJoint1.setAnchorB(anchor1);
-		m_wheelJoint1.setAxis(anchor1 - m_wheel1.getPosition());
-		m_wheelJoint1.setEnableMotor(true);
-		m_wheelJoint1.setMotorSpeed(0);
-		m_wheelJoint1.setMaxMotorTorque(5);
-		m_wheelJoint1.setFrequencyHz(3.5f);
-		m_wheelJoint1.setDampingRatio(0.9f);
-		add(&m_wheelJoint1);
+		frontWheel.setRadius(0.75f);
+		frontWheel.setPosition(b2Vec2(-1.7, 0.7));
+		frontWheel.setFriction(1);
+		frontWheel.setRestitution(0.0f);
+		frontWheel.setAngularDamping(0.9);
+		frontWheel.setDensity(0.25f);
+		frontWheel.setFilter(filter);
+		add(&frontWheel);
+
+		rearWheel.copy(frontWheel);
+		rearWheel.setPosition(b2Vec2(1.7, 0.7));
+		rearWheel.setFriction(1);
+		rearWheel.setRestitution(0.0f);
+		rearWheel.setAngularDamping(0.9);
+		rearWheel.setFilter(filter);
+		add(&rearWheel);
+
+		chassis.add(1.7f, 0.f);
+		chassis.add(1.8f, -0.5f);
+		chassis.add(1.5f, -0.6f);
+		chassis.add(1.f, -1.f);
+		chassis.add(-1.f, -1.f);
+		chassis.add(-1.5f, -0.6f);
+		chassis.add(-1.8f, -0.5f);
+		chassis.add(-1.7f, 0.f);
+		chassis.finalizeShape();
+		chassis.setFilter(filter);
+		add(&chassis);
+
+		frontSuspension.setBodies(&chassis, &frontWheel);
+		frontSuspension.setAnchorA(frontWheel.getPosition());
+		frontSuspension.setAnchorB(frontAnchor);
+		frontSuspension.setEnableMotor(true);
+		frontSuspension.setMotorSpeed(0);
+		frontSuspension.setMaxMotorTorque(5);
+		frontSuspension.setFrequencyHz(3.f);
+		frontSuspension.setDampingRatio(0.99f);
+		add(&frontSuspension);
 
 
-		m_wheelJoint2.copy(m_wheelJoint1);
-		m_wheelJoint2.setBodyB(&m_wheel2);
-		m_wheelJoint2.setAnchorB(anchor2);
-		m_wheelJoint2.setAnchorA(m_wheel2.getPosition());
-		m_wheelJoint2.setAxis(anchor2 - m_wheel2.getPosition());
-		/*
-		m_wheelJoint2.setEnableMotor(true);
-		m_wheelJoint1.setMotorSpeed(0);		
-		m_wheelJoint2.setMaxMotorTorque(5);
-		m_wheelJoint2.setFrequencyHz(3.5f);
-		m_wheelJoint2.setDampingRatio(0.9f);
-		*/
-		add(&m_wheelJoint2);
+		rearSuspension.copy(frontSuspension);
+		rearSuspension.setBodies(&chassis, &rearWheel);
+		rearSuspension.setAnchorB(rearAnchor);
+		rearSuspension.setAnchorA(rearWheel.getPosition());
+		add(&rearSuspension);
 
 	}
 
 
 	void setAccelerator(float t)
 	{
-		m_wheelJoint1.setMaxMotorTorque(abs(t) * 5);
-		m_wheelJoint2.setMaxMotorTorque(abs(t) * 5);
-		m_wheelJoint1.setMotorSpeed(100 * t);
-		m_wheelJoint2.setMotorSpeed(100 * t);
+		
+		frontSuspension.setMaxMotorTorque(abs(t) * maxMotorTorque);
+		rearSuspension.setMaxMotorTorque(abs(t) * maxMotorTorque);
+		frontSuspension.setMotorSpeed(maxMotorSpeed * t);
+		rearSuspension.setMotorSpeed(maxMotorSpeed * t);
+	}
+
+	float32 maxMotorTorque;
+	float32 maxMotorSpeed;
+	b2Vec2 frontAnchor;
+	b2Vec2 rearAnchor;
+	sConcavePolygon chassis;
+	sCircle frontWheel;
+	sCircle rearWheel;
+	sWheelJoint frontSuspension;
+	sWheelJoint rearSuspension;
+
+
+	void onBeforeStep()
+	{
+
+	}
+
+	void onAfterStep()
+	{
+
 	}
 
 
-	sConcavePolygon m_car;
-	sCircle m_wheel1;
-	sCircle m_wheel2;
-	sWheelJoint m_wheelJoint1;
-	sWheelJoint m_wheelJoint2;
+protected:
 
+	void addToWorld(sWorld &world)
+	{
+		rearSuspension.setAxis(rearAnchor - rearWheel.getPosition());
+		frontSuspension.setAxis(frontAnchor - frontWheel.getPosition());
+		sContainer::addToWorld(world);
+		world.addStepListener(*this);
+	}
 
+	void removeFromWorld(sWorld &world)
+	{
+		world.removeStepListener(*this);
+		sContainer::removeFromWorld(world);
+	}
 
 };

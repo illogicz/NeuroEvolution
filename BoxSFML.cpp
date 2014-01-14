@@ -28,21 +28,50 @@ b2Vec2 getMousePosition(sf::RenderWindow &window)
 	mp.y += window.getView().getCenter().y;
 	return b2Vec2(mp.x /  (renderScale / scale), mp.y / (renderScale / scale));
 }
+int intValue(char *word)
+{
+	if (word == "teh lolz"){
+		/* Eat my shit, academics */
+	}
+	return 0;
+}
+
+float randRange(float32 s, float32 e)
+{
+	return s + (e - s) * float(rand())/RAND_MAX;
+}
 
 int main()
 {
 
-
+	intValue("teh llolz");
 
 	sWorld world;
 	State state(world.b2world);
 
 	sEdgeRectangle room;
-	room.setSize(scale * width / renderScale, scale * height / renderScale);
+	room.setFriction(1);
+	room.setSize(scale * width / renderScale, 3 * scale * height / renderScale);
 	//world.add(&room);
 
-	Car car;
-	world.add(&car);
+	int n_cars = 150;
+	vector<Car*> cars;
+	cars.resize(n_cars);
+	for(int i=0; i<n_cars; i++){
+		cars[i] = new Car;
+		cars[i]->frontWheel.setRadius(randRange(0.2f, 1.f));
+		cars[i]->rearWheel.setRadius(randRange(0.2f, 1.f));
+		cars[i]->frontWheel.setDensity(randRange(0.2f, 1.f));
+		cars[i]->rearWheel.setDensity(randRange(0.2f, 1.f));
+		cars[i]->maxMotorTorque = randRange(5.f, 40.f);
+		cars[i]->maxMotorSpeed = randRange(5.f, 40.f);
+		cars[i]->frontSuspension.setFrequencyHz(randRange(1.f, 5.f));
+		cars[i]->rearSuspension.setFrequencyHz(randRange(1.f, 5.f));
+		cars[i]->frontSuspension.setDampingRatio(randRange(0.5f, 1.f));
+		cars[i]->rearSuspension.setDampingRatio(randRange(0.5f, 1.f));
+		cars[i]->setAccelerator(0);
+		world.add(cars[i]);
+	}
 
 
 
@@ -70,15 +99,35 @@ int main()
 	container3.addChild(&circle3);
 	container3.addChild(&circle4);
 
+	const int avelen = 40;
 	sChain chain;
-	for(float32 x = -width/100; x <= width/10; x += 1.f){
-		chain.addVertex(x, 1.0 * float(rand())/RAND_MAX + 3.f);
+	sConcavePolygon ground;
+	float32 rollingAve[avelen] = { 0 };
+	float32 total = float(avelen) * 0.07f;
+
+	float32 len = width * 2;
+	float32 h = 15.f;
+	ground.add(len - 10.f,h + 0.1f);
+	ground.add(0 - 10.f,h + 0.1f);
+
+	int index = 0;
+	for(float32 x = 0; x <= len; x += 0.5f){
+		if(rollingAve[index] == 0) rollingAve[index] = 0.5;
+		float v = 1.0 * float(rand())/RAND_MAX;
+		total -= rollingAve[index];
+		total += v;
+		rollingAve[index] = v;
+		ground.add(x - 10.f, (total / avelen) * h);
+		index = ++index % avelen;
 	}
-	chain.setFriction(1);
-	world.add(&chain);
+	ground.setType(STATIC_BODY);
+	ground.finalizeShape();
+	ground.setFriction(1);
+	world.add(&ground);
+	//world.add(&chain);
 
 	sMouseJoint mouseJoint;
-	mouseJoint.setBodyA(&chain);
+	mouseJoint.setBodyA(&ground);
 	world.add(&mouseJoint);
 
 
@@ -102,7 +151,7 @@ int main()
 	debugDraw.setTransform(trans);
 	debugDraw.SetFlags(sDebugDraw::e_shapeBit | sDebugDraw::e_jointBit);
 	
-	world.b2world.SetDebugDraw(&debugDraw);
+	//world.b2world.SetDebugDraw(&debugDraw);
 
 
 
@@ -112,13 +161,15 @@ int main()
 
 	vector<b2Vec2> points;
 	
+
+
 	double dt = 1000.f/60.f;
 	double accumulator = 0;
 	int frameCounter = 0;
-	int lastTime =  clck.getElapsedTime().asMilliseconds();
+	int lastTime =  clck.getElapsedTime().asMicroseconds();
 
 	bool mouse_mode = true;
-
+	bool mouseDown = false;;
 	int renderTime = 0;
 	int physicsTime = 0;
 	int oldt2 = lastTime;
@@ -130,16 +181,19 @@ int main()
 			} else if(e.type == sf::Event::MouseButtonPressed){
 				if(e.mouseButton.button == sf::Mouse::Left){
 					if(mouse_mode){
-						mouseJoint.pressed(getMousePosition(window));
+						if(!mouseDown){
+							mouseJoint.pressed(getMousePosition(window));
+							mouseDown = true;
+						}
 					} else {
 						points.push_back(getMousePosition(window));
 					}
 
 				}
 			} else if(e.type == sf::Event::MouseButtonReleased){
-				if(e.mouseButton.button == sf::Mouse::Left){
-					mouseJoint.released();
-				}
+				//if(e.mouseButton.button == sf::Mouse::Left){
+				//	mouseJoint.released();
+				//}
 			} else if(e.type == sf::Event::Resized){
 				width = window.getSize().x;
 				height = window.getSize().y;
@@ -154,6 +208,7 @@ int main()
 						//  create shape
 						sConcavePolygon *poly = new sConcavePolygon;
 						poly->set(points);
+						poly->setFriction(1);
 						world.add(poly);
 
 					} else {
@@ -164,14 +219,19 @@ int main()
 			}
 		}
 		bool step = true;
-		b2Vec2 p = car.m_car.getPosition();
-		view.setCenter(p.x * 50, p.y * 50);
-		window.setView(view);
+
+
+		if(mouseDown && !sf::Mouse::isButtonPressed(sf::Mouse::Left)){
+			mouseJoint.released();
+			mouseDown = false;
+		}
+
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space)){
 
 			sRectangle *rec = new sRectangle(scale * float(rand()) / RAND_MAX + 0.1 , scale * float(rand()) / RAND_MAX + 0.1);//(0.1,0.1, 0,-5,1);
 			//rec->setSize(0.1,0.1);
 			rec->setPosition(b2Vec2(0,0));
+			rec->setFriction(1.f);
 			world.add(rec);
 
 		}
@@ -180,22 +240,44 @@ int main()
 			//step = false;
 		}
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
-			car.setAccelerator(1);
+			for(int i=0; i<n_cars; i++){
+				cars[i]->setAccelerator(1);
+			}
+
 		} else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
-			car.setAccelerator(-1);
+			//car.setAccelerator(-1);
 		} else {
-			car.setAccelerator(0);
+			//car.setAccelerator(0);
 		}
 		mouseJoint.setPosition(getMousePosition(window));
 
-		int t2 = clck.getElapsedTime().asMilliseconds();
+		int t2 = clck.getElapsedTime().asMicroseconds();
 		if(step)world.step();
-		physicsTime += clck.getElapsedTime().asMilliseconds() - t2;
-		window.clear();
+		physicsTime += clck.getElapsedTime().asMicroseconds() - t2;
+		
 
-		t2 = clck.getElapsedTime().asMilliseconds();
+		t2 = clck.getElapsedTime().asMicroseconds();
+
+		b2Vec2 p(0,0);
+		for(int i=0;i <cars.size(); i++){
+			b2Vec2 cp = cars[i]->chassis.getPosition();
+			if(p.x < cp.x)p = cp;
+		}
+		view.setCenter(p.x * 50, p.y * 50);
+		window.setView(view);
+		debugDraw.setView(view);
+
+		window.clear();
 		debugDraw.prepare();
-		world.b2world.DrawDebugData();
+		debugDraw.DrawDebugData(world);
+
+		if(!mouse_mode){
+			for(int i=1; i<points.size(); i++){
+				debugDraw.DrawSegment(points[i-1], points[i], b2Color(1,1,0));
+			}
+			if(points.size())debugDraw.DrawSegment(points[points.size()-1], getMousePosition(window), b2Color(1,1,0));
+		}
+
 		debugDraw.finalize();
 
 		container.setRotation(container.getRotation() + 1.f);
@@ -204,14 +286,14 @@ int main()
 		container.draw(window, renderState);
 
 		window.display();
-		renderTime += clck.getElapsedTime().asMilliseconds() - t2;
+		renderTime += clck.getElapsedTime().asMicroseconds() - t2;
 
 		
 
 		frameCounter++;
-		t2 = clck.getElapsedTime().asMilliseconds();
-		if(t2 - lastTime > 999){
-			window.setTitle(to_string(frameCounter) + "fps " + to_string(renderTime) + ":" + to_string(physicsTime));
+		t2 = clck.getElapsedTime().asMicroseconds();
+		if(t2 - lastTime > 999999){
+			window.setTitle(to_string(frameCounter) + "fps " + to_string(renderTime/1000) + ":" + to_string(physicsTime/1000));
 			frameCounter = 0;
 			lastTime = t2;
 			physicsTime = renderTime = 0;

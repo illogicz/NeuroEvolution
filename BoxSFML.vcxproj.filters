@@ -117,6 +117,9 @@
     <ClInclude Include="sPhysics\sChain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="sGraphics\sAnimation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoxSFML.cpp">
