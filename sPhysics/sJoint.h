@@ -2,6 +2,8 @@
 #include <Box2D\Box2D.h>
 #include "sBody.h"
 
+class sBody;
+
 class sJoint : public sObject
 {
 	friend class sWorld; // world must send destruction event
@@ -53,7 +55,7 @@ protected:
 
 	void jointDestroyed()
 	{
-		m_inWorld = false;
+		m_jointWasDestroyed = true;
 	}
 
 	b2JointDef *m_jointDef;
@@ -66,6 +68,7 @@ protected:
 
 private:
 	
+	bool m_jointWasDestroyed;
 	void _copy(sJoint &joint)
 	{
 		m_bodyA = joint.m_bodyA;

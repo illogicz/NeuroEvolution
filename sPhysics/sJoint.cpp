@@ -23,15 +23,17 @@ void sJoint::_addToWorld(sWorld &world)
 	m_jointDef->collideConnected = m_collideConnected;
 		
 	m_joint = world.b2world.CreateJoint(m_jointDef);
+
+	m_jointWasDestroyed = false;
 }
 
 void sJoint::removeFromWorld(sWorld &world)
 {
-	sObject::removeFromWorld(world);
 	_removeFromWorld(world);
+	sObject::removeFromWorld(world);
 }
 
 void sJoint::_removeFromWorld(sWorld &world)
 {
-	world.b2world.DestroyJoint(m_joint);
+	if(m_inWorld && !m_jointWasDestroyed)world.b2world.DestroyJoint(m_joint);
 }

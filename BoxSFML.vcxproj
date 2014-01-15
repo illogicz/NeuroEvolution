@@ -87,12 +87,12 @@
   <ItemGroup>
     <ClInclude Include="sGraphics\sAnimation.h" />
     <ClInclude Include="sGraphics\sDebugDraw.h" />
-    <ClInclude Include="Genes\BaseGene.h" />
+    <ClInclude Include="Genes\sGene.h" />
     <ClInclude Include="Genes\BodyGene.h" />
     <ClInclude Include="Genes\JointGene.h" />
     <ClInclude Include="Genes\LimbGene.h" />
     <ClInclude Include="Genes\MuscleGene.h" />
-    <ClInclude Include="Genome.h" />
+    <ClInclude Include="Genes\Genome.h" />
     <ClInclude Include="Car.h" />
     <ClInclude Include="sGraphics\sDisplayContainer.h" />
     <ClInclude Include="sGraphics\sDisplayObject.h" />
@@ -122,6 +122,7 @@
     <ClCompile Include="sGraphics\sDebugDraw.cpp" />
     <ClCompile Include="sPhysics\sBody.cpp" />
     <ClCompile Include="sPhysics\sJoint.cpp" />
+    <ClCompile Include="sPhysics\sWorld.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

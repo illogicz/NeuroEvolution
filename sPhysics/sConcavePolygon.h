@@ -52,7 +52,6 @@ public:
 		__fixtures.resize(n_parts);
 		__shapes.resize(n_parts);
 		m_fixtureDefs.resize(n_parts);
-		printf("%i parts \n", n_parts);
 
 
 		for(int i = 0; i < n_parts; i++){

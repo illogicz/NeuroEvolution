@@ -2,6 +2,7 @@
 #include <sfml.h>
 #include <Box2D\Box2D.h>
 #include <vector>
+#include <algorithm>
 #include "State.h"
 #include "sPhysics\sPhysics.h"
 #include "sGraphics\sDebugDraw.h"
@@ -13,6 +14,7 @@
 
 using namespace std;
 
+float32 worldWidth = 600;
 int width = 800, height = 600;
 const float renderScale = 10.f;
 float scale = 0.2f;
@@ -28,25 +30,83 @@ b2Vec2 getMousePosition(sf::RenderWindow &window)
 	mp.y += window.getView().getCenter().y;
 	return b2Vec2(mp.x /  (renderScale / scale), mp.y / (renderScale / scale));
 }
-int intValue(char *word)
-{
-	if (word == "teh lolz"){
-		/* Eat my shit, academics */
-	}
-	return 0;
-}
 
 float randRange(float32 s, float32 e)
 {
 	return s + (e - s) * float(rand())/RAND_MAX;
 }
 
-int main()
+int n_elite = 10;
+int n_cars = n_elite * (n_elite + 1) / 2;
+vector<Car*> cars;
+sWorld world;
+sConcavePolygon ground;
+
+bool testForEnd()
 {
 
-	intValue("teh llolz");
+	b2AABB endAABB;
+	endAABB.lowerBound.Set(worldWidth - 3.f, -10);
+	endAABB.upperBound.Set(worldWidth, 40);
 
-	sWorld world;
+	if(world.getBodiesAABB(endAABB).size()){
+		printf("END\n");
+		return true;
+	}
+	for(int i = 0; i < n_cars; i++){
+		if(cars[i]->alive) return false;
+	}
+	printf("END:  all dead\n");
+	return true;
+}
+
+
+bool sortCars(Car* car1, Car *car2)
+{
+	return car1->chassis.getPosition().x  > car2->chassis.getPosition().x;
+}
+
+void createground()
+{
+	if(ground.isInWorld()){
+		world.remove(&ground);
+		ground.resetShape();
+	}
+	const int avelen = 40;
+
+	float32 rollingAve[avelen] = { 0 };
+	for(int i=0;i <avelen; i++){
+		rollingAve[i] = 0.5f;
+	}
+	float32 total = float(avelen) * 0.5f;
+
+	float32 len = worldWidth;
+	float32 h = 40.f;
+	ground.add(len,h + 0.1f);
+	ground.add(0.f,h + 0.1f);
+	ground.setPosition(-4, 4 - h / 2);
+	int index = 0;
+	for(float32 x = 0; x <= len; x += 0.5f){
+		if(rollingAve[index] == 0) rollingAve[index] = 0.5;
+		float v = 1.0 * float(rand())/RAND_MAX;
+		total -= rollingAve[index];
+		total += v;
+		rollingAve[index] = v;
+		ground.add(x, (total / avelen) * h);
+		index = ++index % avelen;
+	}
+	ground.setType(STATIC_BODY);
+	ground.finalizeShape();
+	ground.setFriction(1);
+	world.add(&ground);
+}
+
+int main()
+{
+	sf::Clock clck;
+
+	srand(clck.getElapsedTime().asMicroseconds());
+
 	State state(world.b2world);
 
 	sEdgeRectangle room;
@@ -54,28 +114,15 @@ int main()
 	room.setSize(scale * width / renderScale, 3 * scale * height / renderScale);
 	//world.add(&room);
 
-	int n_cars = 150;
-	vector<Car*> cars;
 	cars.resize(n_cars);
 	for(int i=0; i<n_cars; i++){
 		cars[i] = new Car;
-		cars[i]->frontWheel.setRadius(randRange(0.2f, 1.f));
-		cars[i]->rearWheel.setRadius(randRange(0.2f, 1.f));
-		cars[i]->frontWheel.setDensity(randRange(0.2f, 1.f));
-		cars[i]->rearWheel.setDensity(randRange(0.2f, 1.f));
-		cars[i]->maxMotorTorque = randRange(5.f, 40.f);
-		cars[i]->maxMotorSpeed = randRange(5.f, 40.f);
-		cars[i]->frontSuspension.setFrequencyHz(randRange(1.f, 5.f));
-		cars[i]->rearSuspension.setFrequencyHz(randRange(1.f, 5.f));
-		cars[i]->frontSuspension.setDampingRatio(randRange(0.5f, 1.f));
-		cars[i]->rearSuspension.setDampingRatio(randRange(0.5f, 1.f));
-		cars[i]->setAccelerator(0);
+		cars[i]->randomize();
 		world.add(cars[i]);
 	}
 
 
 
-	srand(time(NULL));
 
 
 	sDisplayContainer container, container2, container3;
@@ -99,42 +146,19 @@ int main()
 	container3.addChild(&circle3);
 	container3.addChild(&circle4);
 
-	const int avelen = 40;
-	sChain chain;
-	sConcavePolygon ground;
-	float32 rollingAve[avelen] = { 0 };
-	float32 total = float(avelen) * 0.07f;
-
-	float32 len = width * 2;
-	float32 h = 15.f;
-	ground.add(len - 10.f,h + 0.1f);
-	ground.add(0 - 10.f,h + 0.1f);
-
-	int index = 0;
-	for(float32 x = 0; x <= len; x += 0.5f){
-		if(rollingAve[index] == 0) rollingAve[index] = 0.5;
-		float v = 1.0 * float(rand())/RAND_MAX;
-		total -= rollingAve[index];
-		total += v;
-		rollingAve[index] = v;
-		ground.add(x - 10.f, (total / avelen) * h);
-		index = ++index % avelen;
-	}
-	ground.setType(STATIC_BODY);
-	ground.finalizeShape();
-	ground.setFriction(1);
-	world.add(&ground);
+	createground();
 	//world.add(&chain);
 
 	sMouseJoint mouseJoint;
 	mouseJoint.setBodyA(&ground);
 	world.add(&mouseJoint);
-
+	world.setGravity(b2Vec2(0,10));
 
 	sf::Event e;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
 	sf::RenderWindow window(sf::VideoMode(width, height), "SFML works!", sf::Style::Default, settings);
+	window.setPosition(sf::Vector2i(0,300));
 	sf::View view;
 	view.setSize(width, height);
 	view.setCenter(0.5f, -0.5f);
@@ -157,24 +181,24 @@ int main()
 
 	bool isDragging = false;
 
-	sf::Clock clck;
+
 
 	vector<b2Vec2> points;
 	
 
-
+	bool frameLimiter = true;
 	double dt = 1000.f/60.f;
 	double accumulator = 0;
 	int frameCounter = 0;
 	int lastTime =  clck.getElapsedTime().asMicroseconds();
-
+	int simFrame = 0;;
 	bool mouse_mode = true;
 	bool mouseDown = false;;
 	int renderTime = 0;
 	int physicsTime = 0;
 	int oldt2 = lastTime;
 	while(window.isOpen()){
-
+		simFrame++;
 		while(window.pollEvent(e)){
 			if(e.type == sf::Event::Closed){
 				window.close();
@@ -215,6 +239,10 @@ int main()
 						points.clear();
 					}
 					mouse_mode = !mouse_mode;
+				} else if(e.key.code == sf::Keyboard::F){
+					frameLimiter = !frameLimiter;
+					window.setFramerateLimit(frameLimiter ? 60 : 2000);
+					window.setVerticalSyncEnabled(frameLimiter);
 				}
 			}
 		}
@@ -241,7 +269,7 @@ int main()
 		}
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
 			for(int i=0; i<n_cars; i++){
-				cars[i]->setAccelerator(1);
+				//cars[i]->setAccelerator(1);
 			}
 
 		} else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
@@ -251,6 +279,28 @@ int main()
 		}
 		mouseJoint.setPosition(getMousePosition(window));
 
+
+		if(testForEnd()){
+			simFrame = 0;
+			sort(cars.begin(), cars.end(), sortCars);
+			int car_index = n_elite;
+			for(int i = 0; i < n_elite; i++){
+				world.remove(cars[i]);
+				world.add(cars[i]);
+				for(int j = i + 1; j < n_elite; j++){
+					world.remove(cars[car_index]);
+					cars[car_index]->mate(cars[i], cars[j]);
+					world.add(cars[car_index]);
+					car_index++;
+				}
+			}
+			createground();
+		}
+		if(simFrame == 120){
+			for(int i = 0; i < n_cars; i++){
+				cars[i]->setAccelerator(1);
+			}
+		}
 		int t2 = clck.getElapsedTime().asMicroseconds();
 		if(step)world.step();
 		physicsTime += clck.getElapsedTime().asMicroseconds() - t2;
@@ -258,10 +308,12 @@ int main()
 
 		t2 = clck.getElapsedTime().asMicroseconds();
 
-		b2Vec2 p(0,0);
+		b2Vec2 p(-100,0);
 		for(int i=0;i <cars.size(); i++){
-			b2Vec2 cp = cars[i]->chassis.getPosition();
-			if(p.x < cp.x)p = cp;
+			if(cars[i]->alive){
+				b2Vec2 cp = cars[i]->chassis.getPosition();
+				if(p.x < cp.x)p = cp;
+			}
 		}
 		view.setCenter(p.x * 50, p.y * 50);
 		window.setView(view);

@@ -31,6 +31,11 @@ public:
 	{
 	}
 
+	bool isInWorld()
+	{
+		return m_inWorld;
+	}
+
 protected:
 	virtual void addToWorld(sWorld &world)
 	{

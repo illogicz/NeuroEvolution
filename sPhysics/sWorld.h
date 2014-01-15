@@ -4,10 +4,12 @@
 #include <vector>
 #include "sBody.h"
 #include "sContainer.h"
+#include "sJoint.h"
 
 using std::set;
 using std::vector;
 class sBody;
+class sJoint;
 
 class sContactListener
 {
@@ -23,7 +25,7 @@ public:
 	virtual void onAfterStep(){}
 };
 
-class sWorld : public sContainer
+class sWorld : public sContainer, private b2DestructionListener
 {
 
 public:
@@ -32,7 +34,7 @@ public:
 	sWorld():gravity(0.0f, 9.8f), b2world(gravity)
 	{
 		m_world = this; //&b2world;
-		//b2world.SetDestructionListener(&m_destructionListener);
+		b2world.SetDestructionListener(this);
 
 		//b2world.SetContactListener();
 		timeStep = 1.f/60.f;
@@ -46,9 +48,9 @@ public:
 
 	void step()
 	{
-		//dispatchStepEvent(true);
+		dispatchStepEvent(true);
 		b2world.Step(timeStep, velocityIterations, positionIterations);
-		//dispatchStepEvent(true);
+		dispatchStepEvent(false);
 	}
 
 
@@ -79,6 +81,10 @@ public:
 	}
 
 
+	void setGravity(b2Vec2 grav)
+	{
+		b2world.SetGravity(grav);
+	}
 
 	
 	// Manage listener for physics step events
@@ -133,16 +139,9 @@ private:
 
 
 	
-	class DestructionListener : public b2DestructionListener
-	{
-		void SayGoodbye(b2Joint * joint)
-		{
-			//sJoint * j = (sJoint*)joint->GetUserData();
-			//j->jointDestroyed();
-		}
-		void SayGoodbye(b2Fixture * fixture){}
-	};
-	DestructionListener m_destructionListener;
+
+	void SayGoodbye(b2Joint * joint);
+	void SayGoodbye(b2Fixture * fixture){}
 
 
 

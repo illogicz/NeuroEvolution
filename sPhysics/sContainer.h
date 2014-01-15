@@ -19,13 +19,17 @@ public:
 
 	void add(sObject *object)
 	{
-		if(m_inWorld)object->addToWorld(*m_world);
-		m_children.insert(object);
+		if(!contains(object)){
+			if(m_inWorld)object->addToWorld(*m_world);
+			m_children.insert(object);
+		}
 	}
 	void remove(sObject *object)
 	{
-		if(m_inWorld)object->removeFromWorld(*m_world);
-		m_children.erase(object);
+		if(contains(object)){
+			if(m_inWorld)object->removeFromWorld(*m_world);
+			m_children.erase(object);
+		}
 	}
 	bool contains(sObject *object)
 	{

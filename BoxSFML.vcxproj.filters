@@ -30,9 +30,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Genome.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Genes\JointGene.h">
       <Filter>Header Files\Genes</Filter>
     </ClInclude>
@@ -43,9 +40,6 @@
       <Filter>Header Files\Genes</Filter>
     </ClInclude>
     <ClInclude Include="Genes\BodyGene.h">
-      <Filter>Header Files\Genes</Filter>
-    </ClInclude>
-    <ClInclude Include="Genes\BaseGene.h">
       <Filter>Header Files\Genes</Filter>
     </ClInclude>
     <ClInclude Include="State.h">
@@ -120,6 +114,12 @@
     <ClInclude Include="sGraphics\sAnimation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Genes\Genome.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Genes\sGene.h">
+      <Filter>Header Files\Genes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoxSFML.cpp">
@@ -132,6 +132,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="sGraphics\sDebugDraw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sPhysics\sWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

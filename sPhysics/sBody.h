@@ -18,6 +18,19 @@ struct sBodyState
 	int32 body_id;
 	void *userData;
 
+	sBodyState()
+	{
+		zero();
+	}
+
+	void zero()
+	{
+		angle = 0;
+		angularVelocity = 0;
+		position.Set(0,0);
+		linearVelocity.Set(0,0);
+	}
+
 	sBodyState interpolate(sBodyState state, float32 t)
 	{
 		sBodyState result;
@@ -121,7 +134,11 @@ public:
 			m_state = state;
 		}
 	}
-
+	void zeroState()
+	{
+		sBodyState z;
+		setState(z);
+	}
 
 	void setPosition(b2Vec2 position)
 	{
@@ -130,6 +147,10 @@ public:
 		} else {
 			m_body->SetTransform(position, m_body->GetAngle());
 		}
+	}
+	void setPosition(float32 x, float32 y)
+	{
+		setPosition(b2Vec2(x, y));
 	}
 	b2Vec2 getPosition()
 	{
@@ -208,10 +229,7 @@ public:
 		if(!m_inWorld) return;
 		m_body->SetAwake(awake);
 	}
-	bool isInWorld()
-	{
-		return m_inWorld;
-	}
+
 
 	b2Body *m_body;  // temp public
 
