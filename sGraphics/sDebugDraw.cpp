@@ -77,6 +77,8 @@ void sDebugDraw::DrawJoint(b2Joint* joint)
 	b2Vec2 p2 = joint->GetAnchorB();
 
 	b2Color color(0.5f, 0.8f, 0.8f);
+	b2WheelJoint *wj;
+	b2Vec2 la;
 
 	switch (joint->GetType())
 	{
@@ -98,7 +100,16 @@ void sDebugDraw::DrawJoint(b2Joint* joint)
 	case e_mouseJoint:
 		// don't draw this
 		break;
+	case e_wheelJoint:
+		wj = (b2WheelJoint*)joint;
+		p1 = bodyA->GetWorldPoint(wj->GetLocalAnchorA() + wj->GetLocalAxisA());
 
+		//DrawSegment(x2, p1, color);
+		//DrawSegment(x2, x1, color);
+		DrawSegment(x2, p1, color);
+		//DrawSegment(p1, p2, color);
+		//DrawSegment(x2, p2, color);
+		break;
 	default:
 		DrawSegment(x1, p1, color);
 		DrawSegment(p1, p2, color);
@@ -294,7 +305,7 @@ void sDebugDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, con
 
 void sDebugDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color)
 {
-	sf::CircleShape circle(radius, 64);
+	sf::CircleShape circle(radius, 20);
 	circle.setPosition(center.x, center.y);
 	circle.setFillColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0));
 	circle.setOutlineColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF));
@@ -305,10 +316,10 @@ void sDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2V
 {
 
 
-	sf::CircleShape circle(radius, 64);
+	sf::CircleShape circle(radius, 20);
 	circle.setPosition(center.x-radius, center.y-radius);
 	circle.setFillColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0x60));
-	circle.setOutlineThickness(1.f/20);
+	circle.setOutlineThickness(1.f/50);
 	circle.setOutlineColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF));
 	target.draw(circle, states);
 

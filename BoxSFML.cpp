@@ -7,14 +7,14 @@
 #include "sPhysics\sPhysics.h"
 #include "sGraphics\sDebugDraw.h"
 #include "sGraphics\sDisplayContainer.h"
-
+#include "sEvolution\sPopulation.h"
 #include "Car.h"
 
 #include <random>
 
 using namespace std;
 
-float32 worldWidth = 600;
+float32 worldWidth = 400;
 int width = 800, height = 600;
 const float renderScale = 10.f;
 float scale = 0.2f;
@@ -36,63 +36,61 @@ float randRange(float32 s, float32 e)
 	return s + (e - s) * float(rand())/RAND_MAX;
 }
 
-int n_elite = 10;
-int n_cars = n_elite * (n_elite + 1) / 2;
+bool elite = false;
+int n_elite = 11;
+int n_cars = n_elite * (n_elite + (elite ? 1 : -1)) / 2;
 vector<Car*> cars;
 sWorld world;
 sConcavePolygon ground;
+
+sPopulation population;
 
 bool testForEnd()
 {
 
 	b2AABB endAABB;
-	endAABB.lowerBound.Set(worldWidth - 3.f, -10);
+	endAABB.lowerBound.Set(worldWidth - 5.f, -10);
 	endAABB.upperBound.Set(worldWidth, 40);
 
 	if(world.getBodiesAABB(endAABB).size()){
-		printf("END\n");
 		return true;
 	}
 	for(int i = 0; i < n_cars; i++){
 		if(cars[i]->alive) return false;
 	}
-	printf("END:  all dead\n");
 	return true;
 }
 
 
-bool sortCars(Car* car1, Car *car2)
-{
-	return car1->chassis.getPosition().x  > car2->chassis.getPosition().x;
-}
-
 void createground()
 {
 	if(ground.isInWorld()){
+		//return;
 		world.remove(&ground);
 		ground.resetShape();
 	}
 	const int avelen = 40;
 
+	float start_h = 0.4f;
+
 	float32 rollingAve[avelen] = { 0 };
 	for(int i=0;i <avelen; i++){
-		rollingAve[i] = 0.5f;
+		rollingAve[i] = start_h;
 	}
-	float32 total = float(avelen) * 0.5f;
+	float32 total = float(avelen) * start_h;
 
 	float32 len = worldWidth;
-	float32 h = 40.f;
-	ground.add(len,h + 0.1f);
-	ground.add(0.f,h + 0.1f);
-	ground.setPosition(-4, 4 - h / 2);
+	float32 h = 10.f + 50.f * float(rand())/RAND_MAX;
+	ground.add(len,h + 10.f);
+	ground.add(0.f,h + 10.f);
+	ground.setPosition(-6, 5 - h * start_h);
 	int index = 0;
 	for(float32 x = 0; x <= len; x += 0.5f){
-		if(rollingAve[index] == 0) rollingAve[index] = 0.5;
 		float v = 1.0 * float(rand())/RAND_MAX;
 		total -= rollingAve[index];
 		total += v;
 		rollingAve[index] = v;
-		ground.add(x, (total / avelen) * h);
+		ground.add(x, (total / float(avelen)) * h);
 		index = ++index % avelen;
 	}
 	ground.setType(STATIC_BODY);
@@ -109,42 +107,14 @@ int main()
 
 	State state(world.b2world);
 
-	sEdgeRectangle room;
-	room.setFriction(1);
-	room.setSize(scale * width / renderScale, 3 * scale * height / renderScale);
-	//world.add(&room);
+	population.setElites(0);
 
 	cars.resize(n_cars);
 	for(int i=0; i<n_cars; i++){
 		cars[i] = new Car;
-		cars[i]->randomize();
+		population.addLifeForm(cars[i]);
 		world.add(cars[i]);
 	}
-
-
-
-
-
-	sDisplayContainer container, container2, container3;
-	container.setPosition(0,0);
-	container2.setPosition(-100,0);
-	container3.setPosition(100,0);
-
-	sDisplayObject circle1, circle2, circle3, circle4;
-	circle1.setPosition(-30, 0);
-	circle2.setPosition(30, 0);
-	circle3.setPosition(-30, 0);
-	circle4.setPosition(30, 0);
-
-
-
-	container.addChild(&container2);
-	container.addChild(&container3);
-
-	container2.addChild(&circle1);
-	container2.addChild(&circle2);
-	container3.addChild(&circle3);
-	container3.addChild(&circle4);
 
 	createground();
 	//world.add(&chain);
@@ -197,6 +167,9 @@ int main()
 	int renderTime = 0;
 	int physicsTime = 0;
 	int oldt2 = lastTime;
+	int render_t = lastTime;
+	bool render_flag = true;
+
 	while(window.isOpen()){
 		simFrame++;
 		while(window.pollEvent(e)){
@@ -243,6 +216,8 @@ int main()
 					frameLimiter = !frameLimiter;
 					window.setFramerateLimit(frameLimiter ? 60 : 2000);
 					window.setVerticalSyncEnabled(frameLimiter);
+				} else if(e.key.code == sf::Keyboard::R){
+					render_flag = !render_flag;
 				}
 			}
 		}
@@ -256,11 +231,11 @@ int main()
 
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space)){
 
-			sRectangle *rec = new sRectangle(scale * float(rand()) / RAND_MAX + 0.1 , scale * float(rand()) / RAND_MAX + 0.1);//(0.1,0.1, 0,-5,1);
+			//sRectangle *rec = new sRectangle(scale * float(rand()) / RAND_MAX + 0.1 , scale * float(rand()) / RAND_MAX + 0.1);//(0.1,0.1, 0,-5,1);
 			//rec->setSize(0.1,0.1);
-			rec->setPosition(b2Vec2(0,0));
-			rec->setFriction(1.f);
-			world.add(rec);
+			//rec->setPosition(b2Vec2(0,0));
+			//rec->setFriction(1.f);
+			//world.add(rec);
 
 		}
 		if(sf::Keyboard::isKeyPressed(sf::Keyboard::F7)){
@@ -279,22 +254,18 @@ int main()
 		}
 		mouseJoint.setPosition(getMousePosition(window));
 
-
+		
 		if(testForEnd()){
 			simFrame = 0;
-			sort(cars.begin(), cars.end(), sortCars);
-			int car_index = n_elite;
-			for(int i = 0; i < n_elite; i++){
+
+
+			population.newGeneration();
+			for(int i = 0; i < population.size(); i++){
 				world.remove(cars[i]);
 				world.add(cars[i]);
-				for(int j = i + 1; j < n_elite; j++){
-					world.remove(cars[car_index]);
-					cars[car_index]->mate(cars[i], cars[j]);
-					world.add(cars[car_index]);
-					car_index++;
-				}
 			}
 			createground();
+
 		}
 		if(simFrame == 120){
 			for(int i = 0; i < n_cars; i++){
@@ -306,41 +277,50 @@ int main()
 		physicsTime += clck.getElapsedTime().asMicroseconds() - t2;
 		
 
-		t2 = clck.getElapsedTime().asMicroseconds();
-
-		b2Vec2 p(-100,0);
-		for(int i=0;i <cars.size(); i++){
-			if(cars[i]->alive){
-				b2Vec2 cp = cars[i]->chassis.getPosition();
-				if(p.x < cp.x)p = cp;
-			}
-		}
-		view.setCenter(p.x * 50, p.y * 50);
-		window.setView(view);
-		debugDraw.setView(view);
-
-		window.clear();
-		debugDraw.prepare();
-		debugDraw.DrawDebugData(world);
-
-		if(!mouse_mode){
-			for(int i=1; i<points.size(); i++){
-				debugDraw.DrawSegment(points[i-1], points[i], b2Color(1,1,0));
-			}
-			if(points.size())debugDraw.DrawSegment(points[points.size()-1], getMousePosition(window), b2Color(1,1,0));
-		}
-
-		debugDraw.finalize();
-
-		container.setRotation(container.getRotation() + 1.f);
-		container2.setRotation(container2.getRotation() + 1.f);
-		container3.setRotation(container3.getRotation() + 1.f);
-		container.draw(window, renderState);
-
-		window.display();
-		renderTime += clck.getElapsedTime().asMicroseconds() - t2;
-
 		
+
+		t2 = clck.getElapsedTime().asMicroseconds();
+		if(render_flag){
+
+
+			
+			if(t2 - render_t > 1000000.f / 60.f || frameLimiter){
+				b2Vec2 wp = b2Vec2(float(view.getCenter().x) / 50.f, float(view.getCenter().y) / 50.f);
+				b2Vec2 p(-100,0);
+				for(int i=0;i <cars.size(); i++){
+					if(cars[i]->alive){
+						b2Vec2 cp = cars[i]->chassis.getPosition();
+						if(p.x < cp.x){
+							p = cp;
+						}
+					}
+				}
+				p.y = wp.y + 0.1f * (p.y - wp.y);
+				view.setCenter(p.x * 50, p.y * 50);				
+				window.setView(view);
+				debugDraw.setView(view);
+
+				window.clear();
+				debugDraw.prepare();
+				debugDraw.DrawDebugData(world);
+
+				if(!mouse_mode){
+					for(int i=1; i<points.size(); i++){
+						debugDraw.DrawSegment(points[i-1], points[i], b2Color(1,1,0));
+					}
+					if(points.size())debugDraw.DrawSegment(points[points.size()-1], getMousePosition(window), b2Color(1,1,0));
+				}
+
+				debugDraw.finalize();
+
+				window.display();
+				renderTime += clck.getElapsedTime().asMicroseconds() - t2;
+
+				render_t = t2;
+			} else {
+				//printf("skip render");
+			}
+		}
 
 		frameCounter++;
 		t2 = clck.getElapsedTime().asMicroseconds();

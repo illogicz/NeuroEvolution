@@ -1,10 +1,13 @@
 #pragma once
 #include "sPhysics\sPhysics.h"
 #include "sPhysics\sWheelJoint.h"
-#include "Genes\sGene.h"
+#include "sEvolution\sGene.h"
+#include "sEvolution\sGenome.h"
+#include "sEvolution\sLifeform.h"
+
 using std::vector;
 
-class Car : public sContainer, public sStepListener
+class Car : public sContainer, public sStepListener, public sLifeForm
 {
 
 public:
@@ -21,59 +24,60 @@ public:
 		filter.categoryBits = 0x02;
 		filter.maskBits = 0x01;
 
+		frontWheel.setFilter(filter);
+		frontWheel.setFriction(1);
+		frontWheel.setRestitution(0.0f);
+		frontWheel.setAngularDamping(0.9);
+
+		rearWheel.setFilter(filter);
+		rearWheel.setFriction(1);
+		rearWheel.setRestitution(0.0f);
+		rearWheel.setAngularDamping(0.9);
+
 		frontSuspension.setBodies(&chassis, &frontWheel);
 		frontSuspension.setEnableMotor(true);
 
 		rearSuspension.setBodies(&chassis, &rearWheel);
 		rearSuspension.setEnableMotor(true);
 
-		frontWheel.setFilter(filter);
-		rearWheel.setFilter(filter);
+		
+		
 		chassis.setFilter(filter);
 
-
+		
 		// Define Genome
-
-		addGene(g_maxMotorTorque.set(20, 5, 50));
-		addGene(g_maxMotorSpeed.set(20, 5, 50));
-
-		addGene(g_frontWheelRadius.set(1, 0.4, 1.6));
-		addGene(g_frontWheelDensity.set(1, 0.5, 2));
-		addGene(g_frontWheelPosition_x.set(-1.7, -2.5, -1));
-		addGene(g_frontWheelPosition_y.set(0.7, 0.2, 2.5));
-		addGene(g_frontWheelAnchor_x.set(-1.4, -1.4, -1.4));
-		addGene(g_frontWheelAnchor_y.set(-0.5, -0.5 ,-0.5));
-
-		addGene(g_frontFrequencyHz.set(2, 1, 3));
-		addGene(g_frontDampingRatio.set(0.99, 0.5, 1));
+		genome.addGene("scale", 0.7, 1.3);
+		genome.addGene("chassisDensity", 0.5, 2);
+		genome.addGene("chassisScale_x", 0.5, 1.5);
+		genome.addGene("chassisScale_y", 0.5, 1.5);
 
 
-		addGene(g_rearWheelRadius.copy(g_frontWheelRadius));
-		addGene(g_rearWheelDensity.copy(g_frontWheelDensity));
-		addGene(g_rearWheelPosition_x.set(1.7, 1, 2.5));
-		addGene(g_rearWheelPosition_y.copy(g_frontWheelPosition_y));
-		addGene(g_rearWheelAnchor_x.set(1.4, 1.4, 1.4));
-		addGene(g_rearWheelAnchor_y.copy(g_frontWheelAnchor_y));
+		genome.addGene("frontMotorTorque", 0, 50);
+		genome.addGene("frontMotorSpeed", 0, 50);
+		
+		genome.addGene("frontWheelRadius", 0.5, 1.5);
+		genome.addGene("frontWheelDensity", 0.5, 2);
+		genome.addGene("frontWheelPosition_x", 0.5, 2.5);
+		genome.addGene("frontWheelPosition_y", -0.5, 2);
+		genome.addGene("frontWheelAnchor_x", 0.1, 1.8);
+		genome.addGene("frontWheelAnchor_y", -1 ,0);
 
-		addGene(g_rearFrequencyHz.copy(g_frontFrequencyHz));
-		addGene(g_rearDampingRatio.copy(g_frontDampingRatio));
+		genome.addGene("frontFrequencyHz", 0.1, 6);
+		genome.addGene("frontDampingRatio", 0.1, 0.999);
+
+		genome.copyGene("rearMotorTorque", "frontMotorTorque");
+		genome.copyGene("rearMotorSpeed", "frontMotorSpeed");
+
+		genome.copyGene("rearWheelRadius", "frontWheelRadius");
+		genome.copyGene("rearWheelDensity", "frontWheelDensity");
+		genome.copyGene("rearWheelPosition_x", "frontWheelPosition_x", GENE_INVERSE);
+		genome.copyGene("rearWheelPosition_y", "frontWheelPosition_y");
+		genome.copyGene("rearWheelAnchor_x", "frontWheelAnchor_x", GENE_INVERSE);
+		genome.copyGene("rearWheelAnchor_y", "frontWheelAnchor_y");
+
+		genome.copyGene("rearFrequencyHz", "frontFrequencyHz");
+		genome.copyGene("rearDampingRatio", "frontDampingRatio");
 	}
-
-
-	void mate(Car *p1, Car *p2)
-	{
-		for(int i = 0; i < genome.size(); i++){
-			genome[i]->mate(p1->genome[i], p2->genome[i]);
-		}
-	}
-
-	void randomize()
-	{
-		for(int i = 0; i < genome.size(); i++){
-			genome[i]->random();
-		}
-	}
-
 
 	void build()
 	{
@@ -83,80 +87,86 @@ public:
 		frontWheel.setType(DYNAMIC_BODY);
 		rearWheel.setType(DYNAMIC_BODY);
 		chassis.setType(DYNAMIC_BODY);
+		float scale = genome.getValue("scale");
+		float32 sx = genome.getValue("chassisScale_x") * scale;
+		float32 sy = genome.getValue("chassisScale_y") * scale;
 
-		maxMotorTorque = g_maxMotorTorque.getValue();
-		maxMotorSpeed = g_maxMotorSpeed.getValue();
-		frontAnchor.x = g_frontWheelAnchor_x.getValue();
-		frontAnchor.y = g_frontWheelAnchor_y.getValue();
-		rearAnchor.x = g_rearWheelAnchor_x.getValue();
-		rearAnchor.y = g_rearWheelAnchor_y.getValue();
+		frontAnchor.x = genome.getValue("frontWheelAnchor_x") * sx;
+		frontAnchor.y = genome.getValue("frontWheelAnchor_y") * sy;
+		rearAnchor.x = genome.getValue("rearWheelAnchor_x") * sx;
+		rearAnchor.y = genome.getValue("rearWheelAnchor_y") * sy;
 
 		frontWheel.zeroState();
-		frontWheel.setRadius(g_frontWheelRadius.getValue());
-		frontWheel.setPosition(b2Vec2(g_frontWheelPosition_x.getValue(), g_frontWheelPosition_y.getValue()));
-		frontWheel.setFriction(1);
-		frontWheel.setRestitution(0.0f);
-		frontWheel.setAngularDamping(0.9);
-		frontWheel.setDensity(g_frontWheelDensity.getValue());
+		frontWheel.setRadius(genome.getValue("frontWheelRadius") * scale);
+		frontWheel.setPosition(b2Vec2(genome.getValue("frontWheelPosition_x") * scale, 
+			                          genome.getValue("frontWheelPosition_y") * scale));
+		frontWheel.setDensity(genome.getValue("frontWheelDensity"));
 
 		rearWheel.zeroState();
-		rearWheel.setRadius(g_rearWheelRadius.getValue());
-		rearWheel.setPosition(b2Vec2(g_rearWheelPosition_x.getValue(), g_rearWheelPosition_y.getValue()));
-		rearWheel.setFriction(1);
-		rearWheel.setRestitution(0.0f);
-		rearWheel.setAngularDamping(0.9);
-		rearWheel.setDensity(g_rearWheelDensity.getValue());
+		rearWheel.setRadius(genome.getValue("rearWheelRadius") * scale);
+		rearWheel.setPosition(b2Vec2(genome.getValue("rearWheelPosition_x") * scale, 
+			                         genome.getValue("rearWheelPosition_y") * scale));
+		rearWheel.setDensity(genome.getValue("rearWheelDensity"));
 
 		chassis.zeroState();
 		chassis.resetShape();
-		chassis.add(1.7f, 0.f);
-		chassis.add(1.8f, -0.5f);
-		chassis.add(1.5f, -0.6f);
-		chassis.add(1.f, -1.f);
-		chassis.add(-1.f, -1.f);
-		chassis.add(-1.5f, -0.6f);
-		chassis.add(-1.8f, -0.5f);
-		chassis.add(-1.7f, 0.f);
+		chassis.setDensity(genome.getValue("chassisDensity"));
+		
+		chassis.add(1.7f * sx, 0.f * sy);
+		chassis.add(1.8f * sx, -0.5f * sy);
+		chassis.add(1.5f * sx, -0.6f * sy);
+		chassis.add(1.f * sx, -1.f * sy);
+		chassis.add(-1.f * sx, -1.f * sy);
+		chassis.add(-1.5f * sx, -0.6f * sy);
+		chassis.add(-1.8f * sx, -0.5f * sy);
+		chassis.add(-1.7f * sx, 0.f * sy);
 		chassis.finalizeShape();
-
-		frontAnchor = b2Vec2(g_frontWheelAnchor_x.getValue(), g_frontWheelAnchor_y.getValue());
+		//s = 1;
 		frontSuspension.setAnchorA(frontWheel.getPosition());
 		frontSuspension.setAnchorB(frontAnchor);
 		frontSuspension.setMotorSpeed(0);
-		frontSuspension.setFrequencyHz(g_frontFrequencyHz.getValue());
-		frontSuspension.setDampingRatio(g_frontDampingRatio.getValue());
+		frontSuspension.setFrequencyHz(genome.getValue("frontFrequencyHz"));
+		frontSuspension.setDampingRatio(genome.getValue("frontDampingRatio"));
+		frontSuspension.setAxis(frontAnchor - frontWheel.getPosition());
 
 
-		rearAnchor = b2Vec2(g_rearWheelAnchor_x.getValue(), g_rearWheelAnchor_y.getValue());
 		rearSuspension.setAnchorA(rearWheel.getPosition());
 		rearSuspension.setAnchorB(rearAnchor);
 		rearSuspension.setMotorSpeed(0);
-		rearSuspension.setFrequencyHz(g_rearFrequencyHz.getValue());
-		rearSuspension.setDampingRatio(g_rearDampingRatio.getValue());
+		rearSuspension.setFrequencyHz(genome.getValue("rearFrequencyHz"));
+		rearSuspension.setDampingRatio(genome.getValue("rearDampingRatio"));
+		rearSuspension.setAxis(rearAnchor - rearWheel.getPosition());
 
-		maxMotorTorque = g_maxMotorTorque.getValue();
-		maxMotorSpeed = g_maxMotorSpeed.getValue();
 
 		setAccelerator(0);
-
+		fitnessModifier = 1;
 		alive = true;
-
+		lifeTime = 0;
 		progressPosition = chassis.getPosition().x;
 		progressDelay = 0;
+
 	}
 
-
+	// sLifeForm implementation
+	float getFitness()
+	{
+		// Distance traveled times average speed
+		float distance = chassis.getPosition().x;
+		float speed = distance / float(lifeTime);
+		return fitnessModifier * distance;
+	}
+	
 	void setAccelerator(float t)
 	{
 		
-		frontSuspension.setMaxMotorTorque(abs(t) * maxMotorTorque);
-		rearSuspension.setMaxMotorTorque(abs(t) * maxMotorTorque);
-		frontSuspension.setMotorSpeed(maxMotorSpeed * t);
-		rearSuspension.setMotorSpeed(maxMotorSpeed * t);
+		frontSuspension.setMaxMotorTorque(abs(t) * genome.getValue("frontMotorTorque"));
+		rearSuspension.setMaxMotorTorque(abs(t) * genome.getValue("rearMotorTorque"));
+		frontSuspension.setMotorSpeed(genome.getValue("frontMotorSpeed") * t);
+		rearSuspension.setMotorSpeed(genome.getValue("rearMotorSpeed") * t);
 	}
 
-	float32 maxMotorTorque;
-	float32 maxMotorSpeed;
+	
+	float fitnessModifier;
 	b2Vec2 frontAnchor;
 	b2Vec2 rearAnchor;
 	sConcavePolygon chassis;
@@ -169,11 +179,25 @@ public:
 	void onBeforeStep()
 	{
 		if(alive){
+			lifeTime++;
+			b2Vec2 axis1 = chassis.m_body->GetLocalPoint(rearWheel.getPosition());
+			axis1 -= rearSuspension.getAnchorA();
+			b2Vec2 axis2 = chassis.m_body->GetLocalPoint(frontWheel.getPosition());
+			axis2 -= frontSuspension.getAnchorA();
+			if(axis1.Length() > 5.f || axis2.Length() > 5.f){
+				//printf("infant death\n");
+				//fitnessModifier = 0.01;
+				//genome.print();
+				die();
+			}
+
+
 			float a = chassis.getAngle();
 			while(a > b2_pi)a -= b2_pi * 2;
 			while(a < -b2_pi)a += b2_pi;
 			if(abs(a) > b2_pi * 0.7){
 				die();
+				fitnessModifier = 0.0;
 				return;
 			}
 
@@ -187,6 +211,7 @@ public:
 					return;
 				}
 			}
+
 		}
 	}
 
@@ -214,37 +239,9 @@ protected:
 	int progressDelay;
 	float progressPosition;
 
-	sGene g_maxMotorTorque;
-	sGene g_maxMotorSpeed;
-
-	sGene g_frontWheelRadius;
-	sGene g_frontWheelDensity;
-	sGene g_frontWheelPosition_x;
-	sGene g_frontWheelPosition_y;
-	sGene g_frontWheelAnchor_x;
-	sGene g_frontWheelAnchor_y;
-
-	sGene g_frontFrequencyHz;
-	sGene g_frontDampingRatio;
-
-
-	sGene g_rearWheelRadius;
-	sGene g_rearWheelDensity;
-	sGene g_rearWheelPosition_x;
-	sGene g_rearWheelPosition_y;
-	sGene g_rearWheelAnchor_x;
-	sGene g_rearWheelAnchor_y;
-
-	sGene g_rearFrequencyHz;
-	sGene g_rearDampingRatio;
-
-	vector<sGene*> genome;
-
 	void addToWorld(sWorld &world)
 	{
 		build();
-		rearSuspension.setAxis(rearAnchor - rearWheel.getPosition());
-		frontSuspension.setAxis(frontAnchor - frontWheel.getPosition());
 		sContainer::addToWorld(world);
 		world.addStepListener(*this);
 	}
@@ -256,9 +253,6 @@ protected:
 	}
 
 private:
-	void addGene(sGene *gene)
-	{
-		genome.push_back(gene);
-	}
+
 
 };

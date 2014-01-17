@@ -25,16 +25,30 @@ public:
 	void setAxis(b2Vec2 axis)
 	{
 		m_axis = axis;
+		m_axis.Normalize();
+	}
+
+	b2Vec2 getAxis()
+	{
+		return m_axis;
 	}
 
 	void setAnchorA(b2Vec2 anchor)
 	{
 		m_localAnchorA = anchor;
 	}
+	b2Vec2 getAnchorA()
+	{
+		return m_localAnchorA;
+	}
 
 	void setAnchorB(b2Vec2 anchor)
 	{
 		m_localAnchorB = anchor;
+	}
+	b2Vec2 getAnchorB()
+	{
+		return m_localAnchorB;
 	}
 
 	void setMaxMotorTorque(float32 maxMotorTorque)

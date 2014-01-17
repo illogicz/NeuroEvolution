@@ -30,18 +30,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Genes\JointGene.h">
-      <Filter>Header Files\Genes</Filter>
-    </ClInclude>
-    <ClInclude Include="Genes\MuscleGene.h">
-      <Filter>Header Files\Genes</Filter>
-    </ClInclude>
-    <ClInclude Include="Genes\LimbGene.h">
-      <Filter>Header Files\Genes</Filter>
-    </ClInclude>
-    <ClInclude Include="Genes\BodyGene.h">
-      <Filter>Header Files\Genes</Filter>
-    </ClInclude>
     <ClInclude Include="State.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -114,11 +102,23 @@
     <ClInclude Include="sGraphics\sAnimation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Genes\Genome.h">
+    <ClInclude Include="sEvolution\sGene.h">
+      <Filter>Header Files\Genes</Filter>
+    </ClInclude>
+    <ClInclude Include="sEvolution\sGenome.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Genes\sGene.h">
-      <Filter>Header Files\Genes</Filter>
+    <ClInclude Include="sEvolution\sLifeform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sEvolution\sPopulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sEvolution\Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sGraphics\sGeneGraph.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -158,7 +158,7 @@ protected:
 			a += (vertices[i].x + vertices[(i + 1) % nv].x) * (vertices[i].y - vertices[(i + 1) % nv].y);
 		}
 		if(a < 0){
-			printf("reversing winding \n", a);
+			//printf("reversing winding \n", a);
 			int i = 0;
 			int j = nv-1;
 			while(j > i){
@@ -229,7 +229,7 @@ protected:
 							if(isConcave(vertices, i1)){
 								if(!isConcave(vertices, i, i1, i1 + 1) && 
 							       !isConcave(vertices, i1 - 1, i1, i)){
-									split_score *= 40.5f;
+									split_score *= 3;
 								}
 							}
 
@@ -326,7 +326,7 @@ protected:
 		} else {
 			simplify(vertices);
 			if(vertices.size() < 3){
-				printf("Degenerate shape, removing\n");
+				//printf("Degenerate shape, removing\n");
 				return;
 			}
 			m_parts.push_back(vertices);

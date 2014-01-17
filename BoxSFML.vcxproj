@@ -85,17 +85,17 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="sEvolution\Scene.h" />
+    <ClInclude Include="sEvolution\sPopulation.h" />
+    <ClInclude Include="sEvolution\sLifeform.h" />
     <ClInclude Include="sGraphics\sAnimation.h" />
     <ClInclude Include="sGraphics\sDebugDraw.h" />
-    <ClInclude Include="Genes\sGene.h" />
-    <ClInclude Include="Genes\BodyGene.h" />
-    <ClInclude Include="Genes\JointGene.h" />
-    <ClInclude Include="Genes\LimbGene.h" />
-    <ClInclude Include="Genes\MuscleGene.h" />
-    <ClInclude Include="Genes\Genome.h" />
+    <ClInclude Include="sEvolution\sGene.h" />
+    <ClInclude Include="sEvolution\sGenome.h" />
     <ClInclude Include="Car.h" />
     <ClInclude Include="sGraphics\sDisplayContainer.h" />
     <ClInclude Include="sGraphics\sDisplayObject.h" />
+    <ClInclude Include="sGraphics\sGeneGraph.h" />
     <ClInclude Include="sGraphics\sResourceManager.h" />
     <ClInclude Include="sGraphics\sSprite.h" />
     <ClInclude Include="sPhysics\sChain.h" />
