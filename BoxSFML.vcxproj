@@ -85,9 +85,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sEvolution\Scene.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="sEvolution\sPopulation.h" />
-    <ClInclude Include="sEvolution\sLifeform.h" />
+    <ClInclude Include="sEvolution\sPhenotype.h" />
+    <ClInclude Include="sEvolution\sSimulation.h" />
     <ClInclude Include="sGraphics\sAnimation.h" />
     <ClInclude Include="sGraphics\sDebugDraw.h" />
     <ClInclude Include="sEvolution\sGene.h" />
@@ -95,9 +96,13 @@
     <ClInclude Include="Car.h" />
     <ClInclude Include="sGraphics\sDisplayContainer.h" />
     <ClInclude Include="sGraphics\sDisplayObject.h" />
+    <ClInclude Include="sGraphics\sFitnessGraph.h" />
     <ClInclude Include="sGraphics\sGeneGraph.h" />
     <ClInclude Include="sGraphics\sResourceManager.h" />
     <ClInclude Include="sGraphics\sSprite.h" />
+    <ClInclude Include="sNeuralNet\sNeuralNet.h" />
+    <ClInclude Include="sNeuralNet\sNeuron.h" />
+    <ClInclude Include="sNeuralNet\sSynapse.h" />
     <ClInclude Include="sPhysics\sChain.h" />
     <ClInclude Include="sPhysics\sComposite.h" />
     <ClInclude Include="sPhysics\sConcavePolygon.h" />

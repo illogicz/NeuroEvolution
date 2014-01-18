@@ -14,13 +14,13 @@ public:
 	//sGenome mate(Genome &s);
 
 
-	void addGene(string name, float min, float max, float bits = 16)
+	void addGene(string name, float min, float max, float bits = 16, float mutation_rate = 0.01f)
 	{
 		sGene &gene = m_genes[name]; 
-		gene.set((max - min) * 0.5, min, max, bits);
+		gene.set((max - min) * 0.5, min, max, bits, mutation_rate);
 		gene.random();
 	}
-	sGene getGene(string name)
+	sGene &getGene(string name)
 	{
 		return m_genes[name];
 	}
@@ -57,7 +57,6 @@ public:
 		} else if(mod == GENE_INVERSE){
 			m_genes[dst].invert();
 		}
-
 	}
 
 	void print()

@@ -3,11 +3,11 @@
 #include "sPhysics\sWheelJoint.h"
 #include "sEvolution\sGene.h"
 #include "sEvolution\sGenome.h"
-#include "sEvolution\sLifeform.h"
+#include "sEvolution\sPhenotype.h"
 
 using std::vector;
 
-class Car : public sContainer, public sStepListener, public sLifeForm
+class Car : public sStepListener, public sPhenotype
 {
 
 public:
@@ -47,26 +47,27 @@ public:
 		
 		// Define Genome
 		genome.addGene("scale", 0.7, 1.3);
-		genome.addGene("chassisDensity", 0.5, 2);
+		genome.addGene("chassisDensity", 1, 1);
 		genome.addGene("chassisScale_x", 0.5, 1.5);
 		genome.addGene("chassisScale_y", 0.5, 1.5);
 
 
-		genome.addGene("frontMotorTorque", 0, 50);
-		genome.addGene("frontMotorSpeed", 0, 50);
+		genome.addGene("frontMotorTorque", 0, 300);
+		genome.addGene("frontMotorSpeed", 0, 300);
 		
-		genome.addGene("frontWheelRadius", 0.5, 1.5);
-		genome.addGene("frontWheelDensity", 0.5, 2);
+		genome.addGene("frontWheelRadius", 0.2, 1.5);
+		genome.addGene("frontWheelDensity", 1, 1);
 		genome.addGene("frontWheelPosition_x", 0.5, 2.5);
 		genome.addGene("frontWheelPosition_y", -0.5, 2);
 		genome.addGene("frontWheelAnchor_x", 0.1, 1.8);
 		genome.addGene("frontWheelAnchor_y", -1 ,0);
 
-		genome.addGene("frontFrequencyHz", 0.1, 6);
-		genome.addGene("frontDampingRatio", 0.1, 0.999);
+		genome.addGene("frontFrequencyHz", 0.2, 6);
+		genome.addGene("frontDampingRatio", 0.2, 0.999);
 
-		genome.copyGene("rearMotorTorque", "frontMotorTorque");
-		genome.copyGene("rearMotorSpeed", "frontMotorSpeed");
+		genome.addGene("rearMotorTorque", 0,300);
+		genome.addGene("rearMotorSpeed", 0,300);
+
 
 		genome.copyGene("rearWheelRadius", "frontWheelRadius");
 		genome.copyGene("rearWheelDensity", "frontWheelDensity");
@@ -138,6 +139,12 @@ public:
 		rearSuspension.setAxis(rearAnchor - rearWheel.getPosition());
 
 
+		payloadMass = genome.getValue("chassisDensity") * sx * sy;
+
+		wheelMass = genome.getValue("rearWheelDensity") * genome.getValue("rearWheelRadius") * scale * genome.getValue("rearWheelRadius") * scale;
+		wheelMass += genome.getValue("frontWheelDensity") * genome.getValue("frontWheelRadius") * scale * genome.getValue("frontWheelRadius") * scale;
+
+
 		setAccelerator(0);
 		fitnessModifier = 1;
 		alive = true;
@@ -147,15 +154,15 @@ public:
 
 	}
 
-	// sLifeForm implementation
+	// sPhenotype implementation
+	// Returns the fitness of the phenotype
 	float getFitness()
 	{
-		// Distance traveled times average speed
 		float distance = chassis.getPosition().x;
-		float speed = distance / float(lifeTime);
-		return fitnessModifier * distance;
+		float speed = distance / float(lifeTime + 1);
+		return fitnessModifier * distance * speed * payloadMass / wheelMass;
 	}
-	
+
 	void setAccelerator(float t)
 	{
 		
@@ -165,33 +172,26 @@ public:
 		rearSuspension.setMotorSpeed(genome.getValue("rearMotorSpeed") * t);
 	}
 
-	
-	float fitnessModifier;
-	b2Vec2 frontAnchor;
-	b2Vec2 rearAnchor;
-	sConcavePolygon chassis;
-	sCircle frontWheel;
-	sCircle rearWheel;
-	sWheelJoint frontSuspension;
-	sWheelJoint rearSuspension;
-
-
 	void onBeforeStep()
 	{
+
 		if(alive){
+
 			lifeTime++;
+
+			// check for joint instability
 			b2Vec2 axis1 = chassis.m_body->GetLocalPoint(rearWheel.getPosition());
 			axis1 -= rearSuspension.getAnchorA();
 			b2Vec2 axis2 = chassis.m_body->GetLocalPoint(frontWheel.getPosition());
 			axis2 -= frontSuspension.getAnchorA();
-			if(axis1.Length() > 5.f || axis2.Length() > 5.f){
-				//printf("infant death\n");
-				//fitnessModifier = 0.01;
+			if(axis1.Length() > 4.f || axis2.Length() > 4.f){
+				printf("infant death\n");
+				fitnessModifier = 0.00;
 				//genome.print();
 				die();
 			}
 
-
+			// Kill off if it's upside down
 			float a = chassis.getAngle();
 			while(a > b2_pi)a -= b2_pi * 2;
 			while(a < -b2_pi)a += b2_pi;
@@ -201,6 +201,7 @@ public:
 				return;
 			}
 
+			// Kill it off if it doesn't make progress for some time
 			if(chassis.getPosition().x > progressPosition){
 				progressDelay = 0;
 				progressPosition = chassis.getPosition().x;
@@ -231,13 +232,24 @@ public:
 		chassis.setType(STATIC_BODY);
 	}
 
-	bool alive;
+	float payloadMass;
+	float wheelMass;
+	b2Vec2 frontAnchor;
+	b2Vec2 rearAnchor;
+	sConcavePolygon chassis;
+	sCircle frontWheel;
+	sCircle rearWheel;
+	sWheelJoint frontSuspension;
+	sWheelJoint rearSuspension;
+
+
 
 protected:
 
 	static const int progressTimeout = 200;
 	int progressDelay;
 	float progressPosition;
+	float fitnessModifier;
 
 	void addToWorld(sWorld &world)
 	{

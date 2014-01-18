@@ -175,6 +175,7 @@ private:
 		vector<sBody*> bodies;
 	};
 	
+	//map
 	//class GlobalContactListener : public b2ContactListener
 	//{
 	//public:

@@ -8,53 +8,63 @@
 #include "sGraphics\sDebugDraw.h"
 #include "sGraphics\sDisplayContainer.h"
 #include "sEvolution\sPopulation.h"
+#include "sGraphics\sGeneGraph.h"
+#include "sGraphics\sFitnessGraph.h"
 #include "Car.h"
 
 #include <random>
 
 using namespace std;
 
+
+int n_cars = 50;
+vector<Car*> cars;
+sWorld world;
+sConcavePolygon ground;
+sPopulation population;
+
 float32 worldWidth = 400;
+float32 worldOffset = -6;
 int width = 800, height = 600;
 const float renderScale = 10.f;
 float scale = 0.2f;
+Car *leader;
 
-
-
-b2Vec2 getMousePosition(sf::RenderWindow &window)
-{
-	sf::Vector2f mp = sf::Vector2f(sf::Mouse::getPosition(window));
-	mp.x -= width / 2;
-	mp.y -= height / 2;
-	mp.x += window.getView().getCenter().x;
-	mp.y += window.getView().getCenter().y;
-	return b2Vec2(mp.x /  (renderScale / scale), mp.y / (renderScale / scale));
-}
 
 float randRange(float32 s, float32 e)
 {
 	return s + (e - s) * float(rand())/RAND_MAX;
 }
 
-bool elite = false;
-int n_elite = 11;
-int n_cars = n_elite * (n_elite + (elite ? 1 : -1)) / 2;
-vector<Car*> cars;
-sWorld world;
-sConcavePolygon ground;
 
-sPopulation population;
 
 bool testForEnd()
 {
 
-	b2AABB endAABB;
-	endAABB.lowerBound.Set(worldWidth - 5.f, -10);
-	endAABB.upperBound.Set(worldWidth, 40);
-
-	if(world.getBodiesAABB(endAABB).size()){
-		return true;
+	float bestFitness = -100;
+	for(int i=0;i <cars.size(); i++){
+		//if(cars[i]->alive){
+			float fitness = cars[i]->getFitness();
+			if(fitness > bestFitness){
+				bestFitness = fitness;
+				leader = cars[i];
+			}
+		//}
 	}
+	
+	for(int i = 0; i < n_cars; i++){
+		if(cars[i]->chassis.getPosition().x > worldWidth + worldOffset){
+			cars[i]->die();
+		}
+	}
+
+	Car *elite = leader;
+	if(population.getGenerationCount() && population.getElites()){
+		elite = (Car*)population[0];
+	}
+
+	//if(!leader->alive && !elite->alive) return true;
+
 	for(int i = 0; i < n_cars; i++){
 		if(cars[i]->alive) return false;
 	}
@@ -78,12 +88,12 @@ void createground()
 		rollingAve[i] = start_h;
 	}
 	float32 total = float(avelen) * start_h;
-
+	//srand(666);
 	float32 len = worldWidth;
-	float32 h = 10.f + 50.f * float(rand())/RAND_MAX;
+	float32 h = 30.f + 30.f * float(rand())/RAND_MAX;
 	ground.add(len,h + 10.f);
 	ground.add(0.f,h + 10.f);
-	ground.setPosition(-6, 5 - h * start_h);
+	ground.setPosition(worldOffset, 5 - h * start_h);
 	int index = 0;
 	for(float32 x = 0; x <= len; x += 0.5f){
 		float v = 1.0 * float(rand())/RAND_MAX;
@@ -97,7 +107,51 @@ void createground()
 	ground.finalizeShape();
 	ground.setFriction(1);
 	world.add(&ground);
+
+	sf::Clock clck;
+	srand(clck.getElapsedTime().asMicroseconds());
 }
+
+
+
+void plotGeneGraphs(vector<sGeneGraph> &geneGraphs)
+{
+	int n = 0;
+	geneGraphs[n++].plotGene(population, "scale");
+	geneGraphs[n++].plotGene(population, "chassisDensity");
+	geneGraphs[n++].plotGene2D(population, "chassisScale_x", "chassisScale_y");
+
+	geneGraphs[n++].plotGene(population, "frontMotorTorque");
+	geneGraphs[n++].plotGene(population, "frontMotorSpeed");
+	geneGraphs[n++].plotGene(population, "frontWheelRadius");
+	geneGraphs[n++].plotGene(population, "frontWheelDensity");
+	geneGraphs[n++].plotGene2D(population, "frontWheelPosition_x", "frontWheelPosition_y");
+	geneGraphs[n++].plotGene2D(population, "frontWheelAnchor_x", "frontWheelAnchor_y");
+	geneGraphs[n++].plotGene(population, "frontFrequencyHz");
+	geneGraphs[n++].plotGene(population, "frontDampingRatio");
+
+	geneGraphs[n++].plotGene(population, "rearMotorTorque");
+	geneGraphs[n++].plotGene(population, "rearMotorSpeed");
+	geneGraphs[n++].plotGene(population, "rearWheelRadius");
+	geneGraphs[n++].plotGene(population, "rearWheelDensity");
+	geneGraphs[n++].plotGene2D(population, "rearWheelPosition_x", "rearWheelPosition_y");
+	geneGraphs[n++].plotGene2D(population, "rearWheelAnchor_x", "rearWheelAnchor_y");
+	geneGraphs[n++].plotGene(population, "rearFrequencyHz");
+	geneGraphs[n++].plotGene(population, "rearDampingRatio");
+
+
+	for(int i = 0; i < n; i++){
+		geneGraphs[i].setPosition(i * 42 + 2, 2);
+	}
+}
+
+void drawGeneGraphs(sf::RenderWindow &window, vector<sGeneGraph> &geneGraphs)
+{
+	for(int i = 0; i < geneGraphs.size(); i++){
+		window.draw(geneGraphs[i]);
+	}
+}
+
 
 int main()
 {
@@ -107,12 +161,12 @@ int main()
 
 	State state(world.b2world);
 
-	population.setElites(0);
+	population.setElites(1);
 
 	cars.resize(n_cars);
 	for(int i=0; i<n_cars; i++){
 		cars[i] = new Car;
-		population.addLifeForm(cars[i]);
+		population.addPhenotype(cars[i]);
 		world.add(cars[i]);
 	}
 
@@ -148,14 +202,6 @@ int main()
 	//world.b2world.SetDebugDraw(&debugDraw);
 
 
-
-	bool isDragging = false;
-
-
-
-	vector<b2Vec2> points;
-	
-
 	bool frameLimiter = true;
 	double dt = 1000.f/60.f;
 	double accumulator = 0;
@@ -170,49 +216,22 @@ int main()
 	int render_t = lastTime;
 	bool render_flag = true;
 
+	sFitnessGraph fitnessGraph;
+	fitnessGraph.setPosition(2,44);
+	vector<sGeneGraph> geneGraphs(19);
+	plotGeneGraphs(geneGraphs);
+	
 	while(window.isOpen()){
 		simFrame++;
 		while(window.pollEvent(e)){
 			if(e.type == sf::Event::Closed){
 				window.close();
-			} else if(e.type == sf::Event::MouseButtonPressed){
-				if(e.mouseButton.button == sf::Mouse::Left){
-					if(mouse_mode){
-						if(!mouseDown){
-							mouseJoint.pressed(getMousePosition(window));
-							mouseDown = true;
-						}
-					} else {
-						points.push_back(getMousePosition(window));
-					}
-
-				}
-			} else if(e.type == sf::Event::MouseButtonReleased){
-				//if(e.mouseButton.button == sf::Mouse::Left){
-				//	mouseJoint.released();
-				//}
 			} else if(e.type == sf::Event::Resized){
 				width = window.getSize().x;
 				height = window.getSize().y;
 				view.setSize(width, height);
 			} else if(e.type == sf::Event::KeyPressed){
-				if(e.key.code == sf::Keyboard::F5){
-					state.save();
-				} else if(e.key.code == sf::Keyboard::F6){
-					state.apply();
-				} else if(e.key.code == sf::Keyboard::F2){
-					if(!mouse_mode){
-						//  create shape
-						sConcavePolygon *poly = new sConcavePolygon;
-						poly->set(points);
-						poly->setFriction(1);
-						world.add(poly);
-
-					} else {
-						points.clear();
-					}
-					mouse_mode = !mouse_mode;
-				} else if(e.key.code == sf::Keyboard::F){
+				if(e.key.code == sf::Keyboard::F){
 					frameLimiter = !frameLimiter;
 					window.setFramerateLimit(frameLimiter ? 60 : 2000);
 					window.setVerticalSyncEnabled(frameLimiter);
@@ -221,43 +240,10 @@ int main()
 				}
 			}
 		}
-		bool step = true;
-
-
-		if(mouseDown && !sf::Mouse::isButtonPressed(sf::Mouse::Left)){
-			mouseJoint.released();
-			mouseDown = false;
-		}
-
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space)){
-
-			//sRectangle *rec = new sRectangle(scale * float(rand()) / RAND_MAX + 0.1 , scale * float(rand()) / RAND_MAX + 0.1);//(0.1,0.1, 0,-5,1);
-			//rec->setSize(0.1,0.1);
-			//rec->setPosition(b2Vec2(0,0));
-			//rec->setFriction(1.f);
-			//world.add(rec);
-
-		}
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::F7)){
-			state.interpolate(0.5);
-			//step = false;
-		}
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
-			for(int i=0; i<n_cars; i++){
-				//cars[i]->setAccelerator(1);
-			}
-
-		} else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
-			//car.setAccelerator(-1);
-		} else {
-			//car.setAccelerator(0);
-		}
-		mouseJoint.setPosition(getMousePosition(window));
-
 		
+
 		if(testForEnd()){
 			simFrame = 0;
-
 
 			population.newGeneration();
 			for(int i = 0; i < population.size(); i++){
@@ -265,7 +251,8 @@ int main()
 				world.add(cars[i]);
 			}
 			createground();
-
+			plotGeneGraphs(geneGraphs);
+			fitnessGraph.renderGraph(population);
 		}
 		if(simFrame == 120){
 			for(int i = 0; i < n_cars; i++){
@@ -273,7 +260,9 @@ int main()
 			}
 		}
 		int t2 = clck.getElapsedTime().asMicroseconds();
-		if(step)world.step();
+
+		world.step();
+
 		physicsTime += clck.getElapsedTime().asMicroseconds() - t2;
 		
 
@@ -286,15 +275,7 @@ int main()
 			
 			if(t2 - render_t > 1000000.f / 60.f || frameLimiter){
 				b2Vec2 wp = b2Vec2(float(view.getCenter().x) / 50.f, float(view.getCenter().y) / 50.f);
-				b2Vec2 p(-100,0);
-				for(int i=0;i <cars.size(); i++){
-					if(cars[i]->alive){
-						b2Vec2 cp = cars[i]->chassis.getPosition();
-						if(p.x < cp.x){
-							p = cp;
-						}
-					}
-				}
+				b2Vec2 p = leader->chassis.getPosition();
 				p.y = wp.y + 0.1f * (p.y - wp.y);
 				view.setCenter(p.x * 50, p.y * 50);				
 				window.setView(view);
@@ -304,24 +285,22 @@ int main()
 				debugDraw.prepare();
 				debugDraw.DrawDebugData(world);
 
-				if(!mouse_mode){
-					for(int i=1; i<points.size(); i++){
-						debugDraw.DrawSegment(points[i-1], points[i], b2Color(1,1,0));
-					}
-					if(points.size())debugDraw.DrawSegment(points[points.size()-1], getMousePosition(window), b2Color(1,1,0));
-				}
-
 				debugDraw.finalize();
 
+				window.setView(window.getDefaultView());
+
+				drawGeneGraphs(window, geneGraphs);
+				window.draw(fitnessGraph);
+
 				window.display();
-				renderTime += clck.getElapsedTime().asMicroseconds() - t2;
 
 				render_t = t2;
 			} else {
 				//printf("skip render");
 			}
 		}
-
+		renderTime += clck.getElapsedTime().asMicroseconds() - t2;
+		
 		frameCounter++;
 		t2 = clck.getElapsedTime().asMicroseconds();
 		if(t2 - lastTime > 999999){
@@ -330,6 +309,7 @@ int main()
 			lastTime = t2;
 			physicsTime = renderTime = 0;
 		}
+		
 
 	}
 

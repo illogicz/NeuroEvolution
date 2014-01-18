@@ -15,7 +15,7 @@ class sGene
 public:
 	sGene(){};
 
-	sGene* set(float value, float min, float max, float bits = 16, float mutation_rate = 0.02f)
+	sGene* set(float value, float min, float max, float bits = 16, float mutation_rate = 0.01f)
 	{
 		if(bits < 1 || bits > 32){}
 		m_min = min;
@@ -46,6 +46,19 @@ public:
 	{
 		unsigned int bin = unsigned int((value - m_min) / (m_max - m_min) * ((1 << m_bits)));
 		m_data = binaryToGray(bin);
+	}
+
+	unsigned int getBinaryValue()
+	{
+		return grayToBinary(m_data);
+	}
+	void setBinaryValue(unsigned int bin)
+	{
+		m_data = binaryToGray(bin);
+	}
+	float getNormalizedValue()
+	{
+		return float(grayToBinary(m_data)) / ((1 << m_bits));
 	}
 
 	void random()
@@ -82,9 +95,6 @@ public:
 		}
 
 	}
-
-
-
 
 
 private:

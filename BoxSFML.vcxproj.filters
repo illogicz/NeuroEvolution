@@ -108,16 +108,31 @@
     <ClInclude Include="sEvolution\sGenome.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sEvolution\sLifeform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sEvolution\sPopulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sEvolution\Scene.h">
+    <ClInclude Include="sGraphics\sGeneGraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sGraphics\sGeneGraph.h">
+    <ClInclude Include="sNeuralNet\sNeuron.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sNeuralNet\sSynapse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sNeuralNet\sNeuralNet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sGraphics\sFitnessGraph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sEvolution\sSimulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sEvolution\sPhenotype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
