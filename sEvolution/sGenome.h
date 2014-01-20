@@ -14,10 +14,10 @@ public:
 	//sGenome mate(Genome &s);
 
 
-	sGene& addGene(string name, float min, float max, float bits = 16, float mutation_rate = 0.01f)
+	sGene& addGene(string name, double min, double max, int bits = 16, float mutation_rate = 0.01f)
 	{
 		sGene &gene = m_genes[name]; 
-		gene.set((max - min) * 0.5, min, max, bits, mutation_rate);
+		gene.set((max - min) * 0.5f, float(min), float(max), bits, mutation_rate);
 		gene.random();
 		return gene;
 	}

@@ -22,7 +22,7 @@ public:
 		m_selectionBias = 2.f;
 		m_mutationRate = 0.01f;
 		m_breadingPoolFraction = 1.0f;
-		m_elites = 0.0f;
+		m_elites = 0;
 	}
 
 	void addPhenotype(sPhenotype *phenotype)
@@ -46,7 +46,7 @@ public:
 		generation.bestGenome = m_phenotypes[0]->genome;
 		generation.bestFitness = generation.averageFitness = m_phenotypes[0]->getFitness();
 		generation.worstFitness = m_phenotypes[int(m_phenotypes.size() * 0.75f)]->getFitness();
-		for(int i = 1; i < m_phenotypes.size(); i++){
+		for(unsigned int i = 1; i < m_phenotypes.size(); i++){
 			if(m_phenotypes[i]->getFitness() > 0){
 				valid_breaders++;
 			}
@@ -63,7 +63,7 @@ public:
 
 		// Copy breader genomes
 		vector<sGenome> breaders;
-		int num_breaders = m_breadingPoolFraction * size();
+		int num_breaders = int(m_breadingPoolFraction * float(size()));
 		if(valid_breaders < num_breaders){
 			num_breaders = valid_breaders;
 		}
@@ -74,24 +74,27 @@ public:
 		
 		
 		// Breading selection range, selection bias 1.0 - 3.0, default 2.0
-		float n2 = pow(num_breaders, m_selectionBias);
+		float n2 = float(pow(num_breaders, m_selectionBias));
 		
 
 		// Don't change the first ones, they become elites 
-		for(int i = m_elites; i < m_phenotypes.size(); i++){
+		for(unsigned int i = m_elites; i < m_phenotypes.size(); i++){
 
 			// Choose 2 breaders, better performers have better chance, no cloning;
 
-			int i1 = num_breaders - floor(pow(getRand(n2), 1.f / m_selectionBias)) - 1;
-			int i2 = num_breaders - floor(pow(getRand(n2), 1.f / m_selectionBias)) - 1;
+			int i1 = num_breaders - int(pow(getRand(n2), 1.f / m_selectionBias)) - 1;
+			int i2 = num_breaders - int(pow(getRand(n2), 1.f / m_selectionBias)) - 1;
 			while(i1 == i2){
-				i2 = num_breaders - floor(pow(getRand(n2), 1.f / m_selectionBias)) - 1;
+				i2 = num_breaders - int(pow(getRand(n2), 1.f / m_selectionBias)) - 1;
 			}
 			breadingDistribution[i1]++;
 			breadingDistribution[i2]++;
 			m_phenotypes[i]->genome.mate(breaders[i1], breaders[i2], m_mutationRate);
 		}
-		printBreadingDistribution();
+
+		//printBreadingDistribution();
+		
+		// Increment generation counter
 		m_generations++;
 	}
 

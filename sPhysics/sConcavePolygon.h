@@ -108,7 +108,7 @@ private:
 	{
 		b2Vec2 v0 = vertices[i0 % vertices.size()];
 		b2Vec2 v1 = vertices[i1 % vertices.size()];
-		for(int i2 = 0; i2 < vertices.size(); i2++){
+		for(unsigned int i2 = 0; i2 < vertices.size(); i2++){
 			int i3 = (i2 + 1) % vertices.size();
 			if(i2 == i0 || i3 == i0 || i2 == i1 || i3 == i1) continue;
 			b2Vec2 v2 = vertices[i2];
@@ -140,7 +140,7 @@ protected:
 
 	void simplify(vector<b2Vec2> &vertices)
 	{
-		for(int i = 0; i < vertices.size(); i++){
+		for(unsigned int i = 0; i < vertices.size(); i++){
 			if(vertices.size() < 3)return;
 
 			b2Vec2 v0 = vertices[i ? i - 1 : vertices.size() - 1];
@@ -158,7 +158,7 @@ protected:
 
 	void simplifyCurvature(vector<b2Vec2> &vertices)
 	{
-		for(int i = 0; i < vertices.size(); i++){
+		for(unsigned int i = 0; i < vertices.size(); i++){
 
 			b2Vec2 v0 = vertices[i > 0 ? i - 1 : vertices.size() - 1];
 			b2Vec2 v1 = vertices[i];
@@ -173,7 +173,7 @@ protected:
 			float dot = b2Dot(s0,s1);
 
 			if(!isConcave(v0,v1,v2)){
-				dot = pow(dot, 0.5);
+				dot = float(pow(dot, 0.5));
 			}
 
 			if(dot > 0.99995f){

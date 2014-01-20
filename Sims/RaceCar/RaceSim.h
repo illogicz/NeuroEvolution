@@ -37,8 +37,9 @@ public:
 	{
 		for(int i = 0; i < populationSize; i++){
 			Car *car = new Car;
+			car->init(world);
 			population.addPhenotype(car);
-			world.addContactListener(car, &car->chassis);
+			//world.addContactListener(car, &car->chassis);
 			world.add(car);
 		}
 	}
@@ -77,7 +78,7 @@ public:
 			ground.resetShape();
 		}
 
-		Perlin perlin(8, 8, 0.5, rand());
+		Perlin perlin(5, 8, 0.5, rand());
 
 
 		randOffset1 = rand() % int(worldWidth);
@@ -129,19 +130,23 @@ public:
 
 
 private:
+
+	// returns a value between 0 - 1;
 	float getHeightValue(float x, Perlin &perlin)
 	{
+		x *= 2;
 		float v;
-		if(false){
-			v = perlin.Get(2.f * x / worldWidth, 0);
+		if(true){
+			v = perlin.Get(x / worldWidth, 0);
 		} else {
 			float w1 = sin(randOffset1 + x / worldWidth * 59) * 0.25f;
-			float w2 = sin(randOffset2 + x / worldWidth * 101) * 0.15f;
-			float w3 = sin(randOffset3 + x / worldWidth * 271) * 0.05f;
+			float w2 = sin(randOffset2 + x / worldWidth * 231) * 0.15f;
+			float w3 = sin(randOffset3 + x / worldWidth * 851) * 0.05f;
 			v = w1 + w2 + w3;
 		}
-		if(v < 0) return 0.5 - v * v * 2;
-		return v * v * 2 + 0.5;
+		//if(v < 0) return 0.5 - v * v * 2;
+		//return v * v * 2 + 0.5;
+		return 0.5f + v;
 		
 	}
 	float randOffset1, randOffset2, randOffset3;

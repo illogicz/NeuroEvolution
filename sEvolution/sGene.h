@@ -15,7 +15,7 @@ class sGene
 public:
 	sGene(){};
 
-	sGene* set(float value, float min, float max, float bits = 16, float mutation_rate = 0.01f)
+	sGene* set(float value, float min, float max, int bits = 16, float mutation_rate = 0.01f)
 	{
 		if(bits < 1 || bits > 32){}
 		m_min = min;

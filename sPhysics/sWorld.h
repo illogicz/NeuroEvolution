@@ -22,6 +22,16 @@ struct sContactPair
 { 
 	sBody *body1; 
 	sBody *body2; 
+
+	bool contains(sBody *body)
+	{
+		return body == body1 || body == body2;
+	}
+	bool contains(sBody *bodyA, sBody *bodyB)
+	{
+		return contains(bodyA) && contains(bodyB);
+	}
+
 };
 struct sContactPairCompare
 {
@@ -142,7 +152,7 @@ public:
 		sContactPair contactPair = getContactPair(body1, body2);
 		ContactMapType::value_type v(contactPair, listener);
 		m_contactListeners.insert(v);
-		printf("add = %i \n", m_contactListeners.size());
+		//printf("add = %i \n", m_contactListeners.size());
 
 	}
 	void removeContactListener(sContactListener *listener, sBody *body1, sBody *body2 = NULL)
@@ -265,10 +275,11 @@ private:
 	}
 	void dispatchEndContactEvent(sContactPair contactPair)
 	{
-		//std::pair<ContactMapType::iterator, ContactMapType::iterator> range;
-		//for(ContactMapType::iterator i = range.first; i != range.second; ++i){
-		//	i->second.onEndContact(contactPair);
-		//}
+		std::pair<ContactMapType::iterator, ContactMapType::iterator> range;
+		range = m_contactListeners.equal_range(contactPair);
+		for(ContactMapType::iterator i = range.first; i != range.second; ++i){
+			i->second->onEndContact(contactPair);
+		}
 	}
 
 	sContactPair getContactPair(sBody *body1, sBody *body2)
