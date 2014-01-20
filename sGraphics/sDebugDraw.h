@@ -14,15 +14,16 @@ class sDebugDraw : public b2Draw
 {
 public:
 
-	sDebugDraw(sf::RenderTarget &renderTarget) : target(renderTarget)
+	sDebugDraw()
 	{
 		triangles.setPrimitiveType(sf::PrimitiveType::Triangles);
 		lines.setPrimitiveType(sf::PrimitiveType::Lines);
 	}
 
 
-	void prepare()
+	void prepare(sf::RenderTarget *target)
 	{
+		m_target = target;
 		triangles_index = lines_index = 0;
 	}
 
@@ -30,11 +31,11 @@ public:
 	{
 		// draw triangles
 		triangles.resize(triangles_index);
-		target.draw(triangles, states);
+		m_target->draw(triangles, states);
 
 		// draw lines
 		lines.resize(lines_index);
-		target.draw(lines, states);
+		m_target->draw(lines, states);
 	}
 
 
@@ -52,26 +53,15 @@ public:
 	void DrawDebugData(sWorld &world);
 	void DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color& color);
 	void DrawJoint(b2Joint* joint);
-
-
 	void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
-
 	void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
-
 	void DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color);
-
 	void DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color);
-
 	void DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color);
-
 	void DrawTransform(const b2Transform& xf);
-
     void DrawPoint(const b2Vec2& p, float32 size, const b2Color& color);
-
     void DrawString(int x, int y, const char* string, ...); 
-
     void DrawString(const b2Vec2& p, const char* string, ...);
-
     void DrawAABB(b2AABB* aabb, const b2Color& color);
 
 private:
@@ -80,12 +70,10 @@ private:
 	void addTriangle(const b2Vec2 &v1, const b2Vec2 &v2, const b2Vec2 &v3, const sf::Color &c);
 	void addLine(const b2Vec2 &v1, const b2Vec2 &v2, const sf::Color &c);
 
-
-
+	sf::RenderTarget *m_target;
 	sf::Vector2f view_center;
 	sf::Vector2f view_size;
 	sf::RenderStates states;
-	sf::RenderTarget &target;
 	sf::VertexArray triangles;
 	sf::VertexArray lines;
 

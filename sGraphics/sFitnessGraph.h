@@ -15,8 +15,10 @@ public:
 		backgroundColor = sf::Color(0x66, 0x66, 0x66, 0xFF);
 		bestFitnessColor = sf::Color(0xFF, 0xFF, 0xFF, 0xFF);
 		averageFitnessColor = sf::Color(0x00, 0xFF, 0xFF, 0xFF);
+		worstColor = sf::Color(0xFF, 0x00, 0xFF, 0xFF);
 		bestVertices.setPrimitiveType(sf::PrimitiveType::LinesStrip);
 		averageVertices.setPrimitiveType(sf::PrimitiveType::LinesStrip);
+		worstVertices.setPrimitiveType(sf::PrimitiveType::LinesStrip);
 		backGroundRect.setFillColor(backgroundColor);
 		backGroundRect.setSize(size);
 		
@@ -28,6 +30,7 @@ public:
 
 		target.draw(backGroundRect, states);
 		target.draw(bestVertices, states);
+		target.draw(worstVertices, states);
 		target.draw(averageVertices, states);
 	}
 
@@ -37,6 +40,7 @@ public:
 		if(l < 2)return;
 		bestVertices.resize(l);
 		averageVertices.resize(l);
+		worstVertices.resize(l);
 		float maxFitness = 0;
 		for(int i = 0 ; i < l; i++){
 			sGeneration &gen = population.getGeneration(i);
@@ -55,6 +59,11 @@ public:
 			averageVertices[i].position.y = floor(size.y - gen.averageFitness/ maxFitness * size.y) + 0.5f;
 			averageVertices[i].color = averageFitnessColor;
 
+			worstVertices[i].position.x = float(i) / l * size.x;
+			worstVertices[i].position.y = floor(size.y - gen.worstFitness / maxFitness * size.y) + 0.5f;
+			worstVertices[i].color = worstColor;
+
+
 		}
 		
 		
@@ -68,6 +77,8 @@ private:
 	sf::Color backgroundColor;
 	sf::Color bestFitnessColor;
 	sf::Color averageFitnessColor;
+	sf::Color worstColor;
 	sf::VertexArray bestVertices;
 	sf::VertexArray averageVertices;
+	sf::VertexArray worstVertices;
 };

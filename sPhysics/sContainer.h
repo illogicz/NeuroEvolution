@@ -36,6 +36,12 @@ public:
 		return m_children.find(object) != m_children.end();
 	}
 
+	void setCustomColor(b2Color color)
+	{
+		for(set<sObject*>::iterator i = m_children.begin(); i != m_children.end(); ++i){
+			(*i)->setCustomColor(color);
+		}
+	}
 
 protected:
 

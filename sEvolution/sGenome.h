@@ -14,11 +14,12 @@ public:
 	//sGenome mate(Genome &s);
 
 
-	void addGene(string name, float min, float max, float bits = 16, float mutation_rate = 0.01f)
+	sGene& addGene(string name, float min, float max, float bits = 16, float mutation_rate = 0.01f)
 	{
 		sGene &gene = m_genes[name]; 
 		gene.set((max - min) * 0.5, min, max, bits, mutation_rate);
 		gene.random();
+		return gene;
 	}
 	sGene &getGene(string name)
 	{
@@ -42,10 +43,10 @@ public:
 		}
 	}
 
-	void mate(sGenome &genome1, sGenome &genome2)
+	void mate(sGenome &genome1, sGenome &genome2, float mutationRate)
 	{
 		for(map<string, sGene>::iterator i = m_genes.begin(); i != m_genes.end(); ++i){
-			i->second.mate(genome1.getGene(i->first), genome2.getGene(i->first));
+			i->second.mate(genome1.getGene(i->first), genome2.getGene(i->first), mutationRate);
 		}
 	}
 
@@ -57,6 +58,11 @@ public:
 		} else if(mod == GENE_INVERSE){
 			m_genes[dst].invert();
 		}
+	}
+
+	int size()
+	{
+		return m_genes.size();
 	}
 
 	void print()

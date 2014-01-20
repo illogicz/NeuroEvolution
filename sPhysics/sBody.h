@@ -94,10 +94,13 @@ public:
 
 
 
-	//-------------------------------------------------------------------------------
+	//========================================================================================
 	// Getters & Setters
-	//-------------------------------------------------------------------------------
+	//========================================================================================
 
+
+	//-------------------------------------------------------------------------------
+	// Type
 
 	void setType(sBodyType type)
 	{
@@ -110,6 +113,10 @@ public:
 	{
 		return m_bodyType;
 	}
+
+
+	//-------------------------------------------------------------------------------
+	// State
 
 	// TODO: possibly change this so that deriving classes can use derived states
 	sBodyState getState()
@@ -140,6 +147,10 @@ public:
 		setState(z);
 	}
 
+
+	//-------------------------------------------------------------------------------
+	// Position
+
 	void setPosition(b2Vec2 position)
 	{
 		if(!m_inWorld){
@@ -158,6 +169,9 @@ public:
 	}
 
 
+	//-------------------------------------------------------------------------------
+	// Angle
+
 	void setAngle(float32 angle)
 	{
 		if(!m_inWorld){
@@ -171,6 +185,9 @@ public:
 		return m_inWorld ? m_body->GetAngle() : m_state.angle;
 	}
 
+
+	//-------------------------------------------------------------------------------
+	// Velocity
 
 	void setLinearVelocity(b2Vec2 velocity)
 	{
@@ -186,6 +203,9 @@ public:
 	}
 
 
+	//-------------------------------------------------------------------------------
+	// Angular Velocity
+
 	void setAngularVelocity(float32 velocity)
 	{
 		if(!m_inWorld){
@@ -199,6 +219,10 @@ public:
 		return m_inWorld ? m_body->GetAngle() : m_state.angle;
 	}
 
+
+	//-------------------------------------------------------------------------------
+	// Linear Damping
+
 	void setLinearDamping(float32 damping)
 	{
 		m_linearDamping = damping;
@@ -209,6 +233,9 @@ public:
 		return m_linearDamping;
 	}
 
+	//-------------------------------------------------------------------------------
+	// Angular Damping
+
 	void setAngularDamping(float32 damping)
 	{
 		m_angularDamping = damping;
@@ -218,6 +245,9 @@ public:
 	{
 		return m_angularDamping;
 	}
+
+	//-------------------------------------------------------------------------------
+	// Awake
 
 	bool isAwake()
 	{
@@ -230,6 +260,7 @@ public:
 		m_body->SetAwake(awake);
 	}
 
+	//========================================================================================
 
 	b2Body *m_body;  // temp public
 

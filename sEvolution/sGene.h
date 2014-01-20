@@ -66,6 +66,11 @@ public:
 		m_data = unsigned int((float(rand()) / RAND_MAX) * ((1 << m_bits)));
 	}
 
+	void setMutationRate(float mutationRate)
+	{
+		m_mutation_rate = mutationRate;
+	}
+
 	void invert()
 	{
 		float v = getValue();
@@ -75,14 +80,14 @@ public:
 		setValue(-v);
 	}
 
-	void mate(const sGene &parent1, const sGene &parent2)
+	void mate(const sGene &parent1, const sGene &parent2, float mutationRate = 0.01f)
 	{
 		m_data = 0;
 		int mask = 0x01;
 		for(int i = 0; i < m_bits; i++){
 			bool b = (float(rand()) / RAND_MAX) > 0.5f;
 			float r = (float(rand()) / RAND_MAX);
-			if(r < m_mutation_rate){
+			if(r < mutationRate){
 				if(b){
 					m_data |= mask;
 				} else {
@@ -104,6 +109,10 @@ private:
 	float m_max;
 	float m_min;
 	unsigned int m_data;
+
+
+	// Convert data to/from gray coded binary
+	// Source: http://en.wikipedia.org/wiki/Gray_code#Converting_to_and_from_Gray_code
 
 	unsigned int binaryToGray(unsigned int num)
 	{

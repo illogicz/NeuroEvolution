@@ -72,9 +72,6 @@
     <ClInclude Include="sPhysics\sWheelJoint.h">
       <Filter>Header Files\sPhysics</Filter>
     </ClInclude>
-    <ClInclude Include="Car.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sPhysics\sMouseJoint.h">
       <Filter>Header Files\sPhysics</Filter>
     </ClInclude>
@@ -84,22 +81,7 @@
     <ClInclude Include="sGraphics\sDebugDraw.h">
       <Filter>Header Files\sGraphics</Filter>
     </ClInclude>
-    <ClInclude Include="sGraphics\sDisplayObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sGraphics\sDisplayContainer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sGraphics\sSprite.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sGraphics\sResourceManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sPhysics\sChain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sGraphics\sAnimation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sEvolution\sGene.h">
@@ -123,9 +105,6 @@
     <ClInclude Include="sNeuralNet\sNeuralNet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sGraphics\sFitnessGraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -133,6 +112,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sEvolution\sPhenotype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\RaceCar\Car.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\RaceCar\RaceSim.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sGraphics\sSimulationDisplay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sGraphics\sSimulationWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sUtils\perlin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -150,6 +144,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="sPhysics\sWorld.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sUtils\perlin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

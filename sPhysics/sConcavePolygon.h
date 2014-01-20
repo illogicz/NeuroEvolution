@@ -17,6 +17,11 @@ public:
 		m_bodyDef = &s_bodyDef;
 		setPosition(b2Vec2(x, y));
 		setAngle(angle);
+
+		vertexSplitBaseWeight = 2.f;
+		segmentSplitBaseWeight = 1.0f;
+		doubleSolveWeight = 2.0f;
+		dotWeight = 1.0f;
 	}
 
 	void set(vector<b2Vec2> vertices)
@@ -41,8 +46,9 @@ public:
 	{
 		m_parts.clear();
 
-		// TODO: simplify shape, weighted to removing concave verts
 		simplify(m_vertices);
+
+		simplifyCurvature(m_vertices);
 
 		if(!validate(m_vertices)) return;
 
@@ -66,6 +72,13 @@ public:
 
 	}
 
+
+	// Split Weights
+	float vertexSplitBaseWeight;
+	float segmentSplitBaseWeight;
+	float doubleSolveWeight;
+	float dotWeight;
+	float lengthWeight;
 
 private:
 
@@ -127,14 +140,47 @@ protected:
 
 	void simplify(vector<b2Vec2> &vertices)
 	{
-		for(int i = 0; i < vertices.size() - 1; i++){
-			for(int j = i + 1; j < vertices.size(); j++){
-				if(b2DistanceSquared(vertices[i], vertices[j]) < 0.5f * b2_linearSlop){
-					vertices.erase(vertices.begin()+ j);
-					i--;
-					break;
-				}
+		for(int i = 0; i < vertices.size(); i++){
+			if(vertices.size() < 3)return;
+
+			b2Vec2 v0 = vertices[i ? i - 1 : vertices.size() - 1];
+			b2Vec2 v1 = vertices[i];
+			b2Vec2 v2 = vertices[(i + 1) % vertices.size()];
+
+			if(b2DistanceSquared(v1, v2) < 0.5f * b2_linearSlop){
+				vertices.erase(vertices.begin() + i);
+				i--;
+				break;
 			}
+		}
+	}
+
+
+	void simplifyCurvature(vector<b2Vec2> &vertices)
+	{
+		for(int i = 0; i < vertices.size(); i++){
+
+			b2Vec2 v0 = vertices[i > 0 ? i - 1 : vertices.size() - 1];
+			b2Vec2 v1 = vertices[i];
+			b2Vec2 v2 = vertices[(i + 1) % vertices.size()];
+
+			b2Vec2 s0 = v1 - v0;
+			b2Vec2 s1 = v2 - v1;
+			s0.Normalize();
+			s1.Normalize();
+			//printf("b2dot = %f \n", i, b2Dot(s0, s1));
+
+			float dot = b2Dot(s0,s1);
+
+			if(!isConcave(v0,v1,v2)){
+				dot = pow(dot, 0.5);
+			}
+
+			if(dot > 0.99995f){
+				vertices.erase(vertices.begin() + i);
+				i--;
+			}
+
 		}
 	}
 
@@ -219,7 +265,7 @@ protected:
 					if(!has_intersection(vertices, i, i1)){
 						if(!isConcave(v0,v1,v3) && !isConcave(v3,v1,v2)){
 
-							float split_score = 2;
+							float split_score = vertexSplitBaseWeight;
 
 							b2Vec2 normal(v3 - v1);
 							float length = normal.Normalize();
@@ -229,12 +275,15 @@ protected:
 							if(isConcave(vertices, i1)){
 								if(!isConcave(vertices, i, i1, i1 + 1) && 
 							       !isConcave(vertices, i1 - 1, i1, i)){
-									split_score *= 3;
+									split_score *= doubleSolveWeight;
 								}
 							}
 
-							split_score /= length;
-							//split_score *= (dot * 0.5f) + 0.5f;
+							//split_score /= length;
+							float lenW = 1.f / (1.f + length);
+							split_score *= (lenW * lengthWeight) + (1.f - lengthWeight);
+
+							split_score *= (dot * dotWeight) + (1.f - dotWeight);
 
 							if(split_score > best_split_score){
 								best_split_score = split_score;
@@ -252,7 +301,7 @@ protected:
 
 
 				
-				b2Vec2 v1n = v1 + (100.f * split_normal);
+				b2Vec2 v1n = v1 + (10000.f * split_normal);
 
 				// Find closest/first intersection
 				int first_i = 0;
@@ -283,7 +332,10 @@ protected:
 					return;
 				}
 
-				float32 score = 1.f / first_len;
+				float32 score = segmentSplitBaseWeight;
+				float lenW = 1.f / (1.f + first_len);
+				score *= (lenW * lengthWeight) + (1.f - lengthWeight);
+
 				if(score > best_split_score){
 					splitVertex_index = -1;
 					//best_split_score = score;
@@ -322,7 +374,8 @@ protected:
 			 }
 		}
 		if(vertices.size() > b2_maxPolygonVertices){
-			split(vertices, n_rec+1, true);
+			//split(vertices, n_rec+1, true);
+			convexSplit(vertices);
 		} else {
 			simplify(vertices);
 			if(vertices.size() < 3){
@@ -332,6 +385,82 @@ protected:
 			m_parts.push_back(vertices);
 		}
 	}
+
+
+	b2Vec2 splitNormal(const b2Vec2 &v0, const b2Vec2 &v1, const b2Vec2 &v2)
+	{
+		// Get mid normal
+		b2Vec2 dv1 = v0 - v1;
+		b2Vec2 dv2 = v2 - v1;
+		dv1.Normalize();
+		dv2.Normalize();
+		b2Vec2 split_normal = dv1 + dv2;
+		split_normal.Normalize();
+		return split_normal;
+	}
+
+	void convexSplit(vector<b2Vec2> &vertices)
+	{
+		int n_verts = vertices.size(); 
+		float bestScore = 0;
+
+		int offset = vertices.size() / 2 - 1;
+		if(offset > 7)offset = 7;
+
+		int bestVetrex1 = 0, bestVetrex2 = 0;
+
+		for(int i = 1; i <= n_verts; i++){
+
+			b2Vec2 v0  = vertices[(i + 0) % n_verts];
+			b2Vec2 v0a = vertices[(i + 1) % n_verts];
+			b2Vec2 v0b = vertices[(i - 1) % n_verts];
+
+			b2Vec2 v1 = vertices[(i + offset) % n_verts];
+			b2Vec2 v1a = vertices[(i + offset - 1) % n_verts];
+			b2Vec2 v1b = vertices[(i + offset + 1) % n_verts];
+
+			// Get mid normal
+			b2Vec2 split_normal1 = splitNormal(v0b, v0, v0a);
+			b2Vec2 split_normal2 = splitNormal(v1b, v1, v1a);
+
+			b2Vec2 split_vector = v0 - v1;
+			split_vector.Normalize();
+
+			float32 dot1 = b2Dot(split_normal1, -split_vector);
+			float32 dot2 = b2Dot(split_normal2, split_vector);
+
+			float score = dot1 + dot2;
+
+			if(score > bestScore){
+				bestScore = score;
+				bestVetrex1 = (i + 0) % n_verts;
+				bestVetrex2 = (i + offset) % n_verts;
+			}
+
+		}
+
+
+		vector<b2Vec2> r1, r2;
+		vector<b2Vec2> *rcur = &r1;
+		for(int j = 0; j <= n_verts; j++){
+			int k = (bestVetrex1 + j) % n_verts;
+			rcur->push_back(vertices[k]);
+			if(k == bestVetrex2){
+				rcur = &r2;
+				rcur->push_back(vertices[k]);
+			}
+		}
+		m_parts.push_back(r1);
+
+		if(r2.size() > b2_maxPolygonVertices){
+			convexSplit(r2);
+		} else {
+			m_parts.push_back(r2);
+		}
+
+
+	}
+
 
 	//void addToWorld(sWorld &world)
 	//{

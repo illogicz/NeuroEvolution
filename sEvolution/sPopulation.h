@@ -6,6 +6,7 @@
 struct sGeneration
 {
 	float bestFitness;
+	float worstFitness;
 	float averageFitness;
 	sGenome bestGenome;
 };
@@ -16,18 +17,23 @@ public:
 
 	sPopulation()
 	{
+		minBreaders = 3;
 		m_generations = 0;
-		selectionBias = 2.f;
-		breadingPoolFraction = 1.0f;
+		m_selectionBias = 2.f;
+		m_mutationRate = 0.01f;
+		m_breadingPoolFraction = 1.0f;
 		m_elites = 0.0f;
 	}
 
 	void addPhenotype(sPhenotype *phenotype)
 	{
 		m_phenotypes.push_back(phenotype);
+		breadingDistribution.push_back(0);
 	}
 
 
+
+	// Generates a new generation of genome
 	void newGeneration()
 	{
 		// Sort based on fitness 
@@ -35,10 +41,11 @@ public:
 		
 		int valid_breaders = 1;
 
-		// Save some data about last generation
+		// Get data about last generation
 		sGeneration generation;
 		generation.bestGenome = m_phenotypes[0]->genome;
 		generation.bestFitness = generation.averageFitness = m_phenotypes[0]->getFitness();
+		generation.worstFitness = m_phenotypes[int(m_phenotypes.size() * 0.75f)]->getFitness();
 		for(int i = 1; i < m_phenotypes.size(); i++){
 			if(m_phenotypes[i]->getFitness() > 0){
 				valid_breaders++;
@@ -46,6 +53,7 @@ public:
 			generation.averageFitness += m_phenotypes[i]->getFitness();
 		}
 		generation.averageFitness /= m_phenotypes.size();
+
 
 		printf("\nGeneration %i\n", m_generations);
 		printf("fitness best = %f average = %f\n", generation.bestFitness, generation.averageFitness);
@@ -55,31 +63,39 @@ public:
 
 		// Copy breader genomes
 		vector<sGenome> breaders;
-		int num_breaders = breadingPoolFraction * size();
+		int num_breaders = m_breadingPoolFraction * size();
 		if(valid_breaders < num_breaders){
-			printf("%i breaders infertile \n", num_breaders - valid_breaders);
 			num_breaders = valid_breaders;
 		}
+		if(num_breaders < minBreaders)num_breaders = minBreaders;
 		for(int i = 0; i < num_breaders; i++){
 			breaders.push_back(m_phenotypes[i]->genome);
 		}
-		float n2 = pow(num_breaders, selectionBias);
+		
+		
+		// Breading selection range, selection bias 1.0 - 3.0, default 2.0
+		float n2 = pow(num_breaders, m_selectionBias);
+		
 
 		// Don't change the first ones, they become elites 
 		for(int i = m_elites; i < m_phenotypes.size(); i++){
 
 			// Choose 2 breaders, better performers have better chance, no cloning;
 
-			int i1 = num_breaders - floor(pow(getRand(n2), 1.f / selectionBias)) - 1;
-			int i2 = num_breaders - floor(pow(getRand(n2), 1.f / selectionBias)) - 1;
+			int i1 = num_breaders - floor(pow(getRand(n2), 1.f / m_selectionBias)) - 1;
+			int i2 = num_breaders - floor(pow(getRand(n2), 1.f / m_selectionBias)) - 1;
 			while(i1 == i2){
-				i2 = num_breaders - floor(pow(getRand(n2), 1.f / selectionBias)) - 1;
+				i2 = num_breaders - floor(pow(getRand(n2), 1.f / m_selectionBias)) - 1;
 			}
-			m_phenotypes[i]->genome.mate(breaders[i1], breaders[i2]);
+			breadingDistribution[i1]++;
+			breadingDistribution[i2]++;
+			m_phenotypes[i]->genome.mate(breaders[i1], breaders[i2], m_mutationRate);
 		}
-
+		printBreadingDistribution();
 		m_generations++;
 	}
+
+
 
 	void setElites(int elites)
 	{
@@ -88,6 +104,21 @@ public:
 	int getElites()
 	{
 		return m_elites;
+	}
+
+	void setSelectionBias(float selectionBias)
+	{
+		m_selectionBias = selectionBias;
+	}
+
+	void setMutationRate(float mutationRate)
+	{
+		m_mutationRate = mutationRate;
+	}
+
+	void setBreadingPoolFraction(float breadingPoolFraction)
+	{
+		m_breadingPoolFraction = breadingPoolFraction;
 	}
 
 	int getGenerationCount()
@@ -110,6 +141,8 @@ public:
     }
 	
 
+	int minBreaders;
+
 private:
 
 	float getRand(float max)
@@ -127,11 +160,23 @@ private:
 		return lifeform1->getFitness() > lifeform2->getFitness();
 	}
 
-	float selectionBias;
-	float breadingPoolFraction;
+	float m_mutationRate;
+	float m_selectionBias;
+	float m_breadingPoolFraction;
 	int m_elites;
 
+
+
+	
 	vector<sPhenotype*> m_phenotypes;
+
+	vector<int> breadingDistribution;
+	void printBreadingDistribution()
+	{
+		for(int i = 0; i < size(); i++){
+			printf("%i : %i\n", i, breadingDistribution[i]);
+		}
+	}
 
 
 };

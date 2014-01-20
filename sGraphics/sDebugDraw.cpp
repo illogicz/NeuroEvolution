@@ -129,6 +129,7 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 	if (flags & b2Draw::e_shapeBit)
 	{
 
+		// Use broadphase clipping to view for rendering debug data
 		b2AABB aabb;
 		aabb.lowerBound.x = view_center.x - view_size.x;
 		aabb.upperBound.x = view_center.x + view_size.x;
@@ -144,8 +145,17 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 			b2Fixture* f = aabb_callback.fixtures[i];
 			b2Body *b = f->GetBody();
 			const b2Transform& xf = b->GetTransform();
-		//	for (b2Fixture* f = b->GetFixtureList(); f; f = f->GetNext())
-		//	{
+
+			sBody *sb = (sBody*)b->GetUserData();
+
+			b2Color cc = sb->getCustomColor();
+
+			if(cc.b || cc.r || cc.g){
+
+				DrawShape(f, xf, cc);
+
+			} else {
+
 				if (b->IsActive() == false)
 				{
 					DrawShape(f, xf, b2Color(0.5f, 0.5f, 0.3f));
@@ -166,7 +176,7 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 				{
 					DrawShape(f, xf, b2Color(0.9f, 0.7f, 0.7f));
 				}
-			//}
+			}
 		}
 	}
 
@@ -309,7 +319,7 @@ void sDebugDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Color&
 	circle.setPosition(center.x, center.y);
 	circle.setFillColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0));
 	circle.setOutlineColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF));
-	target.draw(circle, states);
+	m_target->draw(circle, states);
 }
 
 void sDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color)
@@ -321,7 +331,7 @@ void sDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2V
 	circle.setFillColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0x60));
 	circle.setOutlineThickness(1.f/50);
 	circle.setOutlineColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF));
-	target.draw(circle, states);
+	m_target->draw(circle, states);
 
 	allocate(lines, lines_index, 2);
 	lines[lines_index].position.x = center.x;

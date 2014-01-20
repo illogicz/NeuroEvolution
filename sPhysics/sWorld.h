@@ -1,6 +1,7 @@
 #pragma once
 #include <Box2D\Box2D.h>
 #include <set>
+#include <map>
 #include <vector>
 #include "sBody.h"
 #include "sContainer.h"
@@ -8,14 +9,34 @@
 
 using std::set;
 using std::vector;
+using std::multimap;
+using std::map;
+using std::make_pair;
+
 class sBody;
 class sJoint;
+
+
+
+struct sContactPair
+{ 
+	sBody *body1; 
+	sBody *body2; 
+};
+struct sContactPairCompare
+{
+	bool operator()(const sContactPair &left, const sContactPair &right) const
+	{
+		if(left.body1 != right.body1) return left.body1 < right.body1;
+		return left.body2 < right.body2;
+	}
+};
 
 class sContactListener
 {
 public:
-	virtual void onBeginContact(){}
-	virtual void onEndContact(){}
+	virtual void onBeginContact(sContactPair contactPair){}
+	virtual void onEndContact(sContactPair contactPair){}
 };
 
 class sStepListener
@@ -25,7 +46,9 @@ public:
 	virtual void onAfterStep(){}
 };
 
-class sWorld : public sContainer, private b2DestructionListener
+
+
+class sWorld : public sContainer, public b2DestructionListener, public b2ContactListener
 {
 
 public:
@@ -35,8 +58,8 @@ public:
 	{
 		m_world = this; //&b2world;
 		b2world.SetDestructionListener(this);
+		b2world.SetContactListener(this);
 
-		//b2world.SetContactListener();
 		timeStep = 1.f/60.f;
 		velocityIterations = 8;
 		positionIterations = 3;
@@ -86,6 +109,9 @@ public:
 		b2world.SetGravity(grav);
 	}
 
+	//---------------------------------------------------------------------------------------
+	// Manage listener for step events
+	//---------------------------------------------------------------------------------------
 	
 	// Manage listener for physics step events
 	void addStepListener(sStepListener &listener)
@@ -105,15 +131,35 @@ public:
 		}
 	}
 
-
+	//---------------------------------------------------------------------------------------
 	// Manage listener for contact events
+	//---------------------------------------------------------------------------------------
+
 	// If the last argument is omitted, contact with any other body will fire
-	void addContactListsner(sContactListener &listener, sBody *body1, sBody *body2 = NULL)
+	void addContactListener(sContactListener *listener, sBody *body1, sBody *body2 = nullptr)
 	{
+		if(body1 == body2) return;
+		sContactPair contactPair = getContactPair(body1, body2);
+		ContactMapType::value_type v(contactPair, listener);
+		m_contactListeners.insert(v);
+		printf("add = %i \n", m_contactListeners.size());
 
 	}
-	void removeContactListener(sContactListener &listener, sBody *body1, sBody *body2 = NULL)
+	void removeContactListener(sContactListener *listener, sBody *body1, sBody *body2 = NULL)
 	{
+		if(body1 == body2) return;
+		sContactPair contactPair = getContactPair(body1, body2);
+		//ContactMapType::value_type v(contactPair, listener);
+
+		std::pair<ContactMapType::iterator, ContactMapType::iterator> range;
+		range = m_contactListeners.equal_range(contactPair);
+		for(ContactMapType::iterator i = range.first; i != range.second; ++i){
+			if(i->second == listener){
+				m_contactListeners.erase(i);
+				printf("rem = %i \n", m_contactListeners.size());
+				break;
+			}
+		}
 
 	}
 
@@ -139,12 +185,15 @@ private:
 
 
 	
-
+	// b2DestructionListener impl
 	void SayGoodbye(b2Joint * joint);
 	void SayGoodbye(b2Fixture * fixture){}
 
 
 
+	//-----------------------------------------------------------------------------------
+	// World Query Callbacks
+	//-----------------------------------------------------------------------------------
 
 
 	class PointQueryCallback : public b2QueryCallback
@@ -175,19 +224,74 @@ private:
 		vector<sBody*> bodies;
 	};
 	
-	//map
-	//class GlobalContactListener : public b2ContactListener
-	//{
-	//public:
-		
-	//}
 
+	//-----------------------------------------------------------------------------------
+	// Contact Events
+	//-----------------------------------------------------------------------------------
 
-	// map<sBody*, map<sBody*, set<sContactListener*>>> m_contactListeners;
+	typedef multimap<sContactPair, sContactListener*, sContactPairCompare> ContactMapType;
+	ContactMapType m_contactListeners;
 
+public:
+	void BeginContact (b2Contact *contact)
+	{
+		sBody *body1 = (sBody*)contact->GetFixtureA()->GetBody()->GetUserData();
+		sBody *body2 = (sBody*)contact->GetFixtureB()->GetBody()->GetUserData();
+		sContactPair contactPair = getContactPair(body1, body2);
+		dispatchBeginContactEvent(contactPair);
+		contactPair.body2 = nullptr;
+		dispatchBeginContactEvent(contactPair);
+	}
+	void EndContact (b2Contact *contact)
+	{
+		sBody *body1 = (sBody*)contact->GetFixtureA()->GetBody()->GetUserData();
+		sBody *body2 = (sBody*)contact->GetFixtureB()->GetBody()->GetUserData();
+		sContactPair contactPair = getContactPair(body1, body2);
+		dispatchEndContactEvent(contactPair);
+		contactPair.body2 = nullptr;
+		dispatchEndContactEvent(contactPair);
+	};
+	virtual void 	PreSolve (b2Contact *contact, const b2Manifold *oldManifold){};
+	virtual void 	PostSolve (b2Contact *contact, const b2ContactImpulse *impulse){};
 
+private:
+	void dispatchBeginContactEvent(sContactPair contactPair)
+	{
+		std::pair<ContactMapType::iterator, ContactMapType::iterator> range;
+		range = m_contactListeners.equal_range(contactPair);
+		for(ContactMapType::iterator i = range.first; i != range.second; ++i){
+			i->second->onBeginContact(contactPair);
+		}
+	}
+	void dispatchEndContactEvent(sContactPair contactPair)
+	{
+		//std::pair<ContactMapType::iterator, ContactMapType::iterator> range;
+		//for(ContactMapType::iterator i = range.first; i != range.second; ++i){
+		//	i->second.onEndContact(contactPair);
+		//}
+	}
+
+	sContactPair getContactPair(sBody *body1, sBody *body2)
+	{
+		sContactPair contactPair;
+		if(body2 == nullptr){
+			contactPair.body1 = body1;
+			contactPair.body2 = nullptr;
+		} else if(body1 > body2){
+			contactPair.body1 = body1;
+			contactPair.body2 = body2;
+		} else {
+			contactPair.body1 = body2;
+			contactPair.body2 = body1;
+		}
+		return contactPair;
+	}
 	
-	
+
+	//-----------------------------------------------------------------------------------
+	// Step Events
+	//-----------------------------------------------------------------------------------
+
 	set<sStepListener*> m_stepListeners;
 	void dispatchStepEvent(bool before = true)
 	{
@@ -201,6 +305,7 @@ private:
 		}
 	}
 	
+
 
 
 };

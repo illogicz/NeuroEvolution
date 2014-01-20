@@ -85,21 +85,18 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Scene.h" />
     <ClInclude Include="sEvolution\sPopulation.h" />
     <ClInclude Include="sEvolution\sPhenotype.h" />
     <ClInclude Include="sEvolution\sSimulation.h" />
-    <ClInclude Include="sGraphics\sAnimation.h" />
     <ClInclude Include="sGraphics\sDebugDraw.h" />
     <ClInclude Include="sEvolution\sGene.h" />
     <ClInclude Include="sEvolution\sGenome.h" />
-    <ClInclude Include="Car.h" />
-    <ClInclude Include="sGraphics\sDisplayContainer.h" />
-    <ClInclude Include="sGraphics\sDisplayObject.h" />
+    <ClInclude Include="sGraphics\sSimulationDisplay.h" />
+    <ClInclude Include="sGraphics\sSimulationWindow.h" />
+    <ClInclude Include="Sims\RaceCar\Car.h" />
     <ClInclude Include="sGraphics\sFitnessGraph.h" />
     <ClInclude Include="sGraphics\sGeneGraph.h" />
-    <ClInclude Include="sGraphics\sResourceManager.h" />
-    <ClInclude Include="sGraphics\sSprite.h" />
+    <ClInclude Include="Sims\RaceCar\RaceSim.h" />
     <ClInclude Include="sNeuralNet\sNeuralNet.h" />
     <ClInclude Include="sNeuralNet\sNeuron.h" />
     <ClInclude Include="sNeuralNet\sSynapse.h" />
@@ -120,6 +117,7 @@
     <ClInclude Include="sPhysics\sWheelJoint.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="sPhysics\sWorld.h" />
+    <ClInclude Include="sUtils\perlin.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +126,7 @@
     <ClCompile Include="sPhysics\sBody.cpp" />
     <ClCompile Include="sPhysics\sJoint.cpp" />
     <ClCompile Include="sPhysics\sWorld.cpp" />
+    <ClCompile Include="sUtils\perlin.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

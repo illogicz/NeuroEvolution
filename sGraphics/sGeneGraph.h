@@ -51,13 +51,16 @@ public:
 
 	void plotGene2D(sPopulation &population, const string &geneType1, const string &geneType2)
 	{
-		
+		float v1, v2;
 		clear();
 		for(int i = 0; i < population.size(); i++){
-			float v1 = population[i]->genome.getGene(geneType1).getNormalizedValue();
+			v1 = population[i]->genome.getGene(geneType1).getNormalizedValue();
 			int x = v1 * m_width;
-			float v2 = population[i]->genome.getGene(geneType2).getNormalizedValue();
+			if(x == m_width)x--;
+			v2 = population[i]->genome.getGene(geneType2).getNormalizedValue();
 			int y = v2 * m_height;
+			if(y == m_height)y--;
+
 			m_image.setPixel(x, m_height - y - 1, fillColor);
 		}
 		m_texture.update(m_image);

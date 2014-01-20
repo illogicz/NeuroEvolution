@@ -1,7 +1,7 @@
 #pragma once
 #include "sSynapse.h"
 
-class Neuron
+class sNeuron
 {
 
 public:
