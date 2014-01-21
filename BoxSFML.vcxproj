@@ -98,8 +98,6 @@
     <ClInclude Include="sGraphics\sGeneGraph.h" />
     <ClInclude Include="Sims\RaceCar\RaceSim.h" />
     <ClInclude Include="sNeuralNet\sNeuralNet.h" />
-    <ClInclude Include="sNeuralNet\sNeuron.h" />
-    <ClInclude Include="sNeuralNet\sSynapse.h" />
     <ClInclude Include="sPhysics\sChain.h" />
     <ClInclude Include="sPhysics\sComposite.h" />
     <ClInclude Include="sPhysics\sConcavePolygon.h" />

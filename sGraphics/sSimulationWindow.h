@@ -26,7 +26,7 @@ public:
 		window.setVerticalSyncEnabled(true);
 
 
-		simDisplay.setSize(width, height);
+		simulationDisplay.setSize(width, height);
 
 		view.setSize(width, height);
 		view.setCenter(width/2, height/2);
@@ -38,7 +38,7 @@ public:
 	void setSize(int width, int height)
 	{
 		window.setSize(sf::Vector2u(width, height));
-		simDisplay.setSize(width, height);
+		simulationDisplay.setSize(width, height);
 		view.setSize(width, height);
 		view.setCenter(width/2, height/2);
 	}
@@ -75,7 +75,7 @@ private:
 	int frameRate;
 
 	// Display
-	sSimulationDisplay simDisplay;
+	sSimulationDisplay simulationDisplay;
 	sf::Event e;
 	sf::ContextSettings settings;
 	sf::RenderWindow window;
@@ -148,7 +148,7 @@ private:
 	{
 		bool newGen = m_simulation->step();
 		if(newGen){
-			simDisplay.setCenter(0,0);
+			simulationDisplay.setCenter(0,0);
 			fitnessGraph.renderGraph(m_simulation->population);
 			plotGeneGraphs(geneGraphs);
 		}
@@ -191,6 +191,8 @@ private:
 				} else if(e.key.code == sf::Keyboard::R){
 					render_flag = !render_flag;
 
+				} else if(e.key.code == sf::Keyboard::T){
+					simulationDisplay.toggleFocus();
 				}
 			} else if(e.type == sf::Event::MouseButtonPressed || 
 				      e.type == sf::Event::MouseButtonReleased){
@@ -229,7 +231,7 @@ private:
 			window.clear();
 
 			// Draw simulation
-			simDisplay.draw(*m_simulation, &window, sf::RenderStates::Default);
+			simulationDisplay.draw(*m_simulation, &window, sf::RenderStates::Default);
 
 			// Reset view
 			window.setView(view);

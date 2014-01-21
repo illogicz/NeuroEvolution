@@ -155,32 +155,32 @@ public:
 		*/
 
 		// Small variation, generally valid phenotype
-		genome.addGene("scale", 0.8, 1.4);
-		genome.addGene("chassisDensity", 2, 2);
+		genome.addGene("scale", 1, 1);
+		genome.addGene("chassisDensity", 1.7, 1.7);
 		genome.addGene("chassisScale_x", 0.9, 1.3);
-		genome.addGene("chassisScale_y", 1.9, 1.3);
+		genome.addGene("chassisScale_y", 0.9, 1.3);
 
 
 		// Front Wheel
-		genome.addGene("frontWheelRadius", 0.7, 1.5);
+		genome.addGene("frontWheelRadius", 0.5, 1.3);
 		genome.addGene("frontWheelDensity", 1, 1);
-		genome.addGene("frontWheelPosition_x", 1.5,2.2);
-		genome.addGene("frontWheelPosition_y", 0.5, 1.5);
+		genome.addGene("frontWheelPosition_x", 1.3,2.2);
+		genome.addGene("frontWheelPosition_y", 0.0, 1.5);
 		genome.addGene("frontWheelAnchor_x", 1.2, 1.8);
-		genome.addGene("frontWheelAnchor_y", -1.3 ,-0.7);
+		genome.addGene("frontWheelAnchor_y", -1.3 ,-0.0);
 
 		// Front Motor
-		genome.addGene("frontMotorTorque", 20, 40);
-		genome.addGene("frontMotorSpeed", 20, 40);
+		genome.addGene("frontMotorTorque", 100, 100);
+		genome.addGene("frontMotorSpeed", 100, 100);
 		
 		// Front Suspension
-		genome.addGene("frontFrequencyHz", 1, 5);
-		genome.addGene("frontDampingRatio", 0.4, 0.95);
+		genome.addGene("frontFrequencyHz", 1.1, 5);
+		genome.addGene("frontDampingRatio", 0.5, 0.95);
 		
 
 		// Rear Wheel
 		//genome.copyGene("rearWheelRadius", "frontWheelRadius");
-		genome.addGene("rearWheelRadius", 0.8, 1.9);
+		genome.addGene("rearWheelRadius", 0.6, 1.6);
 		genome.copyGene("rearWheelDensity", "frontWheelDensity");
 		genome.copyGene("rearWheelPosition_x", "frontWheelPosition_x", GENE_INVERSE);
 		genome.copyGene("rearWheelPosition_y", "frontWheelPosition_y");
@@ -188,8 +188,8 @@ public:
 		genome.copyGene("rearWheelAnchor_y", "frontWheelAnchor_y");
 
 		// Rear Motor
-		genome.addGene("rearMotorTorque", 150, 200);
-		genome.addGene("rearMotorSpeed", 150, 200);
+		genome.addGene("rearMotorTorque", 200, 200);
+		genome.addGene("rearMotorSpeed", 200, 200);
 
 		// Rear Suspension
 		genome.copyGene("rearFrequencyHz", "frontFrequencyHz");
@@ -200,10 +200,11 @@ public:
 		// Neural Network Definition
 		//---------------------------------------------------------------------------------
  
-		neuralNet.setInputCount(4);
+		neuralNet.setInputCount(7);
 		neuralNet.setOutputCount(2);
 		neuralNet.setHiddenLayerCount(1);
-		neuralNet.setHiddenLayerSize(0,5);
+		neuralNet.setHiddenLayerSize(0,8);
+		//neuralNet.setHiddenLayerSize(1,4);
 		neuralNet.setMaxBias(1);
 		neuralNet.setMaxWeight(1);
 		neuralNet.create(genome);
@@ -288,6 +289,7 @@ public:
 		wheelMass += genome.getValue("frontWheelDensity") * genome.getValue("frontWheelRadius") * scale * genome.getValue("frontWheelRadius") * scale;
 
 		// Reset neural net inputs
+		neuralNet.prepare();
 		neuralNet.setInput(0,0);
 		neuralNet.setInput(1,0);
 		neuralNet.setInput(2,0);
@@ -301,6 +303,14 @@ public:
 		deferDeath = false;
 		frontWheelContact = false;
 		rearWheelContact = false;
+		lastLinearVelocity.Set(0,0);
+		lastAngularVelocity = 0;
+
+		if(isElite()){
+			chassis.setCustomColor(b2Color(0,1,1));
+		} else {
+			chassis.setCustomColor(b2Color(0,0,0));
+		}
 	}
 
 	
@@ -323,47 +333,64 @@ public:
 		float distance = chassis.getPosition().x;
 		//if(distance < 0)fitnessModifier = 0;
 		float speed = abs(distance) / float(lifeTime + 1);
-		return pow(2, fitnessModifier * distance * speed * 0.1f); //payloadMass;// / wheelMass;
+		//return float(pow(2, fitnessModifier * distance * speed * 0.1f)); //payloadMass;// / wheelMass;
+		return fitnessModifier * distance * speed; //payloadMass;// / wheelMass;
 	}
 
 
 	// Called before world physics is advanced
 	void step()
 	{
-	
+		assert(alive);
+
 		if(deferDeath){
 			die();
 			deferDeath = false;
 			return;
 		}
-		if(!alive) return;
+		
 
 		//---------------------------------------------------------------------------------
 		// Neural Net behaviour
 		//---------------------------------------------------------------------------------
 
+		int index = 0;
+
 		// Set chassis angle input
 		float angle = chassis.getAngle() / b2_pi;
 		while(angle > 1)angle -= 2.f;
 		while(angle < -1)angle += 2.f;
-		neuralNet.setInput(0,angle);
+		neuralNet.setInput(index++, angle);
 
-		// Set chassis angular velocity input
-		neuralNet.setInput(1, chassis.getAngularVelocity() * 0.6);
+		// Set angular velocity input
+		neuralNet.setInput(index++, chassis.getAngularVelocity() * 0.6f);
+
+		// Angular acceleration input
+		float aa = getAngularAcceleration();
+		//if(isLeader())printf("%f \n", aa);
+		neuralNet.setInput(index++, aa * 10.f);
 
 
+		// Front Wheel sensor input
 		float v = neuralNet.getInput(2);
 		float g = frontWheelContact ? 1.f : -1.f;
-		neuralNet.setInput(2, v + (g - v) * 0.1f);
+		neuralNet.setInput(index++, v + (g - v) * 0.2f);
 
-
+		// rear wheel sensor input
 		v = neuralNet.getInput(3);
 		g = rearWheelContact ? 1.f : -1.f;
-		neuralNet.setInput(3, v + (g - v) * 0.1f);
+		neuralNet.setInput(index++, v + (g - v) * 0.2f);
+
+		// Linear acceleration input
+		b2Vec2 acceration = getLinearAcceleration();
+		neuralNet.setInput(index++, acceration.x);
+		neuralNet.setInput(index++, acceration.y);
+
 
 	
-		// Run neural net
+		// Run neural net ////////////////////////////////
 		neuralNet.run();
+		//////////////////////////////////////////////////
 
 
 		// Get outputs, these control the throttle
@@ -382,6 +409,9 @@ public:
 			setThrottle(front_acc, rear_acc);
 		}
 
+		if(isLeader()){
+
+		}
 
 		//---------------------------------------------------------------------------------
 		// Death conditions
@@ -434,7 +464,7 @@ public:
 
 
 
-	// Body Parts
+	// Body
 	b2Vec2 frontAnchor;
 	b2Vec2 rearAnchor;
 	sConcavePolygon chassis;
@@ -443,9 +473,12 @@ public:
 	sWheelJoint frontSuspension;
 	sWheelJoint rearSuspension;
 
+	// Brain
+	sNeuralNet neuralNet;
+
 protected:
 
-	sNeuralNet neuralNet;
+	
 	float payloadMass;
 	float wheelMass;
 	static const int progressTimeout = 350;
@@ -455,6 +488,8 @@ protected:
 	bool deferDeath;
 	bool frontWheelContact;
 	bool rearWheelContact;
+	b2Vec2 lastLinearVelocity;
+	float lastAngularVelocity;
 
 	void setThrottle(float front, float rear)
 	{
@@ -477,12 +512,34 @@ protected:
 		}
 	}
 
+	// Gets change in velocity since last time the function was called
+	b2Vec2 getLinearAcceleration()
+	{
+		b2Vec2 velocity = chassis.getLinearVelocity();
+		b2Vec2 dv = velocity - lastLinearVelocity;
+
+		// remove gravity force ?
+		//dv -= m_world->timeStep * m_world->gravity;
+
+		lastLinearVelocity = velocity;
+		return dv;
+	}
+
+	// Gets change in angular velocity since last time the function was called
+	float getAngularAcceleration()
+	{
+		float av = chassis.getAngularVelocity();
+		float dav = av - lastAngularVelocity;
+		lastAngularVelocity = av;
+		return dav;
+	}
+
 	void onBeginContact(sContactPair contactPair)
 	{
 		if(contactPair.contains(&chassis)) {
 			if(alive){
-				fitnessModifier = 1.f;
-				deferDeath = true;
+			//	fitnessModifier = 1.f;
+			//	deferDeath = true;
 			}
 		} else if(contactPair.contains(&frontWheel)){
 			frontWheelContact = true;

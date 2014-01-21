@@ -76,15 +76,17 @@ protected:
 		}
 
 		world.step();
-
+		calcRankings();
 		return newGen;
 	}
 
-	b2Vec2 getFocus(bool showTrailer)
+	void calcRankings()
 	{
 		float bestFitness = -100;
 		float bestLiveFitness = -100;
 		float worstFitness = 1000000.f;
+		sPhenotype *lastLeader = leader;
+		//leader->setIsLeader(false);
 		for(int i=0;i <population.size(); i++){
 			float fitness = population[i]->getFitness();
 			if(fitness > bestLiveFitness && population[i]->alive){
@@ -102,7 +104,11 @@ protected:
 				}
 			}
 		}
-		return showTrailer ? trailer->getPosition() : leader->getPosition();
+		if(leader != lastLeader){
+			if(lastLeader != nullptr)
+				lastLeader->setIsLeader(false);
+			leader->setIsLeader(true);
+		}
 	}
 
 

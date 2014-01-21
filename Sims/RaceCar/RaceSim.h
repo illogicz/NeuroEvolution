@@ -41,7 +41,9 @@ public:
 			population.addPhenotype(car);
 			//world.addContactListener(car, &car->chassis);
 			world.add(car);
+			if(!i)car->neuralNet.printStats();
 		}
+
 	}
 
 
@@ -81,9 +83,9 @@ public:
 		Perlin perlin(5, 8, 0.5, rand());
 
 
-		randOffset1 = rand() % int(worldWidth);
-		randOffset2 = rand() % int(worldWidth);
-		randOffset3 = rand() % int(worldWidth);
+		randOffset1 = float(rand() % int(worldWidth));
+		randOffset2 = float(rand() % int(worldWidth));
+		randOffset3 = float(rand() % int(worldWidth));
 
 
 
@@ -91,7 +93,7 @@ public:
 		float32 start_h = getHeightValue(worldOffset, perlin) * h;
 		ground.add(worldWidth, h + 0.0001f);
 		ground.add(-2.f, h + 0.0001f);
-		ground.add(-2.f, start_h - 1);
+		ground.add(-2.f, start_h - 3);
 		ground.add(-1.f, start_h);
 		ground.add(worldOffset, start_h);
 		ground.setPosition(3.f - worldOffset, 5 - start_h);
@@ -139,9 +141,9 @@ private:
 		if(true){
 			v = perlin.Get(x / worldWidth, 0);
 		} else {
-			float w1 = sin(randOffset1 + x / worldWidth * 59) * 0.25f;
-			float w2 = sin(randOffset2 + x / worldWidth * 231) * 0.15f;
-			float w3 = sin(randOffset3 + x / worldWidth * 851) * 0.05f;
+			float w1 = sin(randOffset1 + x / worldWidth * 59.f) * 0.25f;
+			float w2 = sin(randOffset2 + x / worldWidth * 231.f) * 0.15f;
+			float w3 = sin(randOffset3 + x / worldWidth * 851.f) * 0.05f;
 			v = w1 + w2 + w3;
 		}
 		//if(v < 0) return 0.5 - v * v * 2;

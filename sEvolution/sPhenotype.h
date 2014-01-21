@@ -24,6 +24,7 @@ public:
 	{
 		lifeTime = 0;
 		alive = true;
+		m_isLeader = false;
 		build(world);
 	}
 
@@ -42,8 +43,28 @@ public:
 	}
 	virtual void onAfterStep(){};
 
+	void setIsLeader(bool leader)
+	{
+		m_isLeader = leader;
+	}
+	bool isLeader()
+	{
+		return m_isLeader;
+	}
+
+	void setIsElite(bool elite)
+	{
+		m_isElite = elite;
+	}
+	bool isElite()
+	{
+		return m_isElite;
+	}
 
 protected:
+
+	bool m_isLeader;
+	bool m_isElite;
 
 	virtual void addToWorld(sWorld &world)
 	{

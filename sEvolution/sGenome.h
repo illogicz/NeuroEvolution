@@ -17,7 +17,7 @@ public:
 	sGene& addGene(string name, double min, double max, int bits = 16, float mutation_rate = 0.01f)
 	{
 		sGene &gene = m_genes[name]; 
-		gene.set((max - min) * 0.5f, float(min), float(max), bits, mutation_rate);
+		gene.set(float((max - min) * 0.5), float(min), float(max), bits, mutation_rate);
 		gene.random();
 		return gene;
 	}

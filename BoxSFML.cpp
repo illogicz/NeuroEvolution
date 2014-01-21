@@ -27,21 +27,22 @@ int main()
 
 	
 
-	srand(3453455);
+	srand(536855);
 
 	RaceSim simulation;
 	sSimulationWindow window;
 	
 
-	simulation.elites = 2;
-	simulation.mutationRate = 0.000f;
-	simulation.selectionBias = 2.f;
-	simulation.breadingPoolFraction = 1.f;
+	simulation.populationSize = 130;
+	simulation.elites = 4;
+	simulation.mutationRate = 0.005f;
+	simulation.selectionBias = 1.7f;
+	simulation.breadingPoolFraction = 0.9f;
 
 	simulation.maxRoughness = 20;
 	simulation.minRoughness = 20;
 	//simulation
-	simulation.randomizeEnvironment = false;
+	simulation.randomizeEnvironment = true;
 	
 	window.setSimulation(&simulation);
 

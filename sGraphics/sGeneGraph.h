@@ -32,7 +32,7 @@ public:
 
 		for(int i = 0; i < population.size(); i++){
 			float v = population[i]->genome.getGene(geneType).getNormalizedValue();
-			int b = v * m_width;
+			int b = int(v * m_width);
 			buckets[b]++;
 		}
 		int max = 0;
@@ -40,7 +40,7 @@ public:
 			if(buckets[i] > max) max = buckets[i];
 		}
 		for(int i = 0 ; i < m_width; i++){
-			int h = ceil(m_height * buckets[i] / max);
+			int h = int(ceil(m_height * buckets[i] / max));
 			for(int y = 0; y < h; y++){
 				m_image.setPixel(i, m_height - y - 1, fillColor);
 			}
@@ -55,7 +55,7 @@ public:
 		clear();
 		for(int i = 0; i < population.size(); i++){
 			v1 = population[i]->genome.getGene(geneType1).getNormalizedValue();
-			int x = v1 * m_width;
+			int x = int(v1 * m_width);
 			if(x == m_width)x--;
 			v2 = population[i]->genome.getGene(geneType2).getNormalizedValue();
 			int y = v2 * m_height;

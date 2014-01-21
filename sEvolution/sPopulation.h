@@ -41,25 +41,31 @@ public:
 		
 		int valid_breaders = 1;
 
-		// Get data about last generation
+		// Store data about last generation
 		sGeneration generation;
+
+		// Store best performer genome
 		generation.bestGenome = m_phenotypes[0]->genome;
 		generation.bestFitness = generation.averageFitness = m_phenotypes[0]->getFitness();
 		generation.worstFitness = m_phenotypes[int(m_phenotypes.size() * 0.75f)]->getFitness();
+
+		m_phenotypes[0]->setIsElite(m_elites > 0);
 		for(unsigned int i = 1; i < m_phenotypes.size(); i++){
+			m_phenotypes[i]->setIsElite(m_elites > i);
 			if(m_phenotypes[i]->getFitness() > 0){
 				valid_breaders++;
 			}
 			generation.averageFitness += m_phenotypes[i]->getFitness();
 		}
 		generation.averageFitness /= m_phenotypes.size();
+		m_generationHistory.push_back(generation);
+
 
 
 		printf("\nGeneration %i\n", m_generations);
 		printf("fitness best = %f average = %f\n", generation.bestFitness, generation.averageFitness);
 		printf("uniformity = %f\n", generation.averageFitness / generation.bestFitness);
 		//generation.bestGenome.print();
-		m_generationHistory.push_back(generation);
 
 		// Copy breader genomes
 		vector<sGenome> breaders;

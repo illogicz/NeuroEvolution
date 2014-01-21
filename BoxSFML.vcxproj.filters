@@ -96,12 +96,6 @@
     <ClInclude Include="sGraphics\sGeneGraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sNeuralNet\sNeuron.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sNeuralNet\sSynapse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sNeuralNet\sNeuralNet.h">
       <Filter>Header Files</Filter>
     </ClInclude>

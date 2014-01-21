@@ -1,5 +1,19 @@
-#pragma once
+/*//////////////////////////////////////////////////////////////////////////////////////////////////
 
+	NEURAL NETWORK
+
+	The neural net consists of a number of inputs and output, with one or more hidden layers
+	in between. At each layer there are synapses connecting every neuron between layers.
+
+	Neurons have a bias value associated with them, and synapses a weight value. Each of these 
+	values has a gene associated with it.
+
+	TODO: more explanations
+
+
+*///////////////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma once
 #include <string>
 #include <vector>
 #include "../sEvolution/sGenome.h"
@@ -16,16 +30,17 @@ struct sSynapse;
 struct sNeuron
 {
 	float value;
+	float bias;
 	sGene *biasGene;
 	vector<sSynapse*> inputSynapses;
 	vector<sSynapse*> outputSynapses;
-	float getBias()
+	void calcBias()
 	{
-		return biasGene->getValue();
+		bias = biasGene->getValue();
 	}
 	float activation()
 	{
-		return tanh_approx(value + getBias());
+		return tanh_approx(value + bias);
 	}
 
 	float tanh_approx(float x)
@@ -49,17 +64,14 @@ struct sSynapse
 	sGene *weightGene;
 	sNeuron *output;
 	sNeuron *input;
-	float getWeight()
+	float weight;
+	void calcWeight()
 	{
-		return weightGene->getValue();
-	}
-	float getOuputValue()
-	{
-		return getWeight() * input->activation();
+		weight = weightGene->getValue();
 	}
 };
 //==============================================================================================
-// Neural Net
+// Neural Network
 //==============================================================================================
 
 class sNeuralNet
@@ -154,6 +166,24 @@ public:
 		return outputs[index].activation();
 	}
 
+	void printStats()
+	{
+		printf(
+"Neural Net contains: \n\
+  %i neurons\n\
+    %i input\n\
+	%i output\n\
+    %i hidden\n\
+  %i synapses\n",
+	
+	    m_neurons.size(),
+		  m_inputCount, 
+		  m_outputCount, 
+		  m_neurons.size() - m_inputCount - m_outputCount, 
+		m_synapses.size() 
+  
+       );
+	}
 
 	//------------------------------------------------------------------------------------------
 	// Create Neural Net
@@ -180,12 +210,14 @@ private: void createSynapses(vector<sNeuron> &_inputs, vector<sNeuron> &_outputs
 
 		for(unsigned int i = 0; i < _outputs.size(); i++){
 			_outputs[i].biasGene = &m_genome->addGene(getNeuronName(layer + 1,i), -m_maxBias, m_maxBias);
+			m_neurons.push_back(&_outputs[i]);
 		}
 
 
 		for(unsigned int i = 0; i < _inputs.size(); i++){
 			if(layer == 0){
 				_inputs[i].biasGene = &m_genome->addGene(getNeuronName(0,i), -m_maxBias, m_maxBias);
+				m_neurons.push_back(&_inputs[i]);
 			}
 
 			for(unsigned int j = 0; j < _outputs.size(); j++){
@@ -201,6 +233,22 @@ private: void createSynapses(vector<sNeuron> &_inputs, vector<sNeuron> &_outputs
 				_outputs[j].inputSynapses.push_back(synapse);
 
 			}
+		}
+	}
+
+
+	//------------------------------------------------------------------------------------------
+	// Prepare Neural Net from Genes
+	//------------------------------------------------------------------------------------------
+
+	// For performance store values from genes when they are changed
+public: void prepare()
+	{
+		for(unsigned int i = 0; i < m_neurons.size(); i++){
+			m_neurons[i]->calcBias();
+		}
+		for(unsigned int i = 0; i < m_synapses.size(); i++){
+			m_synapses[i]->calcWeight();
 		}
 	}
 
@@ -225,45 +273,28 @@ public: void run()
 
 private: void runSynapseLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_outputs, int layer)
 	{
-		
-		//printf("Run Synapse layer %i \n", layer);
-		/*
-		for(unsigned int i = 0; i < _outputs.size(); i++){
-
-			_outputs[i].value = 0;
-
-			//printf("	%i : Inputs: \n", i);
-
-			for(unsigned int j = 0; j < _outputs[i].inputSynapses.size(); j++){
-
-				sSynapse *synapse = _outputs[i].inputSynapses[j];
-
-				_outputs[i].value += synapse->getOuputValue();
-
-			}
-			//printf("		 = %f \n", _outputs[i].value);
-		}
-		//printf("\n");
-		*/
-		
+				
 		// reset output values
-		for(unsigned int i = 0; i < _outputs.size(); i++){
+		unsigned int i = _outputs.size();
+		while(i--){
 			_outputs[i].value = 0;
 		}
 
 		// Loops through inputs
-		for(unsigned int i = 0; i < _inputs.size(); i++){
+		i = _inputs.size();
+		while(i--){
 
 			// Get input activation value
 			float activation_value = _inputs[i].activation();
 
 			// Loop through synapses connected to this input
-			for(unsigned int j = 0; j < _inputs[i].outputSynapses.size(); j++){
+			unsigned int j = _inputs[i].outputSynapses.size();
+			while(j--){
 
 				// Add to output neurons value, this is the activation value of the input 
-				// multiplied by the synapse weight
+				// neuron multiplied by the synapse weight
 				sSynapse *synapse = _inputs[i].outputSynapses[j];
-				synapse->output->value += activation_value * synapse->getWeight();
+				synapse->output->value += activation_value * synapse->weight;
 			}
 		}
 		
@@ -301,6 +332,7 @@ private: void runSynapseLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_output
 	bool m_created;
 	vector<int> m_hiddenLayerSize;
 	vector<sSynapse*> m_synapses;
+	vector<sNeuron*> m_neurons;
 	vector<sNeuron> inputs;
 	vector<sNeuron> outputs;
 	vector<vector<sNeuron>> m_hiddenLayers;
