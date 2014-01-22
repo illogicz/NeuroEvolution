@@ -20,21 +20,24 @@ public:
 		setPosition(b2Vec2(x, y));
 		setAngle(angle);
 	}
-
-	void set(vector<b2Vec2> vertices)
+	~sConvexPolygon(){}
+	void setVerices(vector<b2Vec2> vertices)
 	{
 		m_vertices = vertices;
 	}
 
-	void add(b2Vec2 vertex)
+	void addVertex(b2Vec2 vertex)
 	{
 		m_vertices.push_back(vertex);
 	}
-	void add(float32 x, float32 y)
+	void addVertex(float32 x, float32 y)
 	{
-		add(b2Vec2(x, y));
+		addVertex(b2Vec2(x, y));
 	}
-
+	void clearVerices()
+	{
+		m_vertices.clear();
+	}
 
 
 protected:

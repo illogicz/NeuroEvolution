@@ -58,7 +58,7 @@ public:
 			int x = int(v1 * m_width);
 			if(x == m_width)x--;
 			v2 = population[i]->genome.getGene(geneType2).getNormalizedValue();
-			int y = v2 * m_height;
+			int y = int(v2 * m_height);
 			if(y == m_height)y--;
 
 			m_image.setPixel(x, m_height - y - 1, fillColor);

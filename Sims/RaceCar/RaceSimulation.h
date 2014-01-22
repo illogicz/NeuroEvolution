@@ -1,21 +1,24 @@
 #pragma once
 #include "../../sEvolution/sSimulation.h"
-#include "Car.h"
 #include "../../sUtils/perlin.h"
 
-class RaceSim : public sSimulation
+template <typename PhenotypeClass>
+class RaceSimulation : public sSimulation
 {
 
 public:
 
-	RaceSim()
+	RaceSimulation()
 	{
+		(void)static_cast<sPhenotype*>((PhenotypeClass*)0);
+
 		worldWidth = 600;
 		worldOffset = 6;
 		populationSize = 50;
 		randomizeEnvironment = true;
 		minRoughness = 4;
 		maxRoughness = 4;
+
 
 		ground.vertexSplitBaseWeight = 1.f;
 		ground.doubleSolveWeight = 2.f;
@@ -25,24 +28,47 @@ public:
 
 	}
 
-	~RaceSim()
+	~RaceSimulation()
 	{
 		for(int i = 0; i < populationSize; i++){
 			delete population[i];
 		}
 	}
 
+	void setPhenotype()
+	{
+
+	}
+
+	// Simulation Settings
+	float worldWidth;
+	float worldOffset;
+	int populationSize;
+	bool randomizeEnvironment;
+	float minRoughness;
+	float maxRoughness;
+
+	float groundFrequency;
+	float groundOctaves;
+
+
+
+protected:
 
 	void initPhenotypes()
 	{
 		for(int i = 0; i < populationSize; i++){
-			Car *car = new Car;
-			car->init(world);
-			population.addPhenotype(car);
+			sPhenotype *phenotype = static_cast<sPhenotype*>(new PhenotypeClass);
+			phenotype->init(world);
+			population.addPhenotype(phenotype);
 			//world.addContactListener(car, &car->chassis);
-			world.add(car);
-			if(!i)car->neuralNet.printStats();
+			world.add(phenotype);
+			if(!i){
+			//	car->neuralNet.printStats();
+				phenotype->genome.printStats();
+			}
 		}
+		population.printStats();
 
 	}
 
@@ -57,7 +83,7 @@ public:
 				return true;
 			}
 		}
-
+		
 		// Speed up simulation if leader is not alive
 		if(leader != nullptr)speedUp = !leader->alive;
 
@@ -80,20 +106,21 @@ public:
 			ground.resetShape();
 		}
 
-		Perlin perlin(5, 8, 0.5, rand());
+		Perlin perlin(5, 8, 0.5, sRandom::getInt(0,100000));
 
 
-		randOffset1 = float(rand() % int(worldWidth));
-		randOffset2 = float(rand() % int(worldWidth));
-		randOffset3 = float(rand() % int(worldWidth));
+		randOffset1 = sRandom::getFloat(0,worldWidth);
+		randOffset2 = sRandom::getFloat(0,worldWidth);
+		randOffset3 = sRandom::getFloat(0,worldWidth);
 
 
 
-		float32 h = minRoughness + (maxRoughness - minRoughness) * float(rand())/RAND_MAX;
+		float32 h = sRandom::getFloat(minRoughness, maxRoughness);
 		float32 start_h = getHeightValue(worldOffset, perlin) * h;
-		ground.add(worldWidth, h + 0.0001f);
-		ground.add(-2.f, h + 0.0001f);
+		ground.add(worldWidth, h + 1.f);
+		ground.add(-2.f, h + 1.f);
 		ground.add(-2.f, start_h - 3);
+		ground.add(-1.f, start_h - 3);
 		ground.add(-1.f, start_h);
 		ground.add(worldOffset, start_h);
 		ground.setPosition(3.f - worldOffset, 5 - start_h);
@@ -119,16 +146,7 @@ public:
 
 
 
-	// Simulation Settings
-	float worldWidth;
-	float worldOffset;
-	int populationSize;
-	bool randomizeEnvironment;
-	float minRoughness;
-	float maxRoughness;
 
-	float groundFrequency;
-	float groundOctaves;
 
 
 private:
@@ -149,7 +167,7 @@ private:
 		//if(v < 0) return 0.5 - v * v * 2;
 		//return v * v * 2 + 0.5;
 		return 0.5f + v;
-		
+		//return 0.1f;
 	}
 	float randOffset1, randOffset2, randOffset3;
 

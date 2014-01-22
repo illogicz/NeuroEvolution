@@ -1,3 +1,6 @@
+// TODO: Add some selection methods
+// Determanistic
+
 #pragma once
 #include <vector>
 #include <algorithm>
@@ -28,6 +31,7 @@ public:
 	void addPhenotype(sPhenotype *phenotype)
 	{
 		m_phenotypes.push_back(phenotype);
+		phenotype->setIsElite(false);
 		breadingDistribution.push_back(0);
 	}
 
@@ -110,7 +114,7 @@ public:
 	{
 		m_elites = elites;
 	}
-	int getElites()
+	unsigned int getElites()
 	{
 		return m_elites;
 	}
@@ -149,6 +153,14 @@ public:
           return m_phenotypes[x];
     }
 	
+	void printStats()
+	{
+		int s = m_phenotypes.size();
+		int bits = m_phenotypes[0]->genome.bitSize() * s;
+		printf("\nPopulation Contains:\n    %i phenotypes\n    %i genes (%3.1f kb)\n",
+			s, m_phenotypes[0]->genome.size() * s, float(bits) / 8000.f);
+	}
+
 
 	int minBreaders;
 
@@ -156,7 +168,7 @@ private:
 
 	float getRand(float max)
 	{
-		return max * float(rand()) / (RAND_MAX+1);
+		return sRandom::getFloat(0,max);
 	}
 
 	vector<int> sel_dist;
@@ -172,7 +184,7 @@ private:
 	float m_mutationRate;
 	float m_selectionBias;
 	float m_breadingPoolFraction;
-	int m_elites;
+	unsigned int m_elites;
 
 
 

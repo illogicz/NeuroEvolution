@@ -111,9 +111,6 @@
     <ClInclude Include="Sims\RaceCar\Car.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\RaceSim.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sGraphics\sSimulationDisplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -121,6 +118,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sUtils\perlin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sUtils\sRandom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\RaceCar\RaceSimulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\RaceCar\Worm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\RaceCar\WormSegment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sPhysics\sRevoluteJoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

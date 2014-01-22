@@ -1,6 +1,7 @@
 #pragma once
 #include "../sPhysics/sContainer.h"
 #include "sGenome.h"
+#include "../sNeuralNet/sNeuralNet.h"
 
 // Virtual class
 
@@ -9,6 +10,7 @@ class sPhenotype : public sContainer, public sStepListener
 public:
 
 	// Derived phenotypes should implement these
+	virtual void init(sWorld &world) = 0;
 	virtual void build(sWorld &world) = 0;
 	virtual void destroy(sWorld &world) = 0;
 	virtual float getFitness() = 0;
@@ -60,6 +62,10 @@ public:
 	{
 		return m_isElite;
 	}
+
+	// Brain
+	sNeuralNet neuralNet;
+
 
 protected:
 

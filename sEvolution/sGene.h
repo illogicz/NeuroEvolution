@@ -1,5 +1,5 @@
 #pragma once
-#include <random>
+#include "../sUtils/sRandom.h"
 
 
 enum sGeneModifier
@@ -63,7 +63,7 @@ public:
 
 	void random()
 	{
-		m_data = unsigned int((float(rand()) / RAND_MAX) * ((1 << m_bits)));
+		m_data = sRandom::getInt(0, (1 << m_bits) - 1);
 	}
 
 	void setMutationRate(float mutationRate)
@@ -85,8 +85,8 @@ public:
 		m_data = 0;
 		int mask = 0x01;
 		for(int i = 0; i < m_bits; i++){
-			bool b = (float(rand()) / RAND_MAX) > 0.5f;
-			float r = (float(rand()) / RAND_MAX);
+			bool b = sRandom::getBool();
+			float r = sRandom::getFloat(0.f,1.f);
 			if(r < mutationRate){
 				if(b){
 					m_data |= mask;
@@ -101,6 +101,10 @@ public:
 
 	}
 
+	int getBitCount()
+	{
+		return m_bits;
+	}
 
 private:
 

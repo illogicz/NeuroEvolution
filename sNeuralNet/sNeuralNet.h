@@ -16,7 +16,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "../sEvolution/sGenome.h"
+#include "..\sEvolution\sGenome.h"
 
 using namespace std;
 struct sSynapse;
@@ -70,6 +70,8 @@ struct sSynapse
 		weight = weightGene->getValue();
 	}
 };
+
+
 //==============================================================================================
 // Neural Network
 //==============================================================================================
@@ -172,7 +174,7 @@ public:
 "Neural Net contains: \n\
   %i neurons\n\
     %i input\n\
-	%i output\n\
+    %i output\n\
     %i hidden\n\
   %i synapses\n",
 	

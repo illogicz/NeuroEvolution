@@ -1,5 +1,6 @@
-#pragma once
+// TODO: Add different cross over methods
 
+#pragma once
 #include <map>
 #include <string>
 #include "sGene.h"
@@ -65,11 +66,20 @@ public:
 		return m_genes.size();
 	}
 
-	void print()
+	void printStats()
 	{
+		printf("\nGenome Contains:\n    %i genes\n    %i bits of data\n\n", m_genes.size(), bitSize());
+		
+	}
+
+	int bitSize()
+	{
+		int bits = 0;
 		for(map<string, sGene>::iterator i = m_genes.begin(); i != m_genes.end(); ++i){
-			printf("%s = 	%f\n", i->first.c_str(), getValue(i->first));
+		//	printf("%s = 	%f\n", i->first.c_str(), getValue(i->first));
+			bits += i->second.getBitCount();
 		}
+		return bits;
 	}
 
 private:

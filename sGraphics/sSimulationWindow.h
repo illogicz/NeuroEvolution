@@ -1,4 +1,3 @@
-#include "..\Sims\RaceCar\RaceSim.h"
 #include "sSimulationDisplay.h"
 #include "sGeneGraph.h"
 #include "sFitnessGraph.h"
@@ -20,10 +19,10 @@ public:
 
 
 		settings.antialiasingLevel = 8;
-		window.create(sf::VideoMode(width, height), "", sf::Style::Default, settings);
+		window.create(sf::VideoMode(unsigned int(width), unsigned int(height)), "", sf::Style::Default, settings);
 		window.setPosition(sf::Vector2i(0,300));
 		window.setFramerateLimit(frameRate);
-		window.setVerticalSyncEnabled(true);
+		//window.setVerticalSyncEnabled(true);
 
 
 		simulationDisplay.setSize(width, height);
@@ -49,8 +48,8 @@ public:
 		m_simulation = simulation;
 		m_simulation->init();
 
-		geneGraphs.resize(simulation->population[0]->genome.size());
-		plotGeneGraphs(geneGraphs);
+		//geneGraphs.resize(simulation->population[0]->genome.size());
+		//plotGeneGraphs(geneGraphs);
 
 	}
 
@@ -124,7 +123,7 @@ private:
 
 	void drawGeneGraphs(sf::RenderWindow &window, vector<sGeneGraph> &geneGraphs)
 	{
-		for(int i = 0; i < geneGraphs.size(); i++){
+		for(unsigned int i = 0; i < geneGraphs.size(); i++){
 			window.draw(geneGraphs[i]);
 		}
 	}
@@ -134,12 +133,12 @@ private:
 	sf::Clock clck;
 	int frameCounter;
 	int physicsCounter;
-	int lastSecondTime;
-	int lastPhysicsTime;
+	unsigned long long lastSecondTime;
+	unsigned long long lastPhysicsTime;
 
 
 
-	int now()
+	unsigned long long now()
 	{
 		return clck.getElapsedTime().asMicroseconds();
 	}
@@ -150,7 +149,7 @@ private:
 		if(newGen){
 			simulationDisplay.setCenter(0,0);
 			fitnessGraph.renderGraph(m_simulation->population);
-			plotGeneGraphs(geneGraphs);
+			//plotGeneGraphs(geneGraphs);
 		}
 		physicsCounter++;
 		return newGen;
@@ -184,8 +183,8 @@ private:
 				if(e.key.code == sf::Keyboard::F){
 
 					frameLimiter = !frameLimiter;
-					window.setFramerateLimit(frameLimiter ? 60 : 3000);
-					window.setVerticalSyncEnabled(frameLimiter);
+					window.setFramerateLimit(frameLimiter ? frameRate : 3000);
+					//window.setVerticalSyncEnabled(frameLimiter);
 
 
 				} else if(e.key.code == sf::Keyboard::R){
@@ -237,7 +236,7 @@ private:
 			window.setView(view);
 
 			// Draw Gene graphs
-			drawGeneGraphs(window, geneGraphs);
+			//drawGeneGraphs(window, geneGraphs);
 				
 			// Draw Fitness Graph
 			window.draw(fitnessGraph);

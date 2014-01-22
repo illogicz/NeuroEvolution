@@ -2,7 +2,7 @@
 #include "..\..\sPhysics\sPhysics.h"
 #include "..\..\sPhysics\sWheelJoint.h"
 #include "..\..\sEvolution\sPhenotype.h"
-#include "..\..\sNeuralNet\sNeuralNet.h"
+
 using std::vector;
 
 class Car : public sPhenotype, public sContactListener
@@ -12,11 +12,19 @@ public:
 
 	Car()
 	{
-
 	}
+	static enum BodyType
+	{
+		Fixed,
+		LowVariation,
+		HighVariation
+	};
 
+	static BodyType bodyType;
 
-	void init(sWorld &world)
+protected:
+
+	virtual void init(sWorld &world)
 	{
 
 		//---------------------------------------------------------------------------------
@@ -69,141 +77,148 @@ public:
 		world.addContactListener(this, &rearWheel);		
 		
 		//---------------------------------------------------------------------------------
-		// Genome Definition
+		// Genome Definitions
 		//---------------------------------------------------------------------------------
 
-		// Chassis
-		/* High variation
-		genome.addGene("scale", 0.7, 1.3);
-		genome.addGene("chassisDensity", 1, 1);
-		genome.addGene("chassisScale_x", 0.2, 2);
-		genome.addGene("chassisScale_y", 0.5, 2.0);
+		if(bodyType == BodyType::HighVariation){
+
+			// Chassis
+			genome.addGene("scale", 0.7, 1.3);
+			genome.addGene("chassisDensity", 1, 1);
+			genome.addGene("chassisScale_x", 0.2, 2);
+			genome.addGene("chassisScale_y", 0.5, 2.0);
 
 
-		// Front Wheel
-		genome.addGene("frontWheelRadius", 0.2, 1.5);
-		genome.addGene("frontWheelDensity", 1, 1);
-		genome.addGene("frontWheelPosition_x", -2.5, 2.5, 30);
-		genome.addGene("frontWheelPosition_y", -2, 2, 30);
-		genome.addGene("frontWheelAnchor_x", -1.8, 1.8, 30);
-		genome.addGene("frontWheelAnchor_y", -1 ,0);
+			// Front Wheel
+			genome.addGene("frontWheelRadius", 0.2, 1.5);
+			genome.addGene("frontWheelDensity", 1, 1);
+			genome.addGene("frontWheelPosition_x", -2.5, 2.5, 30);
+			genome.addGene("frontWheelPosition_y", -2, 2, 30);
+			genome.addGene("frontWheelAnchor_x", -1.8, 1.8, 30);
+			genome.addGene("frontWheelAnchor_y", -1 ,0);
 
-		// Front Motor
-		genome.addGene("frontMotorTorque", 0, 300);
-		genome.addGene("frontMotorSpeed", 0, 100);
+			// Front Motor
+			genome.addGene("frontMotorTorque", 0, 300);
+			genome.addGene("frontMotorSpeed", 0, 100);
 		
-		// Front Suspension
-		genome.addGene("frontFrequencyHz", 0.2, 6);
-		genome.addGene("frontDampingRatio", 0.2, 0.999);
+			// Front Suspension
+			genome.addGene("frontFrequencyHz", 0.2, 6);
+			genome.addGene("frontDampingRatio", 0.2, 0.999);
 
-		genome.copyGene("rearWheelRadius", "frontWheelRadius");
-		genome.copyGene("rearWheelDensity", "frontWheelDensity");
-		genome.copyGene("rearWheelPosition_x", "frontWheelPosition_x", GENE_INVERSE);
-		genome.copyGene("rearWheelPosition_y", "frontWheelPosition_y");
-		genome.copyGene("rearWheelAnchor_x", "frontWheelAnchor_x", GENE_INVERSE);
-		genome.copyGene("rearWheelAnchor_y", "frontWheelAnchor_y");
+			genome.copyGene("rearWheelRadius", "frontWheelRadius");
+			genome.copyGene("rearWheelDensity", "frontWheelDensity");
+			genome.copyGene("rearWheelPosition_x", "frontWheelPosition_x", GENE_INVERSE);
+			genome.copyGene("rearWheelPosition_y", "frontWheelPosition_y");
+			genome.copyGene("rearWheelAnchor_x", "frontWheelAnchor_x", GENE_INVERSE);
+			genome.copyGene("rearWheelAnchor_y", "frontWheelAnchor_y");
 
-		// Rear Motor
-		genome.copyGene("rearMotorTorque", "frontMotorTorque");
-		genome.copyGene("rearMotorSpeed", "frontMotorSpeed");
+			// Rear Motor
+			genome.copyGene("rearMotorTorque", "frontMotorTorque");
+			genome.copyGene("rearMotorSpeed", "frontMotorSpeed");
 
-		// Rear Suspension
-		genome.copyGene("rearFrequencyHz", "frontFrequencyHz");
-		genome.copyGene("rearDampingRatio", "frontDampingRatio");
-		*/
-		/*
-		// No variation
-		genome.addGene("scale", 1, 1);
-		genome.addGene("chassisDensity", 2, 2);
-		genome.addGene("chassisScale_x", 1.1, 1.1);
-		genome.addGene("chassisScale_y", 1.1, 1.1);
-
-
-		// Front Wheel
-		genome.addGene("frontWheelRadius", 1, 1);
-		genome.addGene("frontWheelDensity", 1, 1);
-		genome.addGene("frontWheelPosition_x", 2,2);
-		genome.addGene("frontWheelPosition_y", 1,1);
-		genome.addGene("frontWheelAnchor_x", 1.5, 1.5);
-		genome.addGene("frontWheelAnchor_y", -1 ,-1);
-
-		// Front Motor
-		genome.addGene("frontMotorTorque", 40, 40);
-		genome.addGene("frontMotorSpeed", 40, 40);
+			// Rear Suspension
+			genome.copyGene("rearFrequencyHz", "frontFrequencyHz");
+			genome.copyGene("rearDampingRatio", "frontDampingRatio");
 		
-		// Front Suspension
-		genome.addGene("frontFrequencyHz", 3, 3);
-		genome.addGene("frontDampingRatio", 0.7, 0.7);
 		
+		} else if(bodyType == BodyType::Fixed) {
 
-		// Rear Wheel
-		//genome.copyGene("rearWheelRadius", "frontWheelRadius");
-		genome.addGene("rearWheelRadius", 1.4,1.4);
-		genome.copyGene("rearWheelDensity", "frontWheelDensity");
-		genome.copyGene("rearWheelPosition_x", "frontWheelPosition_x", GENE_INVERSE);
-		genome.copyGene("rearWheelPosition_y", "frontWheelPosition_y");
-		genome.copyGene("rearWheelAnchor_x", "frontWheelAnchor_x", GENE_INVERSE);
-		genome.copyGene("rearWheelAnchor_y", "frontWheelAnchor_y");
-
-		// Rear Motor
-		genome.addGene("rearMotorTorque", 200, 200);
-		genome.addGene("rearMotorSpeed", 200, 200);
-
-		// Rear Suspension
-		genome.copyGene("rearFrequencyHz", "frontFrequencyHz");
-		genome.copyGene("rearDampingRatio", "frontDampingRatio");
-		*/
-
-		// Small variation, generally valid phenotype
-		genome.addGene("scale", 1, 1);
-		genome.addGene("chassisDensity", 1.7, 1.7);
-		genome.addGene("chassisScale_x", 0.9, 1.3);
-		genome.addGene("chassisScale_y", 0.9, 1.3);
+			// No variation */
+			genome.addGene("scale", 1, 1);
+			genome.addGene("chassisDensity", 2, 2);
+			genome.addGene("chassisScale_x", 1.1, 1.1);
+			genome.addGene("chassisScale_y", 1.1, 1.1);
 
 
-		// Front Wheel
-		genome.addGene("frontWheelRadius", 0.5, 1.3);
-		genome.addGene("frontWheelDensity", 1, 1);
-		genome.addGene("frontWheelPosition_x", 1.3,2.2);
-		genome.addGene("frontWheelPosition_y", 0.0, 1.5);
-		genome.addGene("frontWheelAnchor_x", 1.2, 1.8);
-		genome.addGene("frontWheelAnchor_y", -1.3 ,-0.0);
+			// Front Wheel
+			genome.addGene("frontWheelRadius", 0.8, 0.8);
+			genome.addGene("frontWheelDensity", 1, 1);
+			genome.addGene("frontWheelPosition_x", 2,2);
+			genome.addGene("frontWheelPosition_y", 1,1);
+			genome.addGene("frontWheelAnchor_x", 1.3, 1.3);
+			genome.addGene("frontWheelAnchor_y", -1 ,-1);
 
-		// Front Motor
-		genome.addGene("frontMotorTorque", 100, 100);
-		genome.addGene("frontMotorSpeed", 100, 100);
+			// Front Motor
+			genome.addGene("frontMotorTorque", 40, 40);
+			genome.addGene("frontMotorSpeed", 70, 70);
 		
-		// Front Suspension
-		genome.addGene("frontFrequencyHz", 1.1, 5);
-		genome.addGene("frontDampingRatio", 0.5, 0.95);
+			// Front Suspension
+			genome.addGene("frontFrequencyHz", 10, 10);
+			genome.addGene("frontDampingRatio", 1, 1);
 		
 
-		// Rear Wheel
-		//genome.copyGene("rearWheelRadius", "frontWheelRadius");
-		genome.addGene("rearWheelRadius", 0.6, 1.6);
-		genome.copyGene("rearWheelDensity", "frontWheelDensity");
-		genome.copyGene("rearWheelPosition_x", "frontWheelPosition_x", GENE_INVERSE);
-		genome.copyGene("rearWheelPosition_y", "frontWheelPosition_y");
-		genome.copyGene("rearWheelAnchor_x", "frontWheelAnchor_x", GENE_INVERSE);
-		genome.copyGene("rearWheelAnchor_y", "frontWheelAnchor_y");
+			// Rear Wheel
+			//genome.copyGene("rearWheelRadius", "frontWheelRadius");
+			genome.addGene("rearWheelRadius", 1,1);
+			genome.copyGene("rearWheelDensity", "frontWheelDensity");
+			genome.copyGene("rearWheelPosition_x", "frontWheelPosition_x", GENE_INVERSE);
+			genome.copyGene("rearWheelPosition_y", "frontWheelPosition_y");
+			genome.copyGene("rearWheelAnchor_x", "frontWheelAnchor_x", GENE_INVERSE);
+			genome.copyGene("rearWheelAnchor_y", "frontWheelAnchor_y");
 
-		// Rear Motor
-		genome.addGene("rearMotorTorque", 200, 200);
-		genome.addGene("rearMotorSpeed", 200, 200);
+			// Rear Motor
+			genome.addGene("rearMotorTorque", 250, 250);
+			genome.addGene("rearMotorSpeed", 150, 150);
 
-		// Rear Suspension
-		genome.copyGene("rearFrequencyHz", "frontFrequencyHz");
-		genome.copyGene("rearDampingRatio", "frontDampingRatio");
+			// Rear Suspension
+			genome.copyGene("rearFrequencyHz", "frontFrequencyHz");
+			genome.copyGene("rearDampingRatio", "frontDampingRatio");
 
+
+		} else if(bodyType == BodyType::LowVariation) {
+
+			// Small variation, generally valid phenotype
+			genome.addGene("scale", 1, 1);
+			genome.addGene("chassisDensity", 1.7, 1.7);
+			genome.addGene("chassisScale_x", 0.9, 1.3);
+			genome.addGene("chassisScale_y", 0.9, 1.3);
+
+
+			// Front Wheel
+			genome.addGene("frontWheelRadius", 0.5, 1.3);
+			genome.addGene("frontWheelDensity", 1, 1);
+			genome.addGene("frontWheelPosition_x", 1.3,2.2);
+			genome.addGene("frontWheelPosition_y", 0.0, 1.5);
+			genome.addGene("frontWheelAnchor_x", 1.2, 1.8);
+			genome.addGene("frontWheelAnchor_y", -1.3 ,-0.0);
+
+			// Front Motor
+			genome.addGene("frontMotorTorque", 70, 70);
+			genome.addGene("frontMotorSpeed", 40, 40);
+		
+			// Front Suspension
+			genome.addGene("frontFrequencyHz", 1.1, 5);
+			genome.addGene("frontDampingRatio", 0.5, 0.95);
+		
+
+			// Rear Wheel
+			//genome.copyGene("rearWheelRadius", "frontWheelRadius");
+			genome.addGene("rearWheelRadius", 0.6, 1.6);
+			genome.copyGene("rearWheelDensity", "frontWheelDensity");
+			genome.copyGene("rearWheelPosition_x", "frontWheelPosition_x", GENE_INVERSE);
+			genome.copyGene("rearWheelPosition_y", "frontWheelPosition_y");
+			genome.copyGene("rearWheelAnchor_x", "frontWheelAnchor_x", GENE_INVERSE);
+			genome.copyGene("rearWheelAnchor_y", "frontWheelAnchor_y");
+
+			// Rear Motor
+			genome.addGene("rearMotorTorque", 200, 200);
+			genome.addGene("rearMotorSpeed", 50, 50);
+
+			// Rear Suspension
+			genome.copyGene("rearFrequencyHz", "frontFrequencyHz");
+			genome.copyGene("rearDampingRatio", "frontDampingRatio");
+		
+		}
 
 		//---------------------------------------------------------------------------------
 		// Neural Network Definition
 		//---------------------------------------------------------------------------------
  
-		neuralNet.setInputCount(7);
-		neuralNet.setOutputCount(2);
-		neuralNet.setHiddenLayerCount(1);
+		neuralNet.setInputCount(9);
+		neuralNet.setOutputCount(3);
+		neuralNet.setHiddenLayerCount(2);
 		neuralNet.setHiddenLayerSize(0,8);
+		neuralNet.setHiddenLayerSize(1,5);
 		//neuralNet.setHiddenLayerSize(1,4);
 		neuralNet.setMaxBias(1);
 		neuralNet.setMaxWeight(1);
@@ -222,7 +237,7 @@ public:
 	{
 
 		//---------------------------------------------------------------------------------
-		// Phenotype Generation from Genome
+		// Phenotype Generation from Genome (Gene Expresion)
 		//---------------------------------------------------------------------------------
 
 		// Make bodies dynamic again
@@ -334,7 +349,7 @@ public:
 		//if(distance < 0)fitnessModifier = 0;
 		float speed = abs(distance) / float(lifeTime + 1);
 		//return float(pow(2, fitnessModifier * distance * speed * 0.1f)); //payloadMass;// / wheelMass;
-		return fitnessModifier * distance * speed; //payloadMass;// / wheelMass;
+		return fitnessModifier * distance;// * speed; //payloadMass;// / wheelMass;
 	}
 
 
@@ -354,6 +369,9 @@ public:
 		// Neural Net behaviour
 		//---------------------------------------------------------------------------------
 
+
+		// INPUT NORMALIZATION
+
 		int index = 0;
 
 		// Set chassis angle input
@@ -366,10 +384,7 @@ public:
 		neuralNet.setInput(index++, chassis.getAngularVelocity() * 0.6f);
 
 		// Angular acceleration input
-		float aa = getAngularAcceleration();
-		//if(isLeader())printf("%f \n", aa);
-		neuralNet.setInput(index++, aa * 10.f);
-
+		neuralNet.setInput(index++, getAngularAcceleration() * 10.f);
 
 		// Front Wheel sensor input
 		float v = neuralNet.getInput(2);
@@ -381,11 +396,16 @@ public:
 		g = rearWheelContact ? 1.f : -1.f;
 		neuralNet.setInput(index++, v + (g - v) * 0.2f);
 
+		// Linear Velocity inputs
+		b2Vec2 lv = chassis.getLinearVelocity();
+		neuralNet.setInput(index++, lv.x * 0.05f);
+		neuralNet.setInput(index++, lv.y * 0.05f);
+
 		// Linear acceleration input
 		b2Vec2 acceration = getLinearAcceleration();
 		neuralNet.setInput(index++, acceration.x);
 		neuralNet.setInput(index++, acceration.y);
-
+		
 
 	
 		// Run neural net ////////////////////////////////
@@ -393,25 +413,50 @@ public:
 		//////////////////////////////////////////////////
 
 
+		// OUTPUT
+
+
+		//* Normal driving behaviour
+
 		// Get outputs, these control the throttle
 		float front_acc = neuralNet.getOutput(0);
-		float rear_acc = neuralNet.getOutput(1);
+		//float rear_acc = neuralNet.getOutput(1);
 		
+		front_acc = front_acc * 0.75f + 0.25f;
+		//rear_acc = rear_acc * 0.75f + 0.25f;
+
 		// Color the wheel according to throttle values
 		frontWheel.setCustomColor(getAccelatorColor(front_acc));
-		rearWheel.setCustomColor(getAccelatorColor(rear_acc));
+		rearWheel.setCustomColor(getAccelatorColor(front_acc));
 
 		// Apply throttle, ramp up slowly during the first 2 seconds
-		if(lifeTime <= 120){
-			float f = lifeTime / 240.f;
-			setThrottle(f * front_acc, f * rear_acc);
-		} else {
-			setThrottle(front_acc, rear_acc);
-		}
+		// If removed they must figure it out themselves
+		//if(lifeTime <= 120){
+		//	float f = lifeTime / 240.f;
+		//	setThrottle(f * front_acc, f * rear_acc);
+		//} else {
+			setThrottle(front_acc, front_acc);
+		//}
+		//*/
+		/*
+		float frontAngle = b2_pi * neuralNet.getOutput(0);
+		float rearAngle = b2_pi * neuralNet.getOutput(1);
 
-		if(isLeader()){
+		float front_acc = frontAngle - frontWheel.getAngle();
+		float rear_acc = rearAngle - rearWheel.getAngle();
 
-		}
+		setThrottle(0, 0);
+		*/
+
+
+		float damping = neuralNet.getOutput(1);
+		float freq = neuralNet.getOutput(2);
+
+		rearSuspension.setDampingRatio((damping * 0.5f) + 0.5f);
+		frontSuspension.setDampingRatio((damping * 0.5f) + 0.5f);
+		rearSuspension.setFrequencyHz(freq * 2.f + 2.5f);
+		frontSuspension.setFrequencyHz(freq * 2.f + 2.5f);
+
 
 		//---------------------------------------------------------------------------------
 		// Death conditions
@@ -422,9 +467,9 @@ public:
 		axis1 -= rearSuspension.getAnchorA();
 		b2Vec2 axis2 = chassis.m_body->GetLocalPoint(frontWheel.getPosition());
 		axis2 -= frontSuspension.getAnchorA();
-		if(axis1.Length() > 4.f || axis2.Length() > 4.f){
+		if(axis1.Length() > 10.f || axis2.Length() > 10.f){
 			printf("infant death\n");
-			fitnessModifier = 0.0;
+			fitnessModifier = 0.4f;
 			//genome.print();
 			die();
 		}
@@ -435,7 +480,7 @@ public:
 		while(a < -b2_pi)a += b2_pi;
 		if(abs(a) > b2_pi * 0.85){
 			die();
-			fitnessModifier = 0.5f;
+			fitnessModifier = 0.9f;
 			return;
 		}
 		
@@ -473,8 +518,11 @@ public:
 	sWheelJoint frontSuspension;
 	sWheelJoint rearSuspension;
 
-	// Brain
-	sNeuralNet neuralNet;
+	// Fitness modfiers
+	float fallOverModifier;
+	float breakModifier;
+	float velocityModifier;
+	float distanceModifier;
 
 protected:
 
@@ -493,6 +541,9 @@ protected:
 
 	void setThrottle(float front, float rear)
 	{
+		//if(front < 0)front *= 0.5f;
+		//if(rear < 0) rear *= 0.5f;
+
 		//t *= payloadMass;
 		//frontSuspension.setMaxMotorTorque(abs(front) * genome.getValue("frontMotorTorque"));
 		//rearSuspension.setMaxMotorTorque(abs(rear) * genome.getValue("rearMotorTorque"));
@@ -560,3 +611,5 @@ protected:
 	}
 
 };
+
+Car::BodyType Car::bodyType = Car::BodyType::LowVariation;

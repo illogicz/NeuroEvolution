@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../sPhysics/sWorld.h"
+#include "..\sPhysics\sWorld.h"
 #include "sPopulation.h"
 
 class sSimulation
@@ -16,6 +16,7 @@ public:
 		mutationRate = 0.01f;
 		selectionBias = 1.5f;
 		breadingPoolFraction = 1.0;
+		renderScale = 25;
 		speedUp = false;
 	}
 
@@ -24,6 +25,7 @@ public:
 	float selectionBias;
 	float breadingPoolFraction;
 	bool speedUp;
+	float renderScale;
 
 	sPhenotype *leader;
 	sPhenotype *liveLeader;
@@ -42,14 +44,13 @@ protected:
 		population.setSelectionBias(selectionBias);
 		population.setMutationRate(mutationRate);
 		population.setBreadingPoolFraction(breadingPoolFraction);
-		renderScale = 25;
 		renderCenter.Set(0,0);
 		simFrame = 0;
 	}
 
 	void resetSimulation()
 	{
-		for(int i = 0; i < population.size(); i++){
+		for(unsigned int i = 0; i < population.size(); i++){
 			if(i < population.getElites() && population.getGenerationCount()){
 				//population[i]->setCustomColor(b2Color(0,0.5,0.9));
 			} else {
@@ -119,7 +120,6 @@ protected:
 
 
 	int simFrame;
-	float renderScale;
 	b2Vec2 renderCenter;
 	sPopulation population;
 	sWorld world;

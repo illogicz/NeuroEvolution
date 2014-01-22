@@ -23,10 +23,11 @@ public:
 		m_inWorld = false;
 		m_customColor = b2Color(0,0,0);
 	}
-	//sObject(sObject &object) : m_type(object.m_type)
-	//{
-	//	m_inWorld = false;
-	//}
+	//virtual ~sObject(){}
+	sObject(sObject &object) : m_type(object.m_type)
+	{
+		m_inWorld = false;
+	}
 
 	virtual void copy(sObject &object)
 	{

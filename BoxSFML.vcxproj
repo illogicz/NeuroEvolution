@@ -96,7 +96,9 @@
     <ClInclude Include="Sims\RaceCar\Car.h" />
     <ClInclude Include="sGraphics\sFitnessGraph.h" />
     <ClInclude Include="sGraphics\sGeneGraph.h" />
-    <ClInclude Include="Sims\RaceCar\RaceSim.h" />
+    <ClInclude Include="Sims\RaceCar\RaceSimulation.h" />
+    <ClInclude Include="Sims\RaceCar\Worm.h" />
+    <ClInclude Include="Sims\RaceCar\WormSegment.h" />
     <ClInclude Include="sNeuralNet\sNeuralNet.h" />
     <ClInclude Include="sPhysics\sChain.h" />
     <ClInclude Include="sPhysics\sComposite.h" />
@@ -111,11 +113,13 @@
     <ClInclude Include="sPhysics\sJoint.h" />
     <ClInclude Include="sPhysics\sPhysics.h" />
     <ClInclude Include="sPhysics\sRectangle.h" />
+    <ClInclude Include="sPhysics\sRevoluteJoint.h" />
     <ClInclude Include="sPhysics\sUniformBody.h" />
     <ClInclude Include="sPhysics\sWheelJoint.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="sPhysics\sWorld.h" />
     <ClInclude Include="sUtils\perlin.h" />
+    <ClInclude Include="sUtils\sRandom.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>

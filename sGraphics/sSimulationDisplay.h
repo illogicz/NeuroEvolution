@@ -27,7 +27,7 @@ public:
 		p.y = wp.y + 0.1f * (p.y - wp.y);
 		float32 dx = p.x - wp.x;// + simulation.leader->getVelocity().x / scale;
 		//if(abs(dx) > 5) dx *= abs(dx) / 5;
-		float32 f = dx / 50;
+		float32 f = abs(dx) / 100;
 		f = f > 1 ? 1 : f;
 		p.x = wp.x + f * dx;
 		m_view.setCenter(p.x * scale, p.y * scale);	
