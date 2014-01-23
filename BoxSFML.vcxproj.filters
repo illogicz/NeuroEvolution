@@ -155,5 +155,8 @@
     <ClCompile Include="sUtils\perlin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sPhysics\sContainer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

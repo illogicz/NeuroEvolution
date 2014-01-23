@@ -14,6 +14,7 @@ public:
 
 		worldWidth = 600;
 		worldOffset = 6;
+		worldOffset_y = 5;
 		populationSize = 50;
 		randomizeEnvironment = true;
 		minRoughness = 4;
@@ -25,6 +26,8 @@ public:
 		ground.segmentSplitBaseWeight = 10.f;
 		ground.lengthWeight = 0.5f;
 		ground.dotWeight = 1.f;
+
+		world.setGroundBody(&ground);
 
 	}
 
@@ -43,6 +46,7 @@ public:
 	// Simulation Settings
 	float worldWidth;
 	float worldOffset;
+	float worldOffset_y;
 	int populationSize;
 	bool randomizeEnvironment;
 	float minRoughness;
@@ -123,7 +127,7 @@ protected:
 		ground.add(-1.f, start_h - 3);
 		ground.add(-1.f, start_h);
 		ground.add(worldOffset, start_h);
-		ground.setPosition(3.f - worldOffset, 5 - start_h);
+		ground.setPosition(3.f - worldOffset, worldOffset_y - start_h);
 		int index = 0;
 		float rampup = 50;
 		for(float32 x = worldOffset; x <= worldWidth; x += 0.5f){
@@ -137,6 +141,7 @@ protected:
 		ground.finalizeShape();
 		ground.setType(STATIC_BODY);
 		ground.setFriction(1);
+		ground.setRestitution(0);
 		world.add(&ground);
 
 		speedUp = false;

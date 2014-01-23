@@ -94,6 +94,7 @@ public:
 		m_maxWeight = 1.f;
 		m_maxBias = 1.f;
 		m_created = false;
+		m_name = "DEF";
 	}
 
 	~sNeuralNet()
@@ -153,6 +154,13 @@ public:
 		inputs[index].value = value;
 	}
 
+	void interpolateInput(int index, float value, float t)
+	{
+		if(index >= m_inputCount)return;
+
+		inputs[index].value += (value - inputs[index].value) * t;
+	}
+
 	float getInput(int index)
 	{
 		if(index >= m_inputCount)return 0.f;
@@ -166,6 +174,11 @@ public:
 		if(index >= m_outputCount)return 0.f;
 
 		return outputs[index].activation();
+	}
+
+	void setName(string name)
+	{
+		m_name = name;
 	}
 
 	void printStats()
@@ -207,7 +220,9 @@ public:
 		m_created = true;
 	}
 
-private: void createSynapses(vector<sNeuron> &_inputs, vector<sNeuron> &_outputs, int layer)
+
+	// Builds a synapse layer. Can be overridden for custom synapse connections
+protected: virtual void createSynapses(vector<sNeuron> &_inputs, vector<sNeuron> &_outputs, int layer)
 	{
 
 		for(unsigned int i = 0; i < _outputs.size(); i++){
@@ -248,6 +263,7 @@ public: void prepare()
 	{
 		for(unsigned int i = 0; i < m_neurons.size(); i++){
 			m_neurons[i]->calcBias();
+			m_neurons[i]->value = 0;
 		}
 		for(unsigned int i = 0; i < m_synapses.size(); i++){
 			m_synapses[i]->calcWeight();
@@ -313,25 +329,26 @@ private: void runSynapseLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_output
 
 	string getSynapseName(int layer, int input, int output)
 	{
-		return "SY_" + to_string(layer) + 
+		return m_name + "_SY_" + to_string(layer) + 
 			 "_" + to_string(input) + 
 			 "_" + to_string(output);
 	}	
 	
 	string getNeuronName(int layer, int index)
 	{
-		return "NR_" + to_string(layer) + 
+		return m_name + "_NR_" + to_string(layer) + 
 			 "_" + to_string(index);
 	}
 
 
-		sGenome *m_genome;
+	sGenome *m_genome;
 	int m_inputCount;
 	int m_outputCount;
 	int m_hiddenLayerCount;
 	float m_maxWeight;
 	float m_maxBias;
 	bool m_created;
+	string m_name;
 	vector<int> m_hiddenLayerSize;
 	vector<sSynapse*> m_synapses;
 	vector<sNeuron*> m_neurons;

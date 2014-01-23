@@ -148,6 +148,8 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 
 			sBody *sb = (sBody*)b->GetUserData();
 
+			if(!sb->getDebugDrawEnabled())continue;
+
 			b2Color cc = sb->getCustomColor();
 
 			if(cc.b || cc.r || cc.g){
@@ -184,6 +186,11 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 	{
 		for (b2Joint* j = m_jointList; j; j = j->GetNext())
 		{
+
+			sJoint *sj = (sJoint*)j->GetUserData();
+
+			if(!sj->getDebugDrawEnabled())continue;
+
 			DrawJoint(j);
 		}
 	}

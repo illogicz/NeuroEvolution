@@ -3,8 +3,9 @@
 #include <set>
 #include <map>
 #include <vector>
-#include "sBody.h"
 #include "sContainer.h"
+#include "sBody.h"
+
 #include "sJoint.h"
 
 using std::set;
@@ -22,7 +23,7 @@ struct sContactPair
 { 
 	sBody *body1; 
 	sBody *body2; 
-
+	b2Contact *contactInto;
 	bool contains(sBody *body)
 	{
 		return body == body1 || body == body2;
@@ -183,12 +184,25 @@ public:
 
 	}
 	
+
+	void setGroundBody(sBody *groundBody)
+	{
+		m_groundBody = groundBody;
+	}
+	sBody* getGroundBody()
+	{
+		return m_groundBody;
+	}
+
 	 //temp public
 protected:
 
 
 
 private:
+
+
+	sBody* m_groundBody;
 
 	sContainer::addToWorld;       // disable
 	sContainer::removeFromWorld;  // disable
@@ -248,18 +262,34 @@ public:
 		sBody *body1 = (sBody*)contact->GetFixtureA()->GetBody()->GetUserData();
 		sBody *body2 = (sBody*)contact->GetFixtureB()->GetBody()->GetUserData();
 		sContactPair contactPair = getContactPair(body1, body2);
+		contactPair.contactInto = contact;
+
 		dispatchBeginContactEvent(contactPair);
+
 		contactPair.body2 = nullptr;
+		contactPair.body1 = body1;
 		dispatchBeginContactEvent(contactPair);
+
+		contactPair.body1 = body2;
+		dispatchBeginContactEvent(contactPair);
+
 	}
 	void EndContact (b2Contact *contact)
 	{
 		sBody *body1 = (sBody*)contact->GetFixtureA()->GetBody()->GetUserData();
 		sBody *body2 = (sBody*)contact->GetFixtureB()->GetBody()->GetUserData();
 		sContactPair contactPair = getContactPair(body1, body2);
+		contactPair.contactInto = contact;
+
 		dispatchEndContactEvent(contactPair);
+
 		contactPair.body2 = nullptr;
+		contactPair.body1 = body1;
 		dispatchEndContactEvent(contactPair);
+
+		contactPair.body1 = body2;
+		dispatchEndContactEvent(contactPair);
+
 	};
 	virtual void 	PreSolve (b2Contact *contact, const b2Manifold *oldManifold){};
 	virtual void 	PostSolve (b2Contact *contact, const b2ContactImpulse *impulse){};

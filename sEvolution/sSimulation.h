@@ -83,6 +83,8 @@ protected:
 
 	void calcRankings()
 	{
+		population.sortPhenotypes();
+
 		float bestFitness = -100;
 		float bestLiveFitness = -100;
 		float worstFitness = 1000000.f;

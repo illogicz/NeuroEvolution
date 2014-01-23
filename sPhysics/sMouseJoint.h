@@ -31,14 +31,13 @@ public:
 	// return true if a dynamic object was found under the mouse
 	bool pressed(b2Vec2 position)
 	{
+		//
 		if(m_inWorld){
-
 			vector<sBody*> bodies = m_world->getBodiesAt(position);
 			for(unsigned int i = 0; i < bodies.size(); i++){
-
+				
 				// Only drag dynamic bodies
 				if(bodies[i]->getType() == DYNAMIC_BODY){
-
 					// Use first body found
 					m_bodyB = bodies[i];
 
@@ -56,6 +55,8 @@ public:
 
 					// Ignore other results
 					return true;
+
+					
 				}
 			}
 		}
@@ -63,12 +64,15 @@ public:
 	}
 
 
-	void released()
+	bool released()
 	{
 		if(m_inWorld && m_draggingBody){
 			sJoint::_removeFromWorld(*m_world);
+			m_draggingBody = false;
+			return true;
 		}		
 		m_draggingBody = false;
+		return false;
 	}
 
 	

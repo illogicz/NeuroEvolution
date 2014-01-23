@@ -14,19 +14,25 @@ void runWormSimulation()
 	RaceSimulation<Worm> simulation;
 	sSimulationWindow window;
 
+
+	// Population and selection settings
 	simulation.populationSize = 50;
 	simulation.elites = 0;
-	simulation.mutationRate = 0.005f;
+	simulation.mutationRate = 0.007f;
 	simulation.selectionBias = 2.f;
-	simulation.breadingPoolFraction = 1.0f;
+	simulation.breadingPoolFraction = 0.9f;
 
-	simulation.maxRoughness = 1.f;
-	simulation.minRoughness = 1.f;
+
+	// Ground
+	simulation.worldOffset_y = 0.5f;
+	simulation.maxRoughness = 0.1f;
+	simulation.minRoughness = 0.1f;
 	simulation.randomizeEnvironment = false;
-	simulation.worldWidth = 30;
+	simulation.worldWidth = 50;
+
+	// Display
 	simulation.renderScale = 60;
 	window.setSimulation(&simulation);
-
 	window.start();
 
 }

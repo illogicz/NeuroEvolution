@@ -1,13 +1,13 @@
 #pragma once
 #include <vector>
 #include "sObject.h"
-#include "sWorld.h"
+//#include "sWorld.h"
 
 using std::vector;
 
 
 
-
+class sWorld;
 
 struct sBodyState
 {
@@ -259,6 +259,27 @@ public:
 		if(!m_inWorld) return;
 		m_body->SetAwake(awake);
 	}
+
+	//-------------------------------------------------------------------------------
+	// Bounding Box
+
+	b2AABB getAABB()
+	{
+		b2AABB aabb;
+		aabb.lowerBound.Set(100000,100000);
+		aabb.upperBound.Set(-100000,-100000);
+
+		// TODO: Allow out of world check?
+		if(!m_inWorld) return aabb;
+		b2Fixture* fixture = m_body->GetFixtureList();
+		while (fixture != NULL)
+		{
+			aabb.Combine(aabb, fixture->GetAABB(0));
+			fixture = fixture->GetNext();
+		}
+		return aabb;
+	}
+
 
 	//========================================================================================
 

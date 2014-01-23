@@ -21,7 +21,9 @@ public:
 	sObject(sObjectType type) : m_type(type)
 	{
 		m_inWorld = false;
+		m_debugDrawEnabled = true;
 		m_customColor = b2Color(0,0,0);
+		m_alpha = 1.f;
 	}
 	//virtual ~sObject(){}
 	sObject(sObject &object) : m_type(object.m_type)
@@ -38,6 +40,9 @@ public:
 		return m_inWorld;
 	}
 
+
+
+	// Debug draw settings
 	void setCustomColor(b2Color color)
 	{
 		m_customColor = color;
@@ -46,6 +51,26 @@ public:
 	{
 		return m_customColor;
 	}
+
+	void setAlpha(float alpha)
+	{
+		m_alpha = alpha;
+	}
+	float getAlpha()
+	{
+		return m_alpha;
+	}
+
+	void setDebugDrawEnabled(bool enabled)
+	{
+		m_debugDrawEnabled = enabled;
+	}
+	bool getDebugDrawEnabled()
+	{
+		return m_debugDrawEnabled;
+	}
+
+
 
 protected:
 	virtual void addToWorld(sWorld &world)
@@ -63,7 +88,10 @@ protected:
 	// Object type. can't be changed
 	const sObjectType m_type;
 
+	bool m_debugDrawEnabled;
 	b2Color m_customColor;	
+	float m_alpha;
+
 	bool m_inWorld;
 	sWorld *m_world;
 

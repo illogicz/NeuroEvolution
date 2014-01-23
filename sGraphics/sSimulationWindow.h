@@ -13,10 +13,10 @@ public:
 
 		width = 800;
 		height = 600;
-		frameRate = 60;
+		frameRate = 30;
 		frameLimiter = true;
 		render_flag = true;
-
+		m_mouseDown = false;
 
 		settings.antialiasingLevel = 8;
 		window.create(sf::VideoMode(unsigned int(width), unsigned int(height)), "", sf::Style::Default, settings);
@@ -31,7 +31,7 @@ public:
 		view.setCenter(width/2, height/2);
 
 
-		fitnessGraph.setPosition(2,44);
+		fitnessGraph.setPosition(2,2);
 	}
 
 	void setSize(int width, int height)
@@ -47,7 +47,7 @@ public:
 	{
 		m_simulation = simulation;
 		m_simulation->init();
-
+		simulationDisplay.setSimulation(simulation);
 		//geneGraphs.resize(simulation->population[0]->genome.size());
 		//plotGeneGraphs(geneGraphs);
 
@@ -84,9 +84,6 @@ private:
 	// Graphs
 	sFitnessGraph fitnessGraph;
 	vector<sGeneGraph> geneGraphs;	
-
-
-
 
 
 
@@ -135,7 +132,7 @@ private:
 	int physicsCounter;
 	unsigned long long lastSecondTime;
 	unsigned long long lastPhysicsTime;
-
+	bool m_mouseDown;
 
 
 	unsigned long long now()
@@ -165,6 +162,11 @@ private:
 		// Return when window closes
 		if(!window.isOpen()) return;
 
+		b2Vec2 mousePosition;
+		mousePosition.x = sf::Mouse::getPosition(window).x;
+		mousePosition.y = sf::Mouse::getPosition(window).y;
+
+
 		while(window.pollEvent(e)){
 
 			// Window closing
@@ -193,19 +195,39 @@ private:
 				} else if(e.key.code == sf::Keyboard::T){
 					simulationDisplay.toggleFocus();
 				}
-			} else if(e.type == sf::Event::MouseButtonPressed || 
-				      e.type == sf::Event::MouseButtonReleased){
-				
+			} else if(e.type == sf::Event::MouseButtonPressed){ 
+
+				if(e.mouseButton.button == sf::Mouse::Button::Left && !m_mouseDown){
+					simulationDisplay.mousePressed(mousePosition);
+					m_mouseDown = true;
+				}
+
+			} else if(e.type == sf::Event::MouseButtonReleased){
+
+				if(e.mouseButton.button == sf::Mouse::Button::Left && m_mouseDown){			
+					simulationDisplay.mouseReleased(mousePosition);
+					m_mouseDown = false;
+				}
+
+			} else if(e.type == sf::Event::MouseMoved){
+
+				simulationDisplay.mouseMoved(mousePosition);
+
 			}
 		}
 
+		// Release outside window
+		if(m_mouseDown && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)){
+			simulationDisplay.mouseReleased(mousePosition);
+			m_mouseDown = false;
+		}
 
 		//-----------------------------------------------------------------------------------
 		// Run Simulation
 		//-----------------------------------------------------------------------------------
 
 		bool newGen = stepSimulation();
-
+		if(frameRate == 30)newGen = stepSimulation();
 
 		
 		// If framelimiter is off loop until time runs out or maxsteps has been reached
@@ -230,7 +252,7 @@ private:
 			window.clear();
 
 			// Draw simulation
-			simulationDisplay.draw(*m_simulation, &window, sf::RenderStates::Default);
+			simulationDisplay.draw(&window, sf::RenderStates::Default);
 
 			// Reset view
 			window.setView(view);

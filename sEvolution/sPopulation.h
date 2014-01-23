@@ -36,12 +36,17 @@ public:
 	}
 
 
+	// Sort based on fitness 
+	void sortPhenotypes()
+	{
+		sort(m_phenotypes.begin(), m_phenotypes.end(), sortPhenotypesFunction);
+	}
 
 	// Generates a new generation of genome
 	void newGeneration()
 	{
-		// Sort based on fitness 
-		sort(m_phenotypes.begin(), m_phenotypes.end(), sortPhenotypes);
+		
+		sortPhenotypes();
 		
 		int valid_breaders = 1;
 
@@ -176,7 +181,7 @@ private:
 	int m_generations;
 	vector<sGeneration> m_generationHistory;
 
-	static bool sortPhenotypes(sPhenotype *lifeform1, sPhenotype *lifeform2)
+	static bool sortPhenotypesFunction(sPhenotype *lifeform1, sPhenotype *lifeform2)
 	{
 		return lifeform1->getFitness() > lifeform2->getFitness();
 	}

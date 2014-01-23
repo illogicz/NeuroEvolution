@@ -1,5 +1,5 @@
 #include "sJoint.h"
-
+#include "sWorld.h"
 
 void sJoint::addToWorld(sWorld &world)
 {

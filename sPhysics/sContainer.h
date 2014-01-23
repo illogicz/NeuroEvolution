@@ -1,13 +1,11 @@
 #pragma once
 #include "sObject.h"
-//#include "sBody.h"
-//#include "sJoint.h"
-//#include "sWorld.h"
 #include <set>
 
 using std::set;
 
 class sWorld;
+class sBody;
 
 class sContainer : public sObject
 {
@@ -42,6 +40,14 @@ public:
 			(*i)->setCustomColor(color);
 		}
 	}
+	void setDebugDrawEnabled(bool debugDrawEnabled)
+	{
+		for(set<sObject*>::iterator i = m_children.begin(); i != m_children.end(); ++i){
+			(*i)->setDebugDrawEnabled(debugDrawEnabled);
+		}
+	}
+
+	b2AABB getAABB();
 
 protected:
 
@@ -76,3 +82,5 @@ protected:
 	//set<sBody*> m_bodies;
 
 };
+
+

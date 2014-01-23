@@ -1,5 +1,5 @@
 #include "sBody.h"
-
+#include "sWorld.h"
 
 void sBody::addToWorld(sWorld &world)
 {

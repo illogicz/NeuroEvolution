@@ -126,6 +126,7 @@
     <ClCompile Include="BoxSFML.cpp" />
     <ClCompile Include="sGraphics\sDebugDraw.cpp" />
     <ClCompile Include="sPhysics\sBody.cpp" />
+    <ClCompile Include="sPhysics\sContainer.cpp" />
     <ClCompile Include="sPhysics\sJoint.cpp" />
     <ClCompile Include="sPhysics\sWorld.cpp" />
     <ClCompile Include="sUtils\perlin.cpp" />
