@@ -6,6 +6,9 @@
 
 using std::vector;
 
+
+
+
 class Worm : public sPhenotype, public sContactListener
 {
 
@@ -13,15 +16,37 @@ public:
 
 	Worm()
 	{
+		// Body Shape
 		numSegments = 7;
 		length = 5.f;
 		thickness = 0.35f;
 		maxJointAngle = 1.3f;
-		muscleTorque = 10.1f;
+
+		// Movement Abilities
+		muscleTorque = 10.f;
 		muscleSpeed = 0.1f;
 		maxPulse = 0.2f;
+		lateralDamping = 0;
+
+		// Neural Net settings
+		maxNeuronBias = 0;
+		maxSynapseWeight = 3;
+
+		// Senses
+		pulseFeedback = false;
+		directFeedback = false;
+		directionSense = false;
+		bodySense = true;
 		contactGain = 0.1f;
+
+		// Death Conditions
+		killOnStarvation = false;
+		startEnery = 3000;
+		killOnLackOffProgress = true;
+		progressTimeout = 800;
+		progressAmount = 0.0001;
 		
+
 	}
 
 	~Worm()
@@ -36,6 +61,14 @@ public:
 		}
 	}
 
+	float eneryUsed;
+
+	bool killOnLackOffProgress;
+	int progressTimeout;
+	float startEnery;
+	bool killOnStarvation;
+	float progressAmount;
+	// Body
 	int numSegments;
 	float length;
 	float thickness;
@@ -44,8 +77,19 @@ public:
 	float muscleSpeed;
 	float maxPulse;
 	float contactGain;
+	float lateralDamping;
 
-protected:
+	// Brain
+	float maxNeuronBias;
+	float maxSynapseWeight;
+	bool pulseFeedback;
+	bool directFeedback;
+	bool bodySense;
+	bool directionSense;
+	b2Vec2 directionTarget;
+
+
+
 
 	virtual void init(sWorld &world)
 	{
@@ -85,8 +129,6 @@ protected:
 			add(joint);
 		}	
 
-		genome.addGene("scale", 0.7, 1.3);
-
 		//---------------------------------------------------------------------------------
 		// Genome Definitions
 		//---------------------------------------------------------------------------------
@@ -100,19 +142,35 @@ protected:
 		// Neural Network Definition
 		//---------------------------------------------------------------------------------
  
-		neuralNet.setInputCount(numSegments+2);
-		neuralNet.setOutputCount(numSegments);
+		int inputCount = numSegments;
+		int outputCount = numSegments - 1;
+		if(pulseFeedback){
+			inputCount += 2;
+			outputCount++;
+		}
+		if(bodySense){ // as opposed to touch sense
+			inputCount--;
+		}
+		if(directionSense){
+			inputCount++;
+		}
+		neuralNet.setInputCount(inputCount);
+		neuralNet.setOutputCount(outputCount);
 		neuralNet.setHiddenLayerCount(1);
-		//neuralNet.setHiddenLayerSize(0,numSegments+3);
-		neuralNet.setHiddenLayerSize(0,4);
-		neuralNet.setMaxBias(1);
-		neuralNet.setMaxWeight(1);
+		neuralNet.setHiddenLayerSize(0,inputCount);//inputCount);
+		neuralNet.setMaxBias(maxNeuronBias);
+		neuralNet.setMaxWeight(maxSynapseWeight);
 		neuralNet.create(genome);
-
 
 	}
 
+	float getEneryUsed()
+	{
+		return eneryUsed;
+	}
 
+
+protected:
 	//=====================================================================================
 	// sPhenotype implementation
 	//=====================================================================================
@@ -142,19 +200,30 @@ protected:
 			segment->zeroState();
 			segment->setPosition(x, 0);
 
-			float s = sin(maxJointAngle);
-			float c = cos(maxJointAngle);
+			float s = sin(maxJointAngle / 2);
+			float c = cos(maxJointAngle / 2);
 
 			segment->clearVerices();
 			segment->addVertex(-w, h1);
 			segment->addVertex( w, h2);
-			segment->addVertex( w + h2 * s, h2 * c);
-			segment->addVertex( w + h2 * s, -h2 * c);
+			if(i == numSegments - 1){
+				float l = sqrt(0.5) / (sqrt(0.5) + 0.5) * h2;
+				segment->addVertex( w + l, h2 - l);
+				segment->addVertex( w + l, -h2 + l);
+			} else {
+				segment->addVertex( w + h2 * s, h2 * c);
+				segment->addVertex( w + h2 * s, -h2 * c);
+			}
 			segment->addVertex( w,-h2);
 			segment->addVertex(-w,-h1);
-			segment->addVertex(-w - h1 * s, -h1 * c);
-			segment->addVertex(-w - h1 * s, h1 * c);
-
+			if(i == 0){
+				float l = sqrt(0.5) / (sqrt(0.5) + 0.5) * h1;
+				segment->addVertex(-w - l, -h1 + l);
+				segment->addVertex(-w - l, h1 - l);
+			} else {
+				segment->addVertex(-w - h1 * s, -h1 * c);
+				segment->addVertex(-w - h1 * s, h1 * c);
+			}
 		}
 
 		for(int i = 0; i < numSegments-1; i++){
@@ -163,17 +232,20 @@ protected:
 			joint->setAnchor(x,0);
 			joint->setMotorSpeed(0);
 		}
-
 		
+
 		neuralNet.prepare();
+
 
 		// Initialise some values for simulation
 		fitnessModifier = 1;
 		progressPosition = getFitness();
 		progressDelay = 0;
 		deferDeath = false;
-		beatPosition = 0.f;
-		maxHeight =  0.f;
+		pulsePosition = 0.f;
+		feedBackValue = 0.f;
+		eneryUsed = 0.f;
+
 		if(isElite()){
 			setCustomColor(b2Color(0,1,1));
 		} else {
@@ -196,27 +268,6 @@ protected:
 	// Phenotype Fitness Function
 	//---------------------------------------------------------------------------------
 	
-	float maxHeight;
-
-	virtual float getFitness() 
-	{
-		if(!isInWorld()) return 0;
-		b2AABB aabb = getAABB();
-		//if(isLeader()) printf("%f, %f   %f, %f \n", aabb.lowerBound.x, aabb.lowerBound.y, aabb.upperBound.x, aabb.upperBound.y);
-
-		float distance = getPosition().x;
-
-		float height = -(aabb.lowerBound.y);
-		if(height > maxHeight) maxHeight = height;
-		//if(isLeader())printf("%f \n", distance);
-		//if(distance < 0)fitnessModifier = 0;
-		float speed = abs(distance) / float(lifeTime + 1) + 0.001f;
-		//return float(pow(2, fitnessModifier * distance * speed * 0.1f)); //payloadMass;// / wheelMass;
-		return fitnessModifier * distance * speed; //payloadMass;// / wheelMass;
-		//return maxHeight;
-	}
-
-
 	// Called before world physics is advanced
 	void step()
 	{
@@ -229,6 +280,18 @@ protected:
 		}
 		
 
+		for(int i = 0; i < numSegments-1; i++){
+			eneryUsed += abs(m_joints[i]->getMotorTorque());
+		}
+		for(int i = 0; i < numSegments; i++){
+			m_segments[i]->applyLateralDamping(lateralDamping);
+		}
+		if(killOnStarvation && eneryUsed > startEnery){
+			printf("died from starvation \n");
+			die();
+			return;
+		}
+
 		//---------------------------------------------------------------------------------
 		// Neural Net behaviour
 		//---------------------------------------------------------------------------------
@@ -236,29 +299,50 @@ protected:
 
 		// INPUT NORMALIZATION
 
-		int index = 0;
-		for(int i = 0; i < numSegments; i++){
-			//neuralNet.setInput(i, m_segmentContact[i] ? 1.f : -1.f);
-			neuralNet.interpolateInput(i, m_segmentContact[i] ? 1.f : -1.f, contactGain);
+		int input_index = 0;
+		if(!bodySense){
+			for(int i = 0; i < numSegments; i++){
+				//neuralNet.setInput(i, m_segmentContact[i] ? 1.f : -1.f);
+				neuralNet.interpolateInput(input_index++, m_segmentContact[i] ? 1.f : -1.f, contactGain);
+			}
+		} else {
+			for(int i = 0; i < numSegments - 1; i++){
+				neuralNet.setInput(input_index++, m_joints[i]->getAngle());
+			}
 		}
-		neuralNet.setInput(numSegments, sin(beatPosition));
-		neuralNet.setInput(numSegments+1, cos(beatPosition));
-		//
+		if(pulseFeedback){
+			neuralNet.setInput(input_index++, sin(pulsePosition));
+			neuralNet.setInput(input_index++, cos(pulsePosition));
+		}
+		if(directionSense){
 
+			WormSegment &segment = *m_segments[m_segments.size()-1];
+			float32 a = segment.getAngle();
+			b2Vec2 td = directionTarget - segment.getPosition();
+			float32 ta = atan2(td.y, td.x);
+			float32 da = ta - a;
+			while(da > b2_pi)da -= b2_pi * 2;
+			while(da < -b2_pi)da += b2_pi * 2;
+
+			neuralNet.setInput(input_index++, da);
+
+		}
 	
-		// Run neural net ////////////////////////////////
+		// Run neural net ////////////////////////////////////////////
 		neuralNet.run();
-		//////////////////////////////////////////////////
+
 
 
 		// OUTPUT
+		int output_index = 0;
 		for(int i = 0; i < numSegments - 1; i++){
-			float o = neuralNet.getOutput(i) * maxJointAngle;
+			float o = neuralNet.getOutput(output_index++);
 			float a = m_joints[i]->getAngle();
-			m_joints[i]->setMotorSpeed((o - a) / m_world->timeStep * muscleSpeed);
-			//m_joints[i]->setMotorSpeed(o * 0.5f);
+			m_joints[i]->setMotorSpeed((o * maxJointAngle - a) / m_world->timeStep * muscleSpeed);
 		}
-		beatPosition += neuralNet.getOutput(numSegments - 1) * maxPulse;
+		if(pulseFeedback){
+			pulsePosition += neuralNet.getOutput(output_index++) * maxPulse;
+		}	
 
 
 		//---------------------------------------------------------------------------------
@@ -267,16 +351,17 @@ protected:
 
 		
 		// Kill it off if it doesn't make progress for some time
-		if(getFitness() > progressPosition + 0.001f){
-			progressDelay = 0;
-			progressPosition = getFitness();
-		} else {
-			if(++progressDelay > progressTimeout){
-				die();
-				return;
+		if(killOnLackOffProgress){
+			if(getFitness() > progressPosition + progressAmount){
+				progressDelay = 0;
+				progressPosition = getFitness();
+			} else {
+				if(++progressDelay > progressTimeout){
+					die();
+					return;
+				}
 			}
 		}
-
 	}
 
 
@@ -300,13 +385,12 @@ protected:
 
 protected:
 
-	
-	static const int progressTimeout = 600;
 	int progressDelay;
 	float progressPosition;
 	float fitnessModifier;
 	bool deferDeath;
-	float beatPosition;
+	float pulsePosition;
+	float feedBackValue;
 
 	void onBeginContact(sContactPair contactPair)
 	{

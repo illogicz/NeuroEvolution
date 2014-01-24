@@ -12,12 +12,14 @@ public:
 	
 	sSimulation()
 	{
+		world.setGravity(b2Vec2(0,10));
 		elites = 1;
 		mutationRate = 0.01f;
 		selectionBias = 1.5f;
 		breadingPoolFraction = 1.0;
 		renderScale = 25;
 		speedUp = false;
+		staticView = false;
 	}
 
 	int elites;
@@ -26,18 +28,24 @@ public:
 	float breadingPoolFraction;
 	bool speedUp;
 	float renderScale;
+	bool staticView;
 
 	sPhenotype *leader;
 	sPhenotype *liveLeader;
 	sPhenotype *trailer;
 	sPhenotype *elite;
 
+	void setGravity(float x, float y)
+	{
+		world.setGravity(b2Vec2(x, y));
+	}
+
 protected:
 
 	
 	void init()
 	{
-		world.setGravity(b2Vec2(0,10));
+		
 		initPhenotypes();
 		resetSimulation();
 		population.setElites(elites);
@@ -89,22 +97,19 @@ protected:
 		float bestLiveFitness = -100;
 		float worstFitness = 1000000.f;
 		sPhenotype *lastLeader = leader;
+		leader = population[0];
 		//leader->setIsLeader(false);
 		for(int i=0;i <population.size(); i++){
-			float fitness = population[i]->getFitness();
-			if(fitness > bestLiveFitness && population[i]->alive){
-				bestLiveFitness = fitness;
-				liveLeader = population[i];
-			}
-			if(fitness > bestFitness){
-				bestFitness = fitness;
-				leader = population[i];
-			}
 			if(population[i]->alive){
-				if(fitness < worstFitness){
-					worstFitness = fitness;
-					trailer = population[i];
-				}
+				liveLeader = population[i];
+				break;
+			}
+		}
+		int i = population.size();
+		while(i--){
+			if(population[i]->alive){
+				trailer = population[i];
+				break;
 			}
 		}
 		if(leader != lastLeader){
@@ -113,6 +118,7 @@ protected:
 			leader->setIsLeader(true);
 		}
 	}
+
 
 
 	virtual void initPhenotypes() = 0;

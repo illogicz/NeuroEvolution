@@ -20,7 +20,7 @@ public:
 
 	sPopulation()
 	{
-		minBreaders = 3;
+		minBreaders = 2;
 		m_generations = 0;
 		m_selectionBias = 2.f;
 		m_mutationRate = 0.01f;
@@ -61,7 +61,7 @@ public:
 		m_phenotypes[0]->setIsElite(m_elites > 0);
 		for(unsigned int i = 1; i < m_phenotypes.size(); i++){
 			m_phenotypes[i]->setIsElite(m_elites > i);
-			if(m_phenotypes[i]->getFitness() > 0){
+			if(m_phenotypes[i]->getFitness() != 0){
 				valid_breaders++;
 			}
 			generation.averageFitness += m_phenotypes[i]->getFitness();

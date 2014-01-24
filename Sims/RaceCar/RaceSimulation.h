@@ -2,6 +2,28 @@
 #include "../../sEvolution/sSimulation.h"
 #include "../../sUtils/perlin.h"
 
+
+
+class sRaceFitness : public sFitnessFunction
+{
+public: 
+	sRaceFitness() : useSpeed(true){}
+	bool useSpeed;
+	 float operator()(sPhenotype *phenotype)
+	{
+		float distance = phenotype->getPosition().x;
+		float energy = ((Worm*)phenotype)->getEneryUsed() + 2;
+		float speed = abs(distance) / float(phenotype->lifeTime + 1);
+
+		if(useSpeed){
+			//return distance * speed;
+			return 100.f * speed * distance;
+		} else {
+			return distance;
+		}
+	}
+};
+
 template <typename PhenotypeClass>
 class RaceSimulation : public sSimulation
 {
@@ -19,7 +41,11 @@ public:
 		randomizeEnvironment = true;
 		minRoughness = 4;
 		maxRoughness = 4;
-
+		groundSegmentSize = 0.5f;
+		groundType = GroundType::PerlinNoise;
+		perlinOctaves = 5;
+		perlinFrequency = 6;
+		groundFrequency = 2.f;
 
 		ground.vertexSplitBaseWeight = 1.f;
 		ground.doubleSolveWeight = 2.f;
@@ -28,6 +54,8 @@ public:
 		ground.dotWeight = 1.f;
 
 		world.setGroundBody(&ground);
+
+		fitnessFunction.useSpeed = false;
 
 	}
 
@@ -38,10 +66,7 @@ public:
 		}
 	}
 
-	void setPhenotype()
-	{
 
-	}
 
 	// Simulation Settings
 	float worldWidth;
@@ -49,13 +74,17 @@ public:
 	float worldOffset_y;
 	int populationSize;
 	bool randomizeEnvironment;
+
+	static enum GroundType	{ PerlinNoise, SinWaves };
+	GroundType groundType;
 	float minRoughness;
 	float maxRoughness;
-
+	float perlinFrequency;
+	float perlinOctaves;
 	float groundFrequency;
-	float groundOctaves;
+	float groundSegmentSize;
 
-
+	sRaceFitness fitnessFunction;
 
 protected:
 
@@ -63,6 +92,7 @@ protected:
 	{
 		for(int i = 0; i < populationSize; i++){
 			sPhenotype *phenotype = static_cast<sPhenotype*>(new PhenotypeClass);
+			phenotype->fitnessFunction = &fitnessFunction;
 			phenotype->init(world);
 			population.addPhenotype(phenotype);
 			//world.addContactListener(car, &car->chassis);
@@ -83,13 +113,15 @@ protected:
 	{
 		for(int i = 0; i < population.size(); i++){
 			if(population[i]->getPosition().x > worldWidth - worldOffset){
-				population[i]->die();
-				return true;
+				//population[i]->die();
+				//return true;
 			}
 		}
 		
 		// Speed up simulation if leader is not alive
-		if(leader != nullptr)speedUp = !leader->alive;
+		//if(leader != nullptr)speedUp = !leader->alive;
+
+
 
 		for(int i = 0; i < population.size(); i++){
 			if(population[i]->alive) return false;
@@ -110,7 +142,7 @@ protected:
 			ground.resetShape();
 		}
 
-		Perlin perlin(5, 8, 0.5, sRandom::getInt(0,100000));
+		Perlin perlin(perlinOctaves, perlinFrequency, 0.5, sRandom::getInt(0,100000));
 
 
 		randOffset1 = sRandom::getFloat(0,worldWidth);
@@ -130,7 +162,7 @@ protected:
 		ground.setPosition(3.f - worldOffset, worldOffset_y - start_h);
 		int index = 0;
 		float rampup = 50;
-		for(float32 x = worldOffset; x <= worldWidth; x += 0.5f){
+		for(float32 x = worldOffset; x <= worldWidth; x += groundSegmentSize){
 
 			float y = getHeightValue(x, perlin) * h;
 			if(x < rampup){
@@ -148,20 +180,14 @@ protected:
 	}
 
 
-
-
-
-
-
-
 private:
 
 	// returns a value between 0 - 1;
 	float getHeightValue(float x, Perlin &perlin)
 	{
-		x *= 2;
+		x *= groundFrequency;
 		float v;
-		if(true){
+		if(groundType == GroundType::PerlinNoise){
 			v = perlin.Get(x / worldWidth, 0);
 		} else {
 			float w1 = sin(randOffset1 + x / worldWidth * 59.f) * 0.25f;
@@ -169,10 +195,7 @@ private:
 			float w3 = sin(randOffset3 + x / worldWidth * 851.f) * 0.05f;
 			v = w1 + w2 + w3;
 		}
-		//if(v < 0) return 0.5 - v * v * 2;
-		//return v * v * 2 + 0.5;
 		return 0.5f + v;
-		//return 0.1f;
 	}
 	float randOffset1, randOffset2, randOffset3;
 

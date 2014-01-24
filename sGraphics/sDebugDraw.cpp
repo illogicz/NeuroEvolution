@@ -2,7 +2,7 @@
 
 
 
-void sDebugDraw::DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color& color)
+void sDebugDraw::DrawShape(b2Fixture* fixture, const b2Transform& xf, sf::Color& color)
 {
 	switch (fixture->GetType())
 	{
@@ -67,6 +67,10 @@ void sDebugDraw::DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Co
 
 void sDebugDraw::DrawJoint(b2Joint* joint)
 {
+
+	sJoint *sj = (sJoint*)joint->GetUserData();
+	if(sj->getAlpha() == 0) return;
+
 	b2Body* bodyA = joint->GetBodyA();
 	b2Body* bodyB = joint->GetBodyB();
 	const b2Transform& xf1 = bodyA->GetTransform();
@@ -76,7 +80,9 @@ void sDebugDraw::DrawJoint(b2Joint* joint)
 	b2Vec2 p1 = joint->GetAnchorA();
 	b2Vec2 p2 = joint->GetAnchorB();
 
-	b2Color color(0.5f, 0.8f, 0.8f);
+
+
+	sf::Color color(127, 204, 204, sj->getAlpha() * 255);
 	b2WheelJoint *wj;
 	b2Vec2 la;
 
@@ -149,34 +155,36 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 			sBody *sb = (sBody*)b->GetUserData();
 
 			if(!sb->getDebugDrawEnabled())continue;
+			
+			float a = sb->getAlpha() * 255;
+			if(a == 0) continue;
 
 			b2Color cc = sb->getCustomColor();
-
 			if(cc.b || cc.r || cc.g){
 
-				DrawShape(f, xf, cc);
+				DrawShape(f, xf, sf::Color(cc.r, cc.g, cc.b, a));
 
 			} else {
 
 				if (b->IsActive() == false)
 				{
-					DrawShape(f, xf, b2Color(0.5f, 0.5f, 0.3f));
+					DrawShape(f, xf, sf::Color(127, 127, 76, a));
 				}
 				else if (b->GetType() == b2_staticBody)
 				{
-					DrawShape(f, xf, b2Color(0.5f, 0.9f, 0.5f));
+					DrawShape(f, xf, sf::Color(127, 230, 127, a));
 				}
 				else if (b->GetType() == b2_kinematicBody)
 				{
-					DrawShape(f, xf, b2Color(0.5f, 0.5f, 0.9f));
+					DrawShape(f, xf, sf::Color(127, 127, 230, a));
 				}
 				else if (b->IsAwake() == false)
 				{
-					DrawShape(f, xf, b2Color(0.6f, 0.6f, 0.6f));
+					DrawShape(f, xf, sf::Color(153, 153, 153, a));
 				}
 				else
 				{
-					DrawShape(f, xf, b2Color(0.9f, 0.7f, 0.7f));
+					DrawShape(f, xf, sf::Color(230, 153, 153, a));
 				}
 			}
 		}
@@ -260,7 +268,7 @@ void sDebugDraw::allocate(sf::VertexArray &va, int i, int n)
 	}
 }
 
-void sDebugDraw::addTriangle(const b2Vec2 &v1, const b2Vec2 &v2, const b2Vec2 &v3, const sf::Color &c)
+void sDebugDraw::addTriangle(const b2Vec2 &v1, const b2Vec2 &v2, const b2Vec2 &v3, sf::Color &c)
 {
 	if(triangles_index + 3 > triangles.getVertexCount()){
 		triangles.resize(triangles_index + 3);
@@ -278,7 +286,7 @@ void sDebugDraw::addTriangle(const b2Vec2 &v1, const b2Vec2 &v2, const b2Vec2 &v
 	triangles[triangles_index].position.y = v3.y;
 	triangles_index++;
 }
-void sDebugDraw::addLine(const b2Vec2 &v1, const b2Vec2 &v2, const sf::Color &c)
+void sDebugDraw::addLine(const b2Vec2 &v1, const b2Vec2 &v2, sf::Color &c)
 {
 	if(lines_index + 2 > lines.getVertexCount()){
 		lines.resize(lines_index + 2);
@@ -293,76 +301,76 @@ void sDebugDraw::addLine(const b2Vec2 &v1, const b2Vec2 &v2, const sf::Color &c)
 	lines_index++;
 }
 
-void sDebugDraw::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color)
+void sDebugDraw::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, sf::Color& color)
 {
 	allocate(lines, lines_index, (vertexCount-1)*2);
-	sf::Color c = sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF);
 	for(int i=0; i < vertexCount-1; i++){
-		addLine(vertices[i], vertices[i+1], c);
+		addLine(vertices[i], vertices[i+1], color);
 	}
 }
 
-void sDebugDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color)
+void sDebugDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, sf::Color& color)
 {
-	sf::Color c = sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0x60);
+	float a = color.a;
+	color.a *= 0.4;
 
 	allocate(triangles, triangles_index, (vertexCount-2)*3);
 	for(int i=1; i < vertexCount-1; i++){
-		addTriangle(vertices[0], vertices[i], vertices[i+1], c);
+		addTriangle(vertices[0], vertices[i], vertices[i+1], color);
 	}
 
 	allocate(lines, lines_index, vertexCount*2);
-
-	c.a = 0xFF;
+	color.a = a;
 	for(int i=0; i < vertexCount; i++){
-		addLine(vertices[i], vertices[(i+1) % vertexCount], c);
+		addLine(vertices[i], vertices[(i+1) % vertexCount], color);
 	}
 
 }
 
-void sDebugDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color)
+void sDebugDraw::DrawCircle(const b2Vec2& center, float32 radius, sf::Color& color)
 {
 	sf::CircleShape circle(radius, 20);
 	circle.setPosition(center.x, center.y);
-	circle.setFillColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0));
-	circle.setOutlineColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF));
+	circle.setOutlineColor(color);
+	color.a = 0;
+	circle.setFillColor(color);
 	m_target->draw(circle, states);
 }
 
-void sDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color)
+void sDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, sf::Color& color)
 {
-
-
-	sf::CircleShape circle(radius, 20);
-	circle.setPosition(center.x-radius, center.y-radius);
-	circle.setFillColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0x60));
-	circle.setOutlineThickness(1.f/50);
-	circle.setOutlineColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF));
-	m_target->draw(circle, states);
 
 	allocate(lines, lines_index, 2);
 	lines[lines_index].position.x = center.x;
 	lines[lines_index].position.y = center.y;
-	lines[lines_index].color = sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF);
+	lines[lines_index].color = color;
 	lines_index++;
 	lines[lines_index].position.x = center.x + axis.x * radius;
 	lines[lines_index].position.y = center.y + axis.y * radius;
-	lines[lines_index].color = sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF);
+	lines[lines_index].color = color;
 	lines_index++;
+
+	sf::CircleShape circle(radius, 20);
+	circle.setPosition(center.x-radius, center.y-radius);
+	circle.setOutlineThickness(1.f/50);
+	circle.setOutlineColor(color);
+	color.a *= 0.4;
+	circle.setFillColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0x60));
+	m_target->draw(circle, states);
 
 }
 
-void sDebugDraw::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color)
+void sDebugDraw::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, sf::Color& color)
 {
-	sf::Color c = sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF);
-	addLine(p1, p2, c);
+	//sf::Color c = sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0xFF);
+	addLine(p1, p2, color);
 }
 
 void sDebugDraw::DrawTransform(const b2Transform& xf)
 {
 }
 
-void sDebugDraw::DrawPoint(const b2Vec2& p, float32 size, const b2Color& color)
+void sDebugDraw::DrawPoint(const b2Vec2& p, float32 size, sf::Color& color)
 {
 }
 
@@ -374,6 +382,6 @@ void sDebugDraw::DrawString(const b2Vec2& p, const char* string, ...)
 {
 }
 
-void sDebugDraw::DrawAABB(b2AABB* aabb, const b2Color& color)
+void sDebugDraw::DrawAABB(b2AABB* aabb, sf::Color& color)
 {
 }

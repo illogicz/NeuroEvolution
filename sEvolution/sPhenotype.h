@@ -3,7 +3,14 @@
 #include "sGenome.h"
 #include "../sNeuralNet/sNeuralNet.h"
 
+
+class sPhenotype;
+
 // Virtual class
+class sFitnessFunction
+{
+	public: virtual float operator()(sPhenotype *phenotype) = 0;
+};
 
 class sPhenotype : public sContainer, public sStepListener
 {
@@ -13,11 +20,14 @@ public:
 	virtual void init(sWorld &world) = 0;
 	virtual void build(sWorld &world) = 0;
 	virtual void destroy(sWorld &world) = 0;
-	virtual float getFitness() = 0;
 	virtual void step() = 0;
 	virtual b2Vec2 getPosition() = 0;
 	virtual b2Vec2 getVelocity() = 0;
-	
+	virtual float getFitness()
+	{
+	    return (*fitnessFunction)(this);		
+	};	
+
 	sGenome genome;
 	int lifeTime;
 	bool alive;
@@ -66,6 +76,7 @@ public:
 	// Brain
 	sNeuralNet neuralNet;
 
+	sFitnessFunction *fitnessFunction;
 
 protected:
 
@@ -86,3 +97,4 @@ protected:
 	}
 
 };
+

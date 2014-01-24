@@ -15,27 +15,49 @@ public:
 		m_debugDraw.SetFlags(sDebugDraw::e_shapeBit | sDebugDraw::e_jointBit);
 		setSize(640, 480);
 		m_focusLeader = true;
+		m_focusChanged = false;
+		m_focusRank = 0;
+		m_lockPosition = false;
+		m_lockFocus = false;
+		setCenter(0,0);
 	}
 
 
 	void draw(sf::RenderTarget *target, sf::RenderStates states)
 	{
+
 		float scale = m_simulation->renderScale;
+		if(!m_simulation->staticView){
+
+			if(!m_lockPosition){
+
+				b2Vec2 wp = b2Vec2(float(m_view.getCenter().x) / scale, float(m_view.getCenter().y) / scale);
+				//b2Vec2 p = m_focusLeader ? m_simulation->leader->getPosition() : m_simulation->trailer->getPosition();
+				b2Vec2 p = m_simulation->population[m_focusRank]->getPosition();
+				p.y = wp.y + 0.1f * (p.y - wp.y);
+				float32 dx = p.x - wp.x;// + simulation.leader->getVelocity().x / scale;
+				//if(abs(dx) > 5) dx *= abs(dx) / 5;
+				float32 f = (abs(dx)+10.f) / 100;
+				f = f > 1 ? 1 : f;
+				p.x = wp.x + f * dx;
+
+				setCenter(p.x * scale, p.y * scale);	
+			}
+
+			if(m_focusChanged || !m_lockFocus){
 
 
-		if(!m_lockPosition){
+				for(int i = 0; i < m_simulation->population.size(); i++){
+					float a = 1.f - abs(m_focusRank - i) / 5.f;
+					if(a < 0.05)a = 0.05;
+					m_simulation->population[i]->setAlpha(a);
+				}
+				m_focusChanged = false;
 
-			b2Vec2 wp = b2Vec2(float(m_view.getCenter().x) / scale, float(m_view.getCenter().y) / scale);
-			b2Vec2 p = m_focusLeader ? m_simulation->leader->getPosition() : m_simulation->trailer->getPosition();
-			p.y = wp.y + 0.1f * (p.y - wp.y);
-			float32 dx = p.x - wp.x;// + simulation.leader->getVelocity().x / scale;
-			//if(abs(dx) > 5) dx *= abs(dx) / 5;
-			float32 f = (abs(dx)+50) / 100;
-			f = f > 1 ? 1 : f;
-			p.x = wp.x + f * dx;
-
-			setCenter(p.x * scale, p.y * scale);	
+			}
 		}
+
+
 
 		sf::Transform trans;
 		trans.scale(scale, scale);	
@@ -67,16 +89,45 @@ public:
 	//	return m_view.getCenter();
 	//}
 
-	void toggleFocus()
+	void setFocusRank(int rank)
 	{
-		m_focusLeader = !m_focusLeader;
+		if(rank < 0)rank = 0;
+		if(rank >= m_simulation->population.size()) 
+			rank = m_simulation->population.size() - 1;
+		if(m_focusRank != rank){
+			m_focusRank = rank;
+			m_focusChanged = true;
+		}
 	}
+	void focusFirst()
+	{
+		setFocusRank(0);
+	}
+	void focusLast()
+	{
+		setFocusRank(m_simulation->population.size() - 1);
+	}
+	void focusNext()
+	{
+		setFocusRank(m_focusRank - 1);
+	}
+	void focusPrev()
+	{
+		setFocusRank(m_focusRank + 1);
+	}
+	void toggleLockFocus()
+	{
+		m_lockFocus = !m_lockFocus;
+	}
+
+
 
 	void setSimulation(sSimulation *simulation)
 	{
 		m_simulation = simulation;
 		m_mouseJoint.setBodyA(simulation->world.getGroundBody());
 		m_simulation->world.add(&m_mouseJoint);
+		setFocusRank(0);
 	}
 
 
@@ -128,6 +179,9 @@ private:
 	sMouseJoint m_mouseJoint;
 	sSimulation *m_simulation;
 	bool m_focusLeader;
+	int m_focusRank;
+	bool m_focusChanged;
+	bool m_lockFocus;
 	bool m_lockPosition;
 	sf::View m_view;
 	sDebugDraw m_debugDraw;

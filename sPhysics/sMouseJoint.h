@@ -70,7 +70,8 @@ public:
 			sJoint::_removeFromWorld(*m_world);
 			m_draggingBody = false;
 			return true;
-		}		
+		}
+		//m_inWorld = false;
 		m_draggingBody = false;
 		return false;
 	}
@@ -89,15 +90,16 @@ public:
 protected:
 
 	// 
-	void addToWorld(sWorld &world)
+	virtual void addToWorld(sWorld &world)
 	{
+		//m_world = &world;
 		// Skip call sJoint's method, we will do this when the joint actually gets created
 		sObject::addToWorld(world);
 	}
-	void removeFromWorld(sWorld &world)
+	virtual void removeFromWorld(sWorld &world)
 	{
 		// Skip call sJoint's method, we will do this when the joint actually gets removed
-		sObject::removeFromWorld(world);
+		//sObject::removeFromWorld(world);
 	}
 
 	bool m_draggingBody;

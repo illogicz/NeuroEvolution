@@ -1,10 +1,35 @@
 #include "Sims\RaceCar\Car.h"
 #include "Sims\RaceCar\Worm.h"
 #include "Sims\RaceCar\RaceSimulation.h"
+#include "Sims\RaceCar\SwarmSimulation.h"
 #include "sGraphics\sSimulationWindow.h"
 
 
+void runSwarmSimulation()
+{
+	sRandom::seed(124455);
 
+
+	SwarmSimulation simulation;
+	sSimulationWindow window;
+
+
+	// Population and selection settings
+	simulation.populationSize = 50;
+	simulation.elites = 0;
+	simulation.mutationRate = 0.007f;
+	simulation.selectionBias = 2.f;
+	simulation.breadingPoolFraction = 0.5f;
+	
+
+	//simulation.groundType = RaceSimulation<Worm>::GroundType::SinWaves;
+
+	// Display
+	simulation.renderScale = 13;
+	window.setSimulation(&simulation);
+	window.start();
+
+}
 
 void runWormSimulation()
 {
@@ -21,14 +46,19 @@ void runWormSimulation()
 	simulation.mutationRate = 0.007f;
 	simulation.selectionBias = 2.f;
 	simulation.breadingPoolFraction = 0.9f;
-
+	simulation.setGravity(0,0);
+	//simulation.fit
 
 	// Ground
-	simulation.worldOffset_y = 0.5f;
+	simulation.worldOffset_y = 11.f;
 	simulation.maxRoughness = 0.1f;
 	simulation.minRoughness = 0.1f;
-	simulation.randomizeEnvironment = false;
-	simulation.worldWidth = 50;
+	simulation.randomizeEnvironment = true;
+	simulation.worldWidth = 200;
+	simulation.groundSegmentSize = 0.2f;
+	simulation.groundFrequency = 2.1f;
+
+	//simulation.groundType = RaceSimulation<Worm>::GroundType::SinWaves;
 
 	// Display
 	simulation.renderScale = 60;
@@ -69,7 +99,7 @@ void runCarSimulation()
 
 int main()
 {
-	
+	runSwarmSimulation();
 	runWormSimulation();
 	runCarSimulation();
 	

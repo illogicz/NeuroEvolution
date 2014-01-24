@@ -52,7 +52,7 @@ public:
 		return m_customColor;
 	}
 
-	void setAlpha(float alpha)
+	virtual void setAlpha(float alpha)
 	{
 		m_alpha = alpha;
 	}

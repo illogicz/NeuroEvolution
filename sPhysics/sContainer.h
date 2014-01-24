@@ -49,6 +49,13 @@ public:
 
 	b2AABB getAABB();
 
+	virtual void setAlpha(float alpha)
+	{
+		for(set<sObject*>::iterator i = m_children.begin(); i != m_children.end(); ++i){
+			(*i)->setAlpha(alpha);
+		}
+	}
+
 protected:
 
 

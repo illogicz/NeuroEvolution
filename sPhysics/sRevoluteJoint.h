@@ -41,6 +41,16 @@ public:
 		_jointDef.maxMotorTorque = maxMotorTorque;
 		if(m_inWorld)_joint->SetMaxMotorTorque(maxMotorTorque);
 	}
+	float getMaxMotorTorque()
+	{
+		return _jointDef.maxMotorTorque;
+	}
+
+	float getMotorTorque()
+	{
+		if(m_inWorld)return _joint->GetMotorTorque(1);
+		return 0;
+	}
 
 	void setMotorSpeed(float32 motorSpeed)
 	{

@@ -1,7 +1,7 @@
 #include "sSimulationDisplay.h"
 #include "sGeneGraph.h"
 #include "sFitnessGraph.h"
-
+#include <Windows.h>
 
 class sSimulationWindow
 {
@@ -32,6 +32,14 @@ public:
 
 
 		fitnessGraph.setPosition(2,2);
+
+		//generationText.
+
+
+		if (!font.loadFromFile("consola.ttf")){
+			printf("error loading font \n");
+			return;
+		}
 	}
 
 	void setSize(int width, int height)
@@ -65,6 +73,8 @@ public:
 
 private:
 
+	
+
 	// Settings
 	sSimulation *m_simulation;
 	float width;
@@ -80,12 +90,11 @@ private:
 	sf::RenderWindow window;
 	sf::View view;
 	sf::RenderStates renderState;
-	
+	sf::Font font;
+
 	// Graphs
 	sFitnessGraph fitnessGraph;
 	vector<sGeneGraph> geneGraphs;	
-
-
 
 	void plotGeneGraphs(vector<sGeneGraph> &geneGraphs)
 	{
@@ -123,6 +132,48 @@ private:
 		for(unsigned int i = 0; i < geneGraphs.size(); i++){
 			window.draw(geneGraphs[i]);
 		}
+	}
+
+
+	void drawUI()
+	{
+			// Draw Gene graphs
+			//drawGeneGraphs(window, geneGraphs);
+				
+			// Draw Fitness Graph
+		window.draw(fitnessGraph);
+
+		drawText("Generation: " + to_string(m_simulation->population.getGenerationCount() + 1), 10,44);
+		drawText("Population: " + to_string(m_simulation->population.size()), 10,62);
+
+	}
+
+	bool hasFocus()
+	{
+
+		HWND handle = window.getSystemHandle();
+		bool one = handle == GetFocus();
+		bool two = handle == GetForegroundWindow();
+
+		if(one != two) //strange 'half-focus': window is in front but you can't click anything - so we fix it
+		{
+			SetFocus(handle);
+			SetForegroundWindow(handle);
+		}
+
+		return one && two;
+	}
+
+	void drawText(string text, float x, float y)
+	{
+
+		sf::Text t;
+		t.setFont(font);
+		t.setCharacterSize(18);
+		t.setPosition(x, y);
+		t.setColor(sf::Color::White);
+		t.setString(text);
+		window.draw(t);
 	}
 
 
@@ -192,8 +243,11 @@ private:
 				} else if(e.key.code == sf::Keyboard::R){
 					render_flag = !render_flag;
 
-				} else if(e.key.code == sf::Keyboard::T){
-					simulationDisplay.toggleFocus();
+
+				} else if(e.key.code == sf::Keyboard::Home){
+					simulationDisplay.focusFirst();
+				} else if(e.key.code == sf::Keyboard::End){
+					simulationDisplay.focusLast();
 				}
 			} else if(e.type == sf::Event::MouseButtonPressed){ 
 
@@ -213,6 +267,14 @@ private:
 
 				simulationDisplay.mouseMoved(mousePosition);
 
+			}
+		}
+
+		if(hasFocus()){
+			if(sf::Keyboard::isKeyPressed(sf::Keyboard::PageUp)){
+				simulationDisplay.focusNext();
+			} else if(sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown)){
+				simulationDisplay.focusPrev();
 			}
 		}
 
@@ -257,11 +319,8 @@ private:
 			// Reset view
 			window.setView(view);
 
-			// Draw Gene graphs
-			//drawGeneGraphs(window, geneGraphs);
-				
-			// Draw Fitness Graph
-			window.draw(fitnessGraph);
+			
+			drawUI();
 
 			// Display Contents
 			window.display();

@@ -91,12 +91,14 @@
     <ClInclude Include="sGraphics\sDebugDraw.h" />
     <ClInclude Include="sEvolution\sGene.h" />
     <ClInclude Include="sEvolution\sGenome.h" />
+    <ClInclude Include="sGraphics\sNeurnalNetDisplay.h" />
     <ClInclude Include="sGraphics\sSimulationDisplay.h" />
     <ClInclude Include="sGraphics\sSimulationWindow.h" />
     <ClInclude Include="Sims\RaceCar\Car.h" />
     <ClInclude Include="sGraphics\sFitnessGraph.h" />
     <ClInclude Include="sGraphics\sGeneGraph.h" />
     <ClInclude Include="Sims\RaceCar\RaceSimulation.h" />
+    <ClInclude Include="Sims\RaceCar\SwarmSimulation.h" />
     <ClInclude Include="Sims\RaceCar\Worm.h" />
     <ClInclude Include="Sims\RaceCar\WormSegment.h" />
     <ClInclude Include="sNeuralNet\sNeuralNet.h" />
