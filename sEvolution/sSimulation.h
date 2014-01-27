@@ -22,6 +22,8 @@ public:
 		staticView = false;
 	}
 
+	sPopulation population;
+
 	int elites;
 	float mutationRate;
 	float selectionBias;
@@ -129,7 +131,6 @@ protected:
 
 	int simFrame;
 	b2Vec2 renderCenter;
-	sPopulation population;
 	sWorld world;
 
 };

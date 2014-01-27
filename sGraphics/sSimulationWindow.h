@@ -1,6 +1,8 @@
 #include "sSimulationDisplay.h"
 #include "sGeneGraph.h"
 #include "sFitnessGraph.h"
+#include "sPopulationGeneticsDisplay.h"
+#include "sNeuralNetDisplay.h"
 #include <Windows.h>
 
 class sSimulationWindow
@@ -11,12 +13,14 @@ public:
 	sSimulationWindow()
 	{
 
-		width = 800;
-		height = 600;
+		width = 1280;
+		height = 720;
 		frameRate = 30;
 		frameLimiter = true;
 		render_flag = true;
 		m_mouseDown = false;
+		m_message = "";
+		messageTimeout = 0;
 
 		settings.antialiasingLevel = 8;
 		window.create(sf::VideoMode(unsigned int(width), unsigned int(height)), "", sf::Style::Default, settings);
@@ -24,17 +28,8 @@ public:
 		window.setFramerateLimit(frameRate);
 		//window.setVerticalSyncEnabled(true);
 
-
-		simulationDisplay.setSize(width, height);
-
-		view.setSize(width, height);
-		view.setCenter(width/2, height/2);
-
-
-		fitnessGraph.setPosition(2,2);
-
 		//generationText.
-
+		neuralNetDisplay.setSize(300,300);
 
 		if (!font.loadFromFile("consola.ttf")){
 			printf("error loading font \n");
@@ -42,12 +37,12 @@ public:
 		}
 	}
 
-	void setSize(int width, int height)
+	void setSize(int w, int h)
 	{
+		width = w;
+		height = h;
 		window.setSize(sf::Vector2u(width, height));
-		simulationDisplay.setSize(width, height);
-		view.setSize(width, height);
-		view.setCenter(width/2, height/2);
+		layoutUI();
 	}
 
 
@@ -56,6 +51,12 @@ public:
 		m_simulation = simulation;
 		m_simulation->init();
 		simulationDisplay.setSimulation(simulation);
+
+		geneDisplay.init(simulation->population);
+		geneDisplay.plot();
+
+		layoutUI();
+
 		//geneGraphs.resize(simulation->population[0]->genome.size());
 		//plotGeneGraphs(geneGraphs);
 
@@ -95,56 +96,55 @@ private:
 	// Graphs
 	sFitnessGraph fitnessGraph;
 	vector<sGeneGraph> geneGraphs;	
-
-	void plotGeneGraphs(vector<sGeneGraph> &geneGraphs)
-	{
-		int n = 0;
-		geneGraphs[n++].plotGene(m_simulation->population, "scale");
-		geneGraphs[n++].plotGene(m_simulation->population, "chassisDensity");
-		geneGraphs[n++].plotGene2D(m_simulation->population, "chassisScale_x", "chassisScale_y");
-
-		geneGraphs[n++].plotGene(m_simulation->population, "frontMotorTorque");
-		geneGraphs[n++].plotGene(m_simulation->population, "frontMotorSpeed");
-		geneGraphs[n++].plotGene(m_simulation->population, "frontWheelRadius");
-		geneGraphs[n++].plotGene(m_simulation->population, "frontWheelDensity");
-		geneGraphs[n++].plotGene2D(m_simulation->population, "frontWheelPosition_x", "frontWheelPosition_y");
-		geneGraphs[n++].plotGene2D(m_simulation->population, "frontWheelAnchor_x", "frontWheelAnchor_y");
-		geneGraphs[n++].plotGene(m_simulation->population, "frontFrequencyHz");
-		geneGraphs[n++].plotGene(m_simulation->population, "frontDampingRatio");
-
-		geneGraphs[n++].plotGene(m_simulation->population, "rearMotorTorque");
-		geneGraphs[n++].plotGene(m_simulation->population, "rearMotorSpeed");
-		geneGraphs[n++].plotGene(m_simulation->population, "rearWheelRadius");
-		geneGraphs[n++].plotGene(m_simulation->population, "rearWheelDensity");
-		geneGraphs[n++].plotGene2D(m_simulation->population, "rearWheelPosition_x", "rearWheelPosition_y");
-		geneGraphs[n++].plotGene2D(m_simulation->population, "rearWheelAnchor_x", "rearWheelAnchor_y");
-		geneGraphs[n++].plotGene(m_simulation->population, "rearFrequencyHz");
-		geneGraphs[n++].plotGene(m_simulation->population, "rearDampingRatio");
-
-
-		for(int i = 0; i < n; i++){
-			geneGraphs[i].setPosition(i * 42 + 2, 2);
-		}
-	}
-
-	void drawGeneGraphs(sf::RenderWindow &window, vector<sGeneGraph> &geneGraphs)
-	{
-		for(unsigned int i = 0; i < geneGraphs.size(); i++){
-			window.draw(geneGraphs[i]);
-		}
-	}
-
+	sPopulationGeneticsDisplay geneDisplay;
+	sNeuralNetDisplay neuralNetDisplay;
 
 	void drawUI()
 	{
-			// Draw Gene graphs
-			//drawGeneGraphs(window, geneGraphs);
-				
-			// Draw Fitness Graph
-		window.draw(fitnessGraph);
 
-		drawText("Generation: " + to_string(m_simulation->population.getGenerationCount() + 1), 10,44);
-		drawText("Population: " + to_string(m_simulation->population.size()), 10,62);
+		// Draw Graphs
+		window.draw(fitnessGraph);
+		window.draw(geneDisplay);
+			
+		int popSize = m_simulation->population.size();
+		if(m_simulation->population.prelimsComplete()){
+			drawText("Generation: " + to_string(m_simulation->population.getGenerationCount() + 1), 10,44);
+			drawText("Population: " + to_string(popSize), 10,62);
+		} else {
+			drawText("Generation: Getting initial seed genes", 10,44);
+			int prelimSize = m_simulation->population.getPrelimWinnerCount();
+			drawText("Population: " + to_string(prelimSize) + " / " + to_string(popSize), 10,62);
+		}
+		drawMessage();
+
+		if((m_simulation->speedUp || !frameLimiter)){
+			sf::CircleShape triangle(17, 3);
+			triangle.setFillColor(sf::Color(200,200,200));
+			triangle.setRotation(90);
+			triangle.setPosition(width / 2 - 13, 50);
+			window.draw(triangle);			
+			triangle.setPosition(width / 2 + 13, 50);
+			window.draw(triangle);
+		}
+
+		sNeuralNet &neuralNet = m_simulation->population[simulationDisplay.getFocusRank()]->neuralNet;
+		neuralNetDisplay.renderNeuralNet(window, neuralNet);
+
+	}
+
+	void layoutUI()
+	{
+		simulationDisplay.setSize(width, height);
+
+		view.setSize(width, height);
+		view.setCenter(width/2, height/2);
+
+		fitnessGraph.setPosition(2,2);
+		fitnessGraph.setSize(width - 4, 40);
+
+		geneDisplay.setPosition(width - geneDisplay.width, 44);
+
+		neuralNetDisplay.setPosition(width - neuralNetDisplay.width, 200);
 
 	}
 
@@ -155,7 +155,7 @@ private:
 		bool one = handle == GetFocus();
 		bool two = handle == GetForegroundWindow();
 
-		if(one != two) //strange 'half-focus': window is in front but you can't click anything - so we fix it
+		if(one != two) 
 		{
 			SetFocus(handle);
 			SetForegroundWindow(handle);
@@ -164,18 +164,33 @@ private:
 		return one && two;
 	}
 
-	void drawText(string text, float x, float y)
+	void drawText(string text, float x, float y, float a = 255)
 	{
 
 		sf::Text t;
 		t.setFont(font);
 		t.setCharacterSize(18);
 		t.setPosition(x, y);
-		t.setColor(sf::Color::White);
+		t.setColor(sf::Color(255,255,255,a));
 		t.setString(text);
 		window.draw(t);
 	}
 
+	void showMessage(string message)
+	{
+		m_message = message;
+		messageTimeout = 150;
+	}
+	void drawMessage()
+	{
+		if(messageTimeout){
+			messageTimeout--;
+			drawText(m_message, 600, 120);
+		}
+		
+	}
+	string m_message;
+	int messageTimeout;
 
 	// Frame Timings
 	sf::Clock clck;
@@ -197,11 +212,17 @@ private:
 		if(newGen){
 			simulationDisplay.setCenter(0,0);
 			fitnessGraph.renderGraph(m_simulation->population);
+			geneDisplay.plot();
 			//plotGeneGraphs(geneGraphs);
 		}
 		physicsCounter++;
 		return newGen;
 	}
+
+	//=======================================================================================
+	// Main loop
+	//=======================================================================================
+
 
 	void run()
 	{
@@ -239,16 +260,26 @@ private:
 					window.setFramerateLimit(frameLimiter ? frameRate : 3000);
 					//window.setVerticalSyncEnabled(frameLimiter);
 
-
 				} else if(e.key.code == sf::Keyboard::R){
 					render_flag = !render_flag;
 
-
 				} else if(e.key.code == sf::Keyboard::Home){
 					simulationDisplay.focusFirst();
+
 				} else if(e.key.code == sf::Keyboard::End){
 					simulationDisplay.focusLast();
-				}
+
+				} else if(e.key.code == sf::Keyboard::Up){
+					int e = m_simulation->population.getElites() + 1;
+					m_simulation->population.setElites(e);
+					showMessage("Elites:"+to_string(m_simulation->population.getElites()));
+
+				}  else if(e.key.code == sf::Keyboard::Down){
+					int e = m_simulation->population.getElites() - 1;
+					m_simulation->population.setElites(e);
+					showMessage("Elites:"+to_string(m_simulation->population.getElites()));
+				} 
+
 			} else if(e.type == sf::Event::MouseButtonPressed){ 
 
 				if(e.mouseButton.button == sf::Mouse::Button::Left && !m_mouseDown){
@@ -295,7 +326,7 @@ private:
 		// If framelimiter is off loop until time runs out or maxsteps has been reached
 		int maxSteps = 500;
 		while((now() < lastPhysicsTime + 1000000.f / frameRate)
-			    && (m_simulation->speedUp || !frameLimiter)){
+			    && (m_simulation->speedUp || !frameLimiter) && !newGen){
 
 			newGen |= stepSimulation();
 			if(!--maxSteps)break;
@@ -319,7 +350,8 @@ private:
 			// Reset view
 			window.setView(view);
 
-			
+
+	
 			drawUI();
 
 			// Display Contents

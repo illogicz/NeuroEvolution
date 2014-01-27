@@ -8,17 +8,18 @@ class sSwarmFitness : public sFitnessFunction
 {
 public: 
 	 b2Vec2 target;
+	 b2Vec2 deathTarget;
+	 float32 distance;
 	 float operator()(sPhenotype *phenotype)
 	{
-		//if(phenotype->isLeader()){
-		//	printf("d = %f \n", (phenotype->getPosition() - target).Length());
-		//}
-
 		float distance_traveled = phenotype->getPosition().Length();
-		float distance_target = (phenotype->getPosition() - target).Length() ;
-		return 25 - distance_target + distance_traveled * 0.5;
+		float distance_target = (phenotype->getPosition() - target).Length();
+		float distance_death = (phenotype->getPosition() - deathTarget).Length();
+		return distance - distance_target + distance_traveled * 0.5;
+		//return distance_death - distance_target;
 	}
 };
+
 
 class SwarmSimulation : public sSimulation
 {
@@ -28,7 +29,7 @@ public:
 	SwarmSimulation()
 	{
 
-		ground.setSize(1000,1000);
+		ground.setSize(120,70);
 
 		setGravity(0,0);
 		world.setGroundBody(&ground);
@@ -38,10 +39,18 @@ public:
 
 		staticView = true;
 
+		targetDistance = 30;
+
 		target.setIsSensor(true);
 		target.setRadius(1);
-
+		target.setLinearDamping(3);
 		world.add(&target);
+
+		deathTarget.setIsSensor(true);
+		deathTarget.setRadius(1);
+		deathTarget.setLinearDamping(3);
+		deathTarget.setCustomColor(b2Color(1,0,0));
+		//world.add(&deathTarget);
 	}
 
 	~SwarmSimulation()
@@ -53,9 +62,10 @@ public:
 
 	int populationSize;
 	float simulationTime;
+	float targetDistance;
 
 	sSwarmFitness fitnessFunction;
-	sCircle target;
+	sCircle target, deathTarget;
 
 protected:
 
@@ -70,12 +80,15 @@ protected:
 			worm->directionSense = true;
 			worm->fitnessFunction = &fitnessFunction;
 			worm->progressTimeout = 3000;
+			worm->progressAmount = 0.03f;
 			worm->maxNeuronBias = 0;
 			worm->maxSynapseWeight = 3;
 			worm->muscleSpeed = 0.1;
-			worm->muscleTorque = 10;
-			worm->lateralDamping = 0.9;
-
+			worm->muscleTorque = 1;
+			worm->lateralDamping = 0.8;
+			worm->directionTargets.resize(1);
+			//worm->additionNeuralInputs.resize(1);
+			worm->killOnLackOffProgress = true;
 
 			//worm->pulseFeedback = true;
 			worm->init(world);
@@ -92,18 +105,35 @@ protected:
 	}
 
 
+	// Step fucntion
 	// Return whether the simulation is finished
 	// In this case it's when all phenotypes are no longer active/alive
 	bool isFinished()
 	{
 
+		if(world.getBodiesAt(deathTarget.getPosition()).size() > 1){
+			for(int i = 0; i < populationSize; i++){
+
+			}
+		}
 		if(world.getBodiesAt(target.getPosition()).size() > 1){
 			return true;
 		}
 
+
+
+		fitnessFunction.target = target.getPosition();
+		for(int i = 0; i < population.size(); i++){
+			((Worm*)population[i])->directionTargets[0] = target.getPosition();
+			//((Worm*)population[i])->directionTargets[1] = deathTarget.getPosition();
+		}
+
+
+
 		for(int i = 0; i < population.size(); i++){
 			if(population[i]->alive) return false;
 		}
+
 		return true;
 	}
 
@@ -111,16 +141,31 @@ protected:
 	// Builds the ground based on roughness inputs
 	void buildEnvironment()
 	{
-		float da = population.getGenerationCount() / 100.f;
-		b2Vec2 p(25, 0);
+		float da = population.getGenerationCount() / 20.f + 2.f;
+		da = da > b2_pi ? b2_pi : da;
+		//float da = b2_pi;
+		b2Vec2 p(targetDistance, 0);
 		b2Rot a(sRandom::getFloat(-da, da));
 		p = b2Mul(a, p);
+		p.y *= 0.75;
 		target.setPosition(p);
-
 		fitnessFunction.target = p;
 
+		/*
+		da = population.getGenerationCount() / 10.f + 0.7f;
+		p.Set(targetDistance, 0);
+		a.Set(sRandom::getFloat(-da, da) + b2_pi);
+		p = b2Mul(a, p);
+		deathTarget.setPosition(p);
+		fitnessFunction.deathTarget = p;
+		*/
+
+		fitnessFunction.distance = targetDistance;
+
+
 		for(int i = 0; i < populationSize; i++){
-			((Worm*)population[i])->directionTarget = p;
+			((Worm*)population[i])->directionTargets[0] = target.getPosition();
+			//((Worm*)population[i])->directionTargets[1] = deathTarget.getPosition();
 		}
 
 	}

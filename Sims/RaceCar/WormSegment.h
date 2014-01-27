@@ -16,7 +16,7 @@ public:
 		v.y *= 1.f - t;
 
 		setLinearVelocity(b2Mul(b2Rot(getAngle()), v));
-
+		
 	}
 
 

@@ -15,16 +15,16 @@ public:
 	//sGenome mate(Genome &s);
 
 
-	sGene& addGene(string name, double min, double max, int bits = 16, float mutation_rate = 0.01f)
+	sGene& addGene(string name, double min, double max, int bits = 16)
 	{
-		if(m_genes.find(name) == m_genes.end()){
+		//if(m_genes.find(name) == m_genes.end()){
 			sGene &gene = m_genes[name]; 
-			gene.set(float((max - min) * 0.5), float(min), float(max), bits, mutation_rate);
+			gene.set(float((max - min) * 0.5), float(min), float(max), bits);
 			gene.random();
 			return gene;
-		} else {
-			return m_genes[name];
-		}
+		//} else {
+		//	return m_genes[name];
+		//}
 	}
 	sGene &getGene(string name)
 	{
@@ -41,6 +41,10 @@ public:
 		m_genes[name].setValue(value);
 	}
 
+	void setMutationRateRange(float lower, float upper)
+	{
+		addGene("mutationRate", lower, upper);
+	}
 
 	void clone(sGenome &genome)
 	{
@@ -49,7 +53,7 @@ public:
 		}
 	}
 
-	void mate(sGenome &genome1, sGenome &genome2, float mutationRate)
+	void mate(sGenome &genome1, sGenome &genome2, float mutationRate = 0)
 	{
 		for(map<string, sGene>::iterator i = m_genes.begin(); i != m_genes.end(); ++i){
 			i->second.mate(genome1.getGene(i->first), genome2.getGene(i->first), mutationRate);
@@ -63,6 +67,13 @@ public:
 			m_genes[dst].random();
 		} else if(mod == GENE_INVERSE){
 			m_genes[dst].invert();
+		}
+	}
+
+	void randomize()
+	{
+		for(map<string, sGene>::iterator i = m_genes.begin(); i != m_genes.end(); ++i){
+			i->second.random();
 		}
 	}
 
@@ -85,6 +96,11 @@ public:
 			bits += i->second.getBitCount();
 		}
 		return bits;
+	}
+
+	map<string, sGene>& getGenes()
+	{
+		return m_genes;
 	}
 
 private:

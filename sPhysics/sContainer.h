@@ -15,12 +15,13 @@ public:
 	sContainer() : sObject(CONTAINER_OBJECT){}
 
 
-	void add(sObject *object)
+	sObject* add(sObject *object)
 	{
 		if(!contains(object)){
 			if(m_inWorld)object->addToWorld(*m_world);
 			m_children.insert(object);
 		}
+		return object;
 	}
 	void remove(sObject *object)
 	{

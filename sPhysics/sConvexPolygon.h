@@ -21,9 +21,23 @@ public:
 		setAngle(angle);
 	}
 	~sConvexPolygon(){}
+	sConvexPolygon(sConvexPolygon &body) : sUniformBody(body)
+	{
+		_copy(body);
+	}
+	virtual void copy(sConvexPolygon &body)
+	{
+		sUniformBody::copy(body);
+		_copy(body);
+	}
+
 	void setVerices(vector<b2Vec2> vertices)
 	{
 		m_vertices = vertices;
+	}
+	vector<b2Vec2> getVerices()
+	{
+		return m_vertices;
 	}
 
 	void addVertex(b2Vec2 vertex)
@@ -59,4 +73,11 @@ protected:
 	b2PolygonShape s_shape;
 	b2FixtureDef s_fixtureDef;
 	b2BodyDef s_bodyDef;
+
+private:
+
+	void _copy(sConvexPolygon &body)
+	{
+		m_vertices = body.m_vertices;
+	}
 };

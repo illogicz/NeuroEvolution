@@ -15,13 +15,12 @@ class sGene
 public:
 	sGene(){};
 
-	sGene* set(float value, float min, float max, int bits = 16, float mutation_rate = 0.01f)
+	sGene* set(float value, float min, float max, int bits = 16)
 	{
 		if(bits < 1 || bits > 32){}
 		m_min = min;
 		m_max = max;
 		m_bits = bits;
-		m_mutation_rate = mutation_rate;
 		setValue(value);
 		return this;
 	}
@@ -34,7 +33,6 @@ public:
 		m_data = gene.m_data;
 		return this;
 	}
-
 
 	float getValue()
 	{
@@ -56,6 +54,11 @@ public:
 	{
 		m_data = binaryToGray(bin);
 	}
+	unsigned int getRawBits()
+	{
+		return m_data;
+	}
+
 	float getNormalizedValue()
 	{
 		return float(grayToBinary(m_data)) / ((1 << m_bits));
@@ -64,11 +67,6 @@ public:
 	void random()
 	{
 		m_data = sRandom::getInt(0, (1 << m_bits) - 1);
-	}
-
-	void setMutationRate(float mutationRate)
-	{
-		m_mutation_rate = mutationRate;
 	}
 
 	void invert()
@@ -108,7 +106,6 @@ public:
 
 private:
 
-	float m_mutation_rate;
 	int m_bits;
 	float m_max;
 	float m_min;

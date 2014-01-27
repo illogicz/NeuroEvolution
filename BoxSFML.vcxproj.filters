@@ -135,10 +135,22 @@
     <ClInclude Include="sPhysics\sRevoluteJoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sGraphics\sNeurnalNetDisplay.h">
+    <ClInclude Include="Sims\RaceCar\SwarmSimulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\SwarmSimulation.h">
+    <ClInclude Include="Sims\RaceCar\Biped.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sGraphics\sPopulationGeneticsDisplay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\RaceCar\TetraPod.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sUtils\sMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sGraphics\sNeuralNetDisplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

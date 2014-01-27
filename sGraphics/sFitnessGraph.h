@@ -19,9 +19,7 @@ public:
 		bestVertices.setPrimitiveType(sf::PrimitiveType::LinesStrip);
 		averageVertices.setPrimitiveType(sf::PrimitiveType::LinesStrip);
 		worstVertices.setPrimitiveType(sf::PrimitiveType::LinesStrip);
-		backGroundRect.setFillColor(backgroundColor);
-		backGroundRect.setSize(size);
-		
+		backGroundRect.setFillColor(backgroundColor);		
 	}
 
 	virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const
@@ -41,6 +39,7 @@ public:
 		bestVertices.resize(l);
 		averageVertices.resize(l);
 		worstVertices.resize(l);
+		backGroundRect.setSize(size);
 		float maxFitness = 0;
 		for(int i = 0 ; i < l; i++){
 			sGeneration &gen = population.getGeneration(i);
@@ -69,6 +68,12 @@ public:
 		
 	}
 
+	void setSize(float x, float y)
+	{
+		size.x = x;
+		size.y = y;
+		backGroundRect.setSize(size);
+	}
 
 private:
 

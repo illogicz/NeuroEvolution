@@ -110,12 +110,20 @@ public:
 		inputs.resize(size);
 		m_inputCount = size;
 	}
+	int getInputCount()
+	{
+		return m_inputCount;
+	}
 
 	// Sets the number of output neurons
 	void setOutputCount(int size)
 	{
 		outputs.resize(size);
 		m_outputCount = size;
+	}
+	int getOutputCount()
+	{
+		return m_outputCount;
 	}
 
 	// Sets the number of hidden layers, should be 1 or more
@@ -125,6 +133,10 @@ public:
 		m_hiddenLayers.resize(size);
 		m_hiddenLayerCount = size;
 	}
+	int getHiddenLayerCount()
+	{
+		return m_hiddenLayerCount;
+	}
 
 	// Sets the number of neurons in the scefied hidden layer
 	void setHiddenLayerSize(int index, int size)
@@ -132,17 +144,30 @@ public:
 		if(index >= m_hiddenLayerCount) return;
 		m_hiddenLayers[index].resize(size);
 	}
+	int getHiddenLayerSize(int index)
+	{
+		if(index >= m_hiddenLayerCount) return 0;
+		return m_hiddenLayers[index].size();
+	}
 
 	// Sets the Maximum bias for each neuron
 	void setMaxBias(float maxBias)
 	{
 		m_maxBias = maxBias;
 	}
+	float getMaxBias()
+	{
+		return m_maxBias;
+	}
 
 	// Set the maximum weight for synapses
 	void setMaxWeight(float maxWeight)
 	{
 		m_maxWeight = maxWeight;
+	}
+	float getMaxWeight()
+	{
+		return m_maxWeight;
 	}
 
 	// Set the value of an input neuron
@@ -153,14 +178,12 @@ public:
 
 		inputs[index].value = value;
 	}
-
 	void interpolateInput(int index, float value, float t)
 	{
 		if(index >= m_inputCount)return;
 
 		inputs[index].value += (value - inputs[index].value) * t;
 	}
-
 	float getInput(int index)
 	{
 		if(index >= m_inputCount)return 0.f;
@@ -172,10 +195,8 @@ public:
 	float getOutput(int index)
 	{
 		if(index >= m_outputCount)return 0.f;
-
 		return outputs[index].activation();
 	}
-
 	void setName(string name)
 	{
 		m_name = name;
@@ -198,6 +219,19 @@ public:
 		m_synapses.size() 
   
        );
+	}
+
+	vector<sNeuron> &getInputNeurons()
+	{
+		return inputs;
+	}
+	vector<sNeuron> &getOutputNeurons()
+	{
+		return outputs;
+	}
+	vector<sNeuron> &getHiddenNeurons(int layer)
+	{
+		return m_hiddenLayers[layer];
 	}
 
 	//------------------------------------------------------------------------------------------

@@ -1,5 +1,4 @@
 #pragma once
-#include <Box2D\Box2D.h>
 #include "sBody.h"
 
 
@@ -35,7 +34,6 @@ public:
 		return m_globalAnchor;
 	}
 
-
 	void setMaxMotorTorque(float32 maxMotorTorque)
 	{
 		_jointDef.maxMotorTorque = maxMotorTorque;
@@ -57,11 +55,19 @@ public:
 		_jointDef.motorSpeed = motorSpeed;
 		if(m_inWorld)_joint->SetMotorSpeed(motorSpeed);
 	}
+	float getMotorSpeed()
+	{
+		return _jointDef.motorSpeed;
+	}
 
 	void setEnableMotor(bool enableMotor)
 	{
 		_jointDef.enableMotor = enableMotor;
 		if(m_inWorld)_joint->EnableMotor(enableMotor);
+	}
+	bool getEnabledMotor()
+	{
+		return _jointDef.enableMotor;
 	}
 
 	void setEnableLimit(bool enableLimit)
@@ -69,12 +75,26 @@ public:
 		_jointDef.enableLimit = enableLimit;
 		if(m_inWorld)_joint->EnableMotor(enableLimit);
 	}	
+	bool getEnableLimit()
+	{
+		return _jointDef.enableLimit;
+	}
+
 	void setLimits(float lowerAngle, float upperAngle)
 	{
 		_jointDef.lowerAngle = lowerAngle;
 		_jointDef.upperAngle = upperAngle;
 		if(m_inWorld)_joint->SetLimits(lowerAngle, upperAngle);
 	}
+	float getLowerLimit()
+	{
+		return _jointDef.lowerAngle;
+	}
+	float getUpperLimit()
+	{
+		return _jointDef.upperAngle;
+	}
+
 	float getAngle()
 	{
 		if(m_inWorld)return _joint->GetJointAngle();
@@ -90,7 +110,6 @@ protected:
 		_joint = (b2RevoluteJoint*)m_joint;
 	}
 
-
 	b2Vec2 m_globalAnchor;
 
 	b2RevoluteJoint *_joint;
@@ -100,6 +119,13 @@ private:
 
 	void _copy(sRevoluteJoint &joint)
 	{
+		setAnchor(joint.getAnchor());
+		setMaxMotorTorque(joint.getMaxMotorTorque());
+		setMotorSpeed(joint.getMotorSpeed());
+		setEnableMotor(joint.getEnabledMotor());
+		setEnableLimit(joint.getEnableLimit());
+		setLimits(joint.getLowerLimit(), joint.getUpperLimit());
+
 	}
 
 };

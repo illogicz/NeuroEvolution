@@ -69,7 +69,7 @@ public:
 	}
 
 	void DrawDebugData(sWorld &world);
-			       
+	void DrawGrid(const b2AABB &aabb);       
 	void DrawShape(b2Fixture* fixture, const b2Transform& xf, sf::Color& color);
 	void DrawJoint(b2Joint* joint);
 	void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, sf::Color& color);
@@ -82,12 +82,12 @@ public:
     void DrawString(int x, int y, const char* string, ...); 
     void DrawString(const b2Vec2& p, const char* string, ...);
     void DrawAABB(b2AABB* aabb, sf::Color& color);
+	void addTriangle(const b2Vec2 &v1, const b2Vec2 &v2, const b2Vec2 &v3, sf::Color &c);
+	void addLine(const b2Vec2 &v1, const b2Vec2 &v2, sf::Color &c);
 
 private:
 
 	void allocate(sf::VertexArray &va, int i, int n);
-	void addTriangle(const b2Vec2 &v1, const b2Vec2 &v2, const b2Vec2 &v3, sf::Color &c);
-	void addLine(const b2Vec2 &v1, const b2Vec2 &v2, sf::Color &c);
 
 	sf::RenderTarget *m_target;
 	sf::Vector2f view_center;

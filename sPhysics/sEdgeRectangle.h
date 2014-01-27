@@ -27,7 +27,7 @@ public:
 
 		b2Vec2 points[4];
 		float width = m_size.x;
-		float height = m_size.y;
+		float height = -m_size.y;
 		points[0] = b2Vec2(-width/2, -height/2);
 		points[1] = b2Vec2(-width/2, height/2);
 		points[2] = b2Vec2(width/2, height/2);

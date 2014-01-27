@@ -43,8 +43,8 @@ public:
 		maxRoughness = 4;
 		groundSegmentSize = 0.5f;
 		groundType = GroundType::PerlinNoise;
-		perlinOctaves = 5;
-		perlinFrequency = 6;
+		perlinOctaves = 3;
+		perlinFrequency = 8;
 		groundFrequency = 2.f;
 
 		ground.vertexSplitBaseWeight = 1.f;
@@ -98,7 +98,7 @@ protected:
 			//world.addContactListener(car, &car->chassis);
 			world.add(phenotype);
 			if(!i){
-			//	car->neuralNet.printStats();
+				phenotype->neuralNet.printStats();
 				phenotype->genome.printStats();
 			}
 		}
@@ -113,8 +113,8 @@ protected:
 	{
 		for(int i = 0; i < population.size(); i++){
 			if(population[i]->getPosition().x > worldWidth - worldOffset){
-				//population[i]->die();
-				//return true;
+				population[i]->die();
+				return true;
 			}
 		}
 		

@@ -20,17 +20,17 @@ public:
 		numSegments = 7;
 		length = 5.f;
 		thickness = 0.35f;
-		maxJointAngle = 1.3f;
+		maxJointAngle = 1.35f;
 
 		// Movement Abilities
 		muscleTorque = 10.f;
-		muscleSpeed = 0.1f;
+		muscleSpeed = 0.15f;
 		maxPulse = 0.2f;
 		lateralDamping = 0;
 
 		// Neural Net settings
-		maxNeuronBias = 0;
-		maxSynapseWeight = 3;
+		maxNeuronBias = 1;
+		maxSynapseWeight = 1; //1.f / tanh(1);
 
 		// Senses
 		pulseFeedback = false;
@@ -44,7 +44,7 @@ public:
 		startEnery = 3000;
 		killOnLackOffProgress = true;
 		progressTimeout = 800;
-		progressAmount = 0.0001;
+		progressAmount = 0.001;
 		
 
 	}
@@ -86,7 +86,9 @@ public:
 	bool directFeedback;
 	bool bodySense;
 	bool directionSense;
-	b2Vec2 directionTarget;
+	vector<float> additionNeuralInputs;
+	vector<b2Vec2> directionTargets;
+	
 
 
 
@@ -152,7 +154,7 @@ public:
 			inputCount--;
 		}
 		if(directionSense){
-			inputCount++;
+			inputCount += directionTargets.size();
 		}
 		neuralNet.setInputCount(inputCount);
 		neuralNet.setOutputCount(outputCount);
@@ -284,7 +286,7 @@ protected:
 			eneryUsed += abs(m_joints[i]->getMotorTorque());
 		}
 		for(int i = 0; i < numSegments; i++){
-			m_segments[i]->applyLateralDamping(lateralDamping);
+			//m_segments[i]->applyLateralDamping(lateralDamping);
 		}
 		if(killOnStarvation && eneryUsed > startEnery){
 			printf("died from starvation \n");
@@ -297,7 +299,7 @@ protected:
 		//---------------------------------------------------------------------------------
 
 
-		// INPUT NORMALIZATION
+		// INPUT & NORMALIZATION
 
 		int input_index = 0;
 		if(!bodySense){
@@ -310,30 +312,34 @@ protected:
 				neuralNet.setInput(input_index++, m_joints[i]->getAngle());
 			}
 		}
+
 		if(pulseFeedback){
 			neuralNet.setInput(input_index++, sin(pulsePosition));
 			neuralNet.setInput(input_index++, cos(pulsePosition));
 		}
+
 		if(directionSense){
 
 			WormSegment &segment = *m_segments[m_segments.size()-1];
 			float32 a = segment.getAngle();
-			b2Vec2 td = directionTarget - segment.getPosition();
-			float32 ta = atan2(td.y, td.x);
-			float32 da = ta - a;
-			while(da > b2_pi)da -= b2_pi * 2;
-			while(da < -b2_pi)da += b2_pi * 2;
 
-			neuralNet.setInput(input_index++, da);
-
+			for(int i = 0; i < directionTargets.size(); i++){
+				b2Vec2 td = directionTargets[i] - segment.getPosition();
+				float32 ta = atan2(td.y, td.x);
+				float32 da = ta - a;
+				while(da > b2_pi)da -= b2_pi * 2;
+				while(da < -b2_pi)da += b2_pi * 2;
+				neuralNet.setInput(input_index++, da);
+			}
 		}
 	
-		// Run neural net ////////////////////////////////////////////
-		neuralNet.run();
-
+		// Run neural net ////////////////////////////////////////////////////
+		neuralNet.run(); /////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////
 
 
 		// OUTPUT
+
 		int output_index = 0;
 		for(int i = 0; i < numSegments - 1; i++){
 			float o = neuralNet.getOutput(output_index++);

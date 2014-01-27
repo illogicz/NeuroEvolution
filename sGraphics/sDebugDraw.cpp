@@ -38,7 +38,7 @@ void sDebugDraw::DrawShape(b2Fixture* fixture, const b2Transform& xf, sf::Color&
 			{
 				b2Vec2 v2 = b2Mul(xf, vertices[i]);
 				DrawSegment(v1, v2, color);
-				DrawCircle(v1, 0.05f, color);
+				//DrawCircle(v1, 0.05f, color);
 				v1 = v2;
 			}
 		}
@@ -122,6 +122,22 @@ void sDebugDraw::DrawJoint(b2Joint* joint)
 		DrawSegment(x2, p2, color);
 	}
 }
+void sDebugDraw::DrawGrid(const b2AABB &aabb)
+{
+
+	sf::Color subColor(127, 127, 127, 80);
+	sf::Color mainColor(150, 150, 150, 120);
+	int startx = int(aabb.lowerBound.x);
+	int endx = int(aabb.upperBound.x);
+	int starty = int(aabb.lowerBound.y);
+	int endy = int(aabb.upperBound.y);
+	for(int x = startx; x <= endx; x++){
+		addLine(b2Vec2(x, aabb.lowerBound.y), b2Vec2(x, aabb.upperBound.y), x % 10 ? subColor : mainColor);
+	}
+	for(int y = starty; y <= endy;  y++){
+		addLine(b2Vec2(aabb.lowerBound.x, y), b2Vec2(aabb.upperBound.x, y), y % 10 ? subColor : mainColor);
+	}
+}
 
 void sDebugDraw::DrawDebugData(sWorld &world)
 {
@@ -131,16 +147,19 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 	b2Joint *m_jointList = world.b2world.GetJointList();
 
 
+	// Use broadphase clipping to view for rendering debug data
+	b2AABB aabb;
+	aabb.lowerBound.x = view_center.x - view_size.x;
+	aabb.upperBound.x = view_center.x + view_size.x;
+	aabb.lowerBound.y = view_center.y - view_size.y;
+	aabb.upperBound.y = view_center.y + view_size.y;
+
+	DrawGrid(aabb);
 
 	if (flags & b2Draw::e_shapeBit)
 	{
 
-		// Use broadphase clipping to view for rendering debug data
-		b2AABB aabb;
-		aabb.lowerBound.x = view_center.x - view_size.x;
-		aabb.upperBound.x = view_center.x + view_size.x;
-		aabb.lowerBound.y = view_center.y - view_size.y;
-		aabb.upperBound.y = view_center.y + view_size.y;
+
 		AABBQueryCallback aabb_callback;
 		world.b2world.QueryAABB(&aabb_callback, aabb);
 
@@ -162,7 +181,7 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 			b2Color cc = sb->getCustomColor();
 			if(cc.b || cc.r || cc.g){
 
-				DrawShape(f, xf, sf::Color(cc.r, cc.g, cc.b, a));
+				DrawShape(f, xf, sf::Color(cc.r * 255, cc.g * 255, cc.b * 255, a));
 
 			} else {
 
@@ -332,7 +351,7 @@ void sDebugDraw::DrawCircle(const b2Vec2& center, float32 radius, sf::Color& col
 	sf::CircleShape circle(radius, 20);
 	circle.setPosition(center.x, center.y);
 	circle.setOutlineColor(color);
-	color.a = 0;
+	//color.a = 0;
 	circle.setFillColor(color);
 	m_target->draw(circle, states);
 }

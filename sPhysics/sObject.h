@@ -1,5 +1,30 @@
 #pragma once
+
+
+//#ifdef _DEBUG
+//	#pragma optimize( "", on )
+//	#undef _DEBUG
+//	#define _REBUG 
+//#endif
+
 #include <Box2D\Box2D.h>
+
+
+//#ifdef _REBUG
+//	#define _DEBUG 
+//	#pragma optimize( "", off )
+//#endif
+
+
+
+
+
+
+
+
+
+
+
 //#include "sWorld.h"
 
 class sWorld;

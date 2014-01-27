@@ -99,6 +99,10 @@ public:
 			m_focusChanged = true;
 		}
 	}
+	int getFocusRank()
+	{
+		return m_focusRank;
+	}
 	void focusFirst()
 	{
 		setFocusRank(0);
@@ -115,6 +119,7 @@ public:
 	{
 		setFocusRank(m_focusRank + 1);
 	}
+
 	void toggleLockFocus()
 	{
 		m_lockFocus = !m_lockFocus;
