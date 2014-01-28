@@ -34,6 +34,15 @@ public:
 		return this;
 	}
 
+	float getMinimum()
+	{
+		return m_min;
+	}
+	float getMaximum()
+	{
+		return m_max;
+	}
+
 	float getValue()
 	{
 		unsigned int bin = grayToBinary(m_data);

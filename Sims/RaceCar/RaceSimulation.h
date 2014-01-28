@@ -7,11 +7,15 @@
 class sRaceFitness : public sFitnessFunction
 {
 public: 
-	sRaceFitness() : useSpeed(true){}
+	sRaceFitness() : useSpeed(true), absolueDistance(false) {}
 	bool useSpeed;
+	bool absolueDistance;
 	 float operator()(sPhenotype *phenotype)
 	{
 		float distance = phenotype->getPosition().x;
+		if(absolueDistance){
+			distance = abs(distance);
+		}
 		float energy = ((Worm*)phenotype)->getEneryUsed() + 2;
 		float speed = abs(distance) / float(phenotype->lifeTime + 1);
 
@@ -46,6 +50,8 @@ public:
 		perlinOctaves = 3;
 		perlinFrequency = 8;
 		groundFrequency = 2.f;
+		firstStepHeight = 0.1;
+		stepIncrease = 0.05f;
 
 		ground.vertexSplitBaseWeight = 1.f;
 		ground.doubleSolveWeight = 2.f;
@@ -55,7 +61,7 @@ public:
 
 		world.setGroundBody(&ground);
 
-		fitnessFunction.useSpeed = false;
+		fitnessFunction.useSpeed = true;
 
 	}
 
@@ -75,7 +81,7 @@ public:
 	int populationSize;
 	bool randomizeEnvironment;
 
-	static enum GroundType	{ PerlinNoise, SinWaves };
+	static enum GroundType	{ PerlinNoise, SinWaves, Steps };
 	GroundType groundType;
 	float minRoughness;
 	float maxRoughness;
@@ -83,7 +89,8 @@ public:
 	float perlinOctaves;
 	float groundFrequency;
 	float groundSegmentSize;
-
+	float firstStepHeight;
+	float stepIncrease;
 	sRaceFitness fitnessFunction;
 
 protected:
@@ -151,8 +158,13 @@ protected:
 
 
 
-		float32 h = sRandom::getFloat(minRoughness, maxRoughness);
-		float32 start_h = getHeightValue(worldOffset, perlin) * h;
+		float h = sRandom::getFloat(minRoughness, maxRoughness);
+		float start_h;
+		if(groundType != GroundType::Steps){
+			start_h = getHeightValue(worldOffset, perlin) * h;
+		} else {
+			start_h = 5;
+		}
 		ground.add(worldWidth, h + 1.f);
 		ground.add(-2.f, h + 1.f);
 		ground.add(-2.f, start_h - 3);
@@ -162,13 +174,26 @@ protected:
 		ground.setPosition(3.f - worldOffset, worldOffset_y - start_h);
 		int index = 0;
 		float rampup = 50;
-		for(float32 x = worldOffset; x <= worldWidth; x += groundSegmentSize){
+		float lasth = start_h;
+		float stepHeight = firstStepHeight;
+		printf("%f \n", groundSegmentSize);
+		for(float x = worldOffset; x <= worldWidth; x += groundSegmentSize){
 
-			float y = getHeightValue(x, perlin) * h;
-			if(x < rampup){
-				y = start_h + (y - start_h) * (x / rampup);
+			if(groundType == GroundType::Steps){
+				//printf("h = %f \n", start_h + lastx * lastx * stepheightf);
+				ground.add(x, lasth);
+				lasth -= stepHeight;
+				stepHeight += stepIncrease;
+				if(x < worldWidth - groundSegmentSize){
+					//ground.add(x, lasth);
+				}
+			} else {
+				float y = getHeightValue(x, perlin) * h;
+				if(x < rampup){
+					y = start_h + (y - start_h) * (x / rampup);
+				}
+				ground.add(x, y);
 			}
-			ground.add(x, y);
 		}
 		ground.finalizeShape();
 		ground.setType(STATIC_BODY);
@@ -189,11 +214,13 @@ private:
 		float v;
 		if(groundType == GroundType::PerlinNoise){
 			v = perlin.Get(x / worldWidth, 0);
-		} else {
+		} else if(groundType == GroundType::SinWaves){
 			float w1 = sin(randOffset1 + x / worldWidth * 59.f) * 0.25f;
 			float w2 = sin(randOffset2 + x / worldWidth * 231.f) * 0.15f;
 			float w3 = sin(randOffset3 + x / worldWidth * 851.f) * 0.05f;
 			v = w1 + w2 + w3;
+		} else {
+
 		}
 		return 0.5f + v;
 	}

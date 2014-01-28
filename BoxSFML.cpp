@@ -66,7 +66,7 @@ void runSwarmSimulation()
 
 void runWormSimulation()
 {
-	sRandom::seed(1000002);
+	sRandom::seed(1339);
 
 
 	RaceSimulation<Worm> simulation;
@@ -74,22 +74,32 @@ void runWormSimulation()
 
 
 	// Population and selection settings
-	simulation.populationSize = 50;
+	simulation.populationSize = 80;
 	simulation.elites = 0;
 	simulation.mutationRate = 0.007f;
 	simulation.selectionBias = 2.f;
 	simulation.breadingPoolFraction = 0.9f;
+	simulation.population.setWinnersPerPrelim(5);
+	simulation.fitnessFunction.useSpeed = false;
 	//simulation.setGravity(0,0);
 	//simulation.fit
 
 	// Ground
+	simulation.groundType = RaceSimulation<Worm>::Steps;
 	simulation.worldOffset_y = 1.f;
-	simulation.maxRoughness = 0.1f;
-	simulation.minRoughness = 0.1f;
+	simulation.worldOffset = 12;
+
+	simulation.maxRoughness = 10.f;
+	simulation.minRoughness = 10.f;
+
+	simulation.firstStepHeight = 0.3f;
+	simulation.stepIncrease = 0.05f;
+
+	simulation.groundSegmentSize = 5.f;
 	simulation.randomizeEnvironment = false;
-	simulation.worldWidth = 200;
-	simulation.groundSegmentSize = 0.2f;
+	simulation.worldWidth = 400;
 	simulation.groundFrequency = 2.1f;
+
 
 	//simulation.groundType = RaceSimulation<Worm>::GroundType::SinWaves;
 

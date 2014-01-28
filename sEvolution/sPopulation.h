@@ -104,6 +104,7 @@ public:
 
 			for(unsigned int i = 0; i < m_phenotypes.size(); i++){
 				m_phenotypes[i]->genome.randomize();
+				m_phenotypes[i]->neuralNet.randomize();
 			}
 
 

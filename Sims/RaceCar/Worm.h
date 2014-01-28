@@ -19,32 +19,34 @@ public:
 		// Body Shape
 		numSegments = 7;
 		length = 5.f;
-		thickness = 0.35f;
-		maxJointAngle = 1.35f;
+		//thickness = 0.35f;
+		thickness = 0.3f;
+		maxJointAngle = 1.3f;
 
 		// Movement Abilities
-		muscleTorque = 10.f;
-		muscleSpeed = 0.15f;
+		muscleTorque = 20;
+		muscleSpeed = 0.05f;
 		maxPulse = 0.2f;
 		lateralDamping = 0;
 
 		// Neural Net settings
-		maxNeuronBias = 1;
-		maxSynapseWeight = 1; //1.f / tanh(1);
+		maxNeuronBias = 2.0;
+		maxSynapseWeight = 2.f / tanh(1);
 
 		// Senses
 		pulseFeedback = false;
 		directFeedback = false;
 		directionSense = false;
 		bodySense = true;
+		touchSense = true;
 		contactGain = 0.1f;
 
 		// Death Conditions
 		killOnStarvation = false;
 		startEnery = 3000;
 		killOnLackOffProgress = true;
-		progressTimeout = 800;
-		progressAmount = 0.001;
+		progressTimeout = 1500;
+		progressAmount = 1;
 		
 
 	}
@@ -86,6 +88,7 @@ public:
 	bool directFeedback;
 	bool bodySense;
 	bool directionSense;
+	bool touchSense;
 	vector<float> additionNeuralInputs;
 	vector<b2Vec2> directionTargets;
 	
@@ -136,7 +139,12 @@ public:
 		//---------------------------------------------------------------------------------
 
 		
-//		genome.addGene("num_segments", 0.7, 1.3);
+		for(int i = 0; i <= numSegments; i++){
+			genome.addGene("WSW_" + to_string(i), 0.05, 0.35);
+		}
+		for(int i = 0; i < numSegments; i++){
+			genome.addGene("WSL_" + to_string(i), 0.3, 1.4);
+		}		
 				
 		
 
@@ -144,22 +152,26 @@ public:
 		// Neural Network Definition
 		//---------------------------------------------------------------------------------
  
-		int inputCount = numSegments;
+		int inputCount = 0;
 		int outputCount = numSegments - 1;
 		if(pulseFeedback){
 			inputCount += 2;
 			outputCount++;
 		}
 		if(bodySense){ // as opposed to touch sense
-			inputCount--;
+			inputCount += numSegments - 1;
+		}
+		if(touchSense){
+			inputCount += numSegments;
 		}
 		if(directionSense){
 			inputCount += directionTargets.size();
 		}
 		neuralNet.setInputCount(inputCount);
 		neuralNet.setOutputCount(outputCount);
-		neuralNet.setHiddenLayerCount(1);
-		neuralNet.setHiddenLayerSize(0,inputCount);//inputCount);
+		neuralNet.setHiddenLayerCount(2);
+		neuralNet.setHiddenLayerSize(0,(inputCount + outputCount)/2);//inputCount);
+		neuralNet.setHiddenLayerSize(1,(inputCount + outputCount)/2);//inputCount);
 		neuralNet.setMaxBias(maxNeuronBias);
 		neuralNet.setMaxWeight(maxSynapseWeight);
 		neuralNet.create(genome);
@@ -177,6 +189,19 @@ protected:
 	// sPhenotype implementation
 	//=====================================================================================
 
+	float getSegmentThickness(int index)
+	{
+		//float(sin(float(index) / numSegments * b2_pi) * thickness * 0.4f + 0.15f);
+		return genome.getValue("WSW_" + to_string(index)) / geneThicknessTotal * thickness * numSegments;
+	}
+	float getSegmentLength(int index)
+	{
+		//float(sin(float(index) / numSegments * b2_pi) * thickness * 0.4f + 0.15f);
+		return (genome.getValue("WSL_" + to_string(index))) / geneLengthTotal * length;
+	}
+	float geneLengthTotal;
+	float geneThicknessTotal;
+
 	// Rebuilds the phenotype from it's genome
 	void build(sWorld &world)
 	{
@@ -186,6 +211,13 @@ protected:
 		//---------------------------------------------------------------------------------
 
 
+		float x = -5.f;
+		geneLengthTotal = 0;
+		geneThicknessTotal = 0;
+		for(int i = 0; i < numSegments; i++){
+			geneLengthTotal += genome.getValue("WSL_" + to_string(i));
+			geneThicknessTotal += genome.getValue("WSW_" + to_string(i));
+		}
 		for(int i = 0; i < numSegments; i++){
 
 
@@ -194,10 +226,27 @@ protected:
 
 			WormSegment* segment = m_segments[i];
 			
-			float h1 = float(sin(float(i) / numSegments * b2_pi) * thickness * 0.4f + 0.15f);
-			float h2 = float(sin(float(i + 1) / numSegments * b2_pi) * thickness * 0.4 + 0.15f);
-			float w = length / numSegments * 0.5f;
-			float x = float(i) / numSegments * length - length * 0.5;
+			float h1 = getSegmentThickness(i + 1);
+			float h2 = getSegmentThickness(i);
+
+
+			 float w = getSegmentLength(i) / 2.f;
+			//float w = length / numSegments * 0.5f;
+			//float x = float(i) / numSegments * length - length * 0.5;
+
+			if(i == 0){
+				x -= w;
+			} else {
+				float w2 = getSegmentLength(i - 1) / 2.f;
+				x -= w + w2;
+				sRevoluteJoint* joint = m_joints[i-1];
+				//float jx = float(i + 0.5f) / numSegments * length - length * 0.5;
+				float jx = x + w;
+				joint->setAnchor(jx,0);
+				joint->setMotorSpeed(0);
+			}
+
+
 
 			segment->zeroState();
 			segment->setPosition(x, 0);
@@ -208,7 +257,7 @@ protected:
 			segment->clearVerices();
 			segment->addVertex(-w, h1);
 			segment->addVertex( w, h2);
-			if(i == numSegments - 1){
+			if(i == 0){
 				float l = sqrt(0.5) / (sqrt(0.5) + 0.5) * h2;
 				segment->addVertex( w + l, h2 - l);
 				segment->addVertex( w + l, -h2 + l);
@@ -218,7 +267,7 @@ protected:
 			}
 			segment->addVertex( w,-h2);
 			segment->addVertex(-w,-h1);
-			if(i == 0){
+			if(i == numSegments - 1){
 				float l = sqrt(0.5) / (sqrt(0.5) + 0.5) * h1;
 				segment->addVertex(-w - l, -h1 + l);
 				segment->addVertex(-w - l, h1 - l);
@@ -226,15 +275,10 @@ protected:
 				segment->addVertex(-w - h1 * s, -h1 * c);
 				segment->addVertex(-w - h1 * s, h1 * c);
 			}
-		}
 
-		for(int i = 0; i < numSegments-1; i++){
-			sRevoluteJoint* joint = m_joints[i];
-			float x = float(i + 0.5f) / numSegments * length - length * 0.5;
-			joint->setAnchor(x,0);
-			joint->setMotorSpeed(0);
+
 		}
-		
+	
 
 		neuralNet.prepare();
 
@@ -259,7 +303,9 @@ protected:
 	// Returns the position of this individual
 	virtual b2Vec2 getPosition()
 	{
-		return m_segments[int(numSegments/2)]->getPosition();
+		b2AABB aabb = getAABB();
+		float y_mid = (getAABB().upperBound.y + getAABB().lowerBound.y) / 2.f;
+		return b2Vec2(getAABB().upperBound.x, y_mid);
 	}
 	virtual b2Vec2 getVelocity()
 	{
@@ -302,14 +348,15 @@ protected:
 		// INPUT & NORMALIZATION
 
 		int input_index = 0;
-		if(!bodySense){
+		if(touchSense){
 			for(int i = 0; i < numSegments; i++){
 				//neuralNet.setInput(i, m_segmentContact[i] ? 1.f : -1.f);
 				neuralNet.interpolateInput(input_index++, m_segmentContact[i] ? 1.f : -1.f, contactGain);
 			}
-		} else {
+		}
+		if(bodySense){
 			for(int i = 0; i < numSegments - 1; i++){
-				neuralNet.setInput(input_index++, m_joints[i]->getAngle());
+				neuralNet.interpolateInput(input_index++, m_joints[i]->getAngle(), 0.5f);
 			}
 		}
 
@@ -342,9 +389,9 @@ protected:
 
 		int output_index = 0;
 		for(int i = 0; i < numSegments - 1; i++){
-			float o = neuralNet.getOutput(output_index++);
+			float o = neuralNet.getOutput(output_index++) * maxJointAngle;
 			float a = m_joints[i]->getAngle();
-			m_joints[i]->setMotorSpeed((o * maxJointAngle - a) / m_world->timeStep * muscleSpeed);
+			m_joints[i]->setMotorSpeed((o - a) / m_world->timeStep * muscleSpeed);
 		}
 		if(pulseFeedback){
 			pulsePosition += neuralNet.getOutput(output_index++) * maxPulse;

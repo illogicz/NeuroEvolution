@@ -14,38 +14,44 @@ public:
 
 	//sGenome mate(Genome &s);
 
-
+	// Adds a gene with name and range, fills it with random data
+	// If it exist already, it simply returns the existing gene
 	sGene& addGene(string name, double min, double max, int bits = 16)
 	{
-		//if(m_genes.find(name) == m_genes.end()){
+		if(m_genes.find(name) == m_genes.end()){
 			sGene &gene = m_genes[name]; 
 			gene.set(float((max - min) * 0.5), float(min), float(max), bits);
 			gene.random();
 			return gene;
-		//} else {
-		//	return m_genes[name];
-		//}
+		} else {
+			return m_genes[name];
+		}
 	}
 	sGene &getGene(string name)
 	{
+		assert(m_genes.find(name) != m_genes.end());
 		return m_genes[name];
 	}
 
 	float getValue(const string &name)
 	{
+		assert(m_genes.find(name) != m_genes.end());
 		return m_genes[name].getValue();
 	}
 
 	void setValue(const string &name, float value)
 	{
+		assert(m_genes.find(name) != m_genes.end());
 		m_genes[name].setValue(value);
 	}
 
+	// not used yet
 	void setMutationRateRange(float lower, float upper)
 	{
 		addGene("mutationRate", lower, upper);
 	}
 
+	// TODO: handle different structured genomes
 	void clone(sGenome &genome)
 	{
 		for(map<string, sGene>::iterator i = m_genes.begin(); i != m_genes.end(); ++i){
@@ -53,6 +59,7 @@ public:
 		}
 	}
 
+	// TODO: handle different structured genomes
 	void mate(sGenome &genome1, sGenome &genome2, float mutationRate = 0)
 	{
 		for(map<string, sGene>::iterator i = m_genes.begin(); i != m_genes.end(); ++i){

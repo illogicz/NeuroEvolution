@@ -10,6 +10,7 @@ public:
 
 	void init(sPopulation &population)
 	{
+
 		m_population = &population;
 		width = population[0]->genome.size();
 		height = population.size();
@@ -29,7 +30,7 @@ public:
 	{
 
 		for(int i = 0; i < m_population->size(); i++){
-			map<string, sGene>& genes = (*m_population)[i]->genome.getGenes();			
+			map<string, sGene>& genes = (*m_population)[i]->genome.getGenes();
 			int x = 0;
 			for(map<string, sGene>::iterator j = genes.begin(); j != genes.end(); ++j){
 				int c = (j->second.getBinaryValue() >> 8) & 0xFF;

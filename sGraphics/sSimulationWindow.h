@@ -29,7 +29,7 @@ public:
 		//window.setVerticalSyncEnabled(true);
 
 		//generationText.
-		neuralNetDisplay.setSize(300,300);
+		//neuralNetDisplay.setSize(300,300);
 
 		if (!font.loadFromFile("consola.ttf")){
 			printf("error loading font \n");
@@ -142,9 +142,11 @@ private:
 		fitnessGraph.setPosition(2,2);
 		fitnessGraph.setSize(width - 4, 40);
 
-		geneDisplay.setPosition(width - geneDisplay.width, 44);
 
-		neuralNetDisplay.setPosition(width - neuralNetDisplay.width, 200);
+		neuralNetDisplay.setPosition(width - neuralNetDisplay.width, height - neuralNetDisplay.height);
+
+		geneDisplay.setPosition(0, height - geneDisplay.height * 2);
+		geneDisplay.setScale(2,2);
 
 	}
 
@@ -162,6 +164,12 @@ private:
 		}
 
 		return one && two;
+	}
+
+	void setFocus()
+	{
+		HWND handle = window.getSystemHandle();
+		SetFocus(handle);
 	}
 
 	void drawText(string text, float x, float y, float a = 255)
@@ -282,6 +290,7 @@ private:
 
 			} else if(e.type == sf::Event::MouseButtonPressed){ 
 
+				setFocus();
 				if(e.mouseButton.button == sf::Mouse::Button::Left && !m_mouseDown){
 					simulationDisplay.mousePressed(mousePosition);
 					m_mouseDown = true;
@@ -325,8 +334,10 @@ private:
 		
 		// If framelimiter is off loop until time runs out or maxsteps has been reached
 		int maxSteps = 500;
-		while((now() < lastPhysicsTime + 1000000.f / frameRate)
-			    && (m_simulation->speedUp || !frameLimiter) && !newGen){
+		while(   (now() < lastPhysicsTime + 1000000.f / frameRate) // step as long as there is time left
+			  && (m_simulation->speedUp || !frameLimiter)          // only step if frame limiting is off
+			  && !newGen                                           // stop if there is a new generation
+			){
 
 			newGen |= stepSimulation();
 			if(!--maxSteps)break;
@@ -356,6 +367,7 @@ private:
 
 			// Display Contents
 			window.display();
+			//printf("display?");
 		}
 
 
