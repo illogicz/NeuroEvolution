@@ -1,3 +1,5 @@
+#pragma once
+
 float tanh_approx(float x)
 {
 	if( x < -3.f )

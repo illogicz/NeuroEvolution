@@ -95,6 +95,7 @@
     <ClInclude Include="sGraphics\sPopulationGeneticsDisplay.h" />
     <ClInclude Include="sGraphics\sSimulationDisplay.h" />
     <ClInclude Include="sGraphics\sSimulationWindow.h" />
+    <ClInclude Include="sGraphics\sText.h" />
     <ClInclude Include="Sims\RaceCar\Biped.h" />
     <ClInclude Include="Sims\RaceCar\Car.h" />
     <ClInclude Include="sGraphics\sFitnessGraph.h" />
@@ -104,6 +105,7 @@
     <ClInclude Include="Sims\RaceCar\TetraPod.h" />
     <ClInclude Include="Sims\RaceCar\Worm.h" />
     <ClInclude Include="Sims\RaceCar\WormSegment.h" />
+    <ClInclude Include="sNeuralNet\sNeuralNetAnalyser.h" />
     <ClInclude Include="sNeuralNet\sNeuralNet.h" />
     <ClInclude Include="sPhysics\sChain.h" />
     <ClInclude Include="sPhysics\sComposite.h" />

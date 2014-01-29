@@ -53,7 +53,15 @@ public:
 			lifeTime++;
 		}
 	}
-	virtual void onAfterStep(){};
+	virtual void onAfterStep()
+	{
+		//m_aabb = sContainer::getAABB();
+	};
+
+	//b2AABB getAABB()
+	//{
+	//	return m_aabb;
+	//}
 
 	void setIsLeader(bool leader)
 	{
@@ -82,7 +90,7 @@ protected:
 
 	bool m_isLeader;
 	bool m_isElite;
-
+	b2AABB m_aabb;
 	virtual void addToWorld(sWorld &world)
 	{
 		born(world);

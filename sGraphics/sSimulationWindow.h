@@ -3,7 +3,9 @@
 #include "sFitnessGraph.h"
 #include "sPopulationGeneticsDisplay.h"
 #include "sNeuralNetDisplay.h"
+#include "sText.h"
 #include <Windows.h>
+#include "sNeuralNet\sNeuralNetAnalyser.h"
 
 class sSimulationWindow
 {
@@ -22,6 +24,7 @@ public:
 		m_message = "";
 		messageTimeout = 0;
 
+
 		settings.antialiasingLevel = 8;
 		window.create(sf::VideoMode(unsigned int(width), unsigned int(height)), "", sf::Style::Default, settings);
 		window.setPosition(sf::Vector2i(0,300));
@@ -31,10 +34,11 @@ public:
 		//generationText.
 		//neuralNetDisplay.setSize(300,300);
 
-		if (!font.loadFromFile("consola.ttf")){
-			printf("error loading font \n");
-			return;
-		}
+		sText::loadFont("consola.ttf");
+
+
+		
+		
 	}
 
 	void setSize(int w, int h)
@@ -56,6 +60,12 @@ public:
 		geneDisplay.plot();
 
 		layoutUI();
+
+
+
+		nnAnalyser.graphWidth = 200;
+		nnAnalyser.height = 100;
+		nnAnalyser.analyze(simulation->population[0]->neuralNet);
 
 		//geneGraphs.resize(simulation->population[0]->genome.size());
 		//plotGeneGraphs(geneGraphs);
@@ -92,18 +102,22 @@ private:
 	sf::View view;
 	sf::RenderStates renderState;
 	sf::Font font;
+	b2Vec2 mousePosition;
 
 	// Graphs
 	sFitnessGraph fitnessGraph;
 	vector<sGeneGraph> geneGraphs;	
 	sPopulationGeneticsDisplay geneDisplay;
 	sNeuralNetDisplay neuralNetDisplay;
+	sNeuralNetworkAnalyser nnAnalyser;
 
 	void drawUI()
 	{
 
 		// Draw Graphs
 		window.draw(fitnessGraph);
+
+		geneDisplay.mousePosition = sf::Vector2f(mousePosition.x, mousePosition.y);
 		window.draw(geneDisplay);
 			
 		int popSize = m_simulation->population.size();
@@ -130,6 +144,8 @@ private:
 		sNeuralNet &neuralNet = m_simulation->population[simulationDisplay.getFocusRank()]->neuralNet;
 		neuralNetDisplay.renderNeuralNet(window, neuralNet);
 
+		nnAnalyser.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser.width, height - nnAnalyser.height);
+		nnAnalyser.draw(window);
 	}
 
 	void layoutUI()
@@ -174,14 +190,7 @@ private:
 
 	void drawText(string text, float x, float y, float a = 255)
 	{
-
-		sf::Text t;
-		t.setFont(font);
-		t.setCharacterSize(18);
-		t.setPosition(x, y);
-		t.setColor(sf::Color(255,255,255,a));
-		t.setString(text);
-		window.draw(t);
+		sText::drawText(window, text, x, y, 18, sf::Color(255,255,255,a));
 	}
 
 	void showMessage(string message)
@@ -199,6 +208,8 @@ private:
 	}
 	string m_message;
 	int messageTimeout;
+
+	
 
 	// Frame Timings
 	sf::Clock clck;
@@ -242,7 +253,7 @@ private:
 		// Return when window closes
 		if(!window.isOpen()) return;
 
-		b2Vec2 mousePosition;
+		
 		mousePosition.x = sf::Mouse::getPosition(window).x;
 		mousePosition.y = sf::Mouse::getPosition(window).y;
 

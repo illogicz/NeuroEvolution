@@ -72,32 +72,46 @@ void runWormSimulation()
 	RaceSimulation<Worm> simulation;
 	sSimulationWindow window;
 
+	// Worm setup
+	Worm::touchSense = true;
+	Worm::bodySense = true;
+	Worm::maxNeuronBias = 1;
+	Worm::maxSynapseWeight = 3;//.f / tanh(1);
+	Worm::muscleTorque = 25; // 20
+	
+	Worm::progressTimeout = 6000;
+	Worm::progressAmount = 0.1;
+	
+	Worm::killOnLackOffProgress = true;
+	Worm::killOnStarvation = true;
+	Worm::startEnery = 10000;
 
 	// Population and selection settings
-	simulation.populationSize = 80;
+	simulation.populationSize = 50;
 	simulation.elites = 0;
 	simulation.mutationRate = 0.007f;
-	simulation.selectionBias = 2.f;
+	simulation.selectionBias = 1.9f;
 	simulation.breadingPoolFraction = 0.9f;
-	simulation.population.setWinnersPerPrelim(5);
-	simulation.fitnessFunction.useSpeed = false;
+	simulation.population.setWinnersPerPrelim(10);
+	simulation.fitnessFunction.useSpeed = true;
+	simulation.fitnessFunction.absolueDistance = false;
 	//simulation.setGravity(0,0);
 	//simulation.fit
 
 	// Ground
 	simulation.groundType = RaceSimulation<Worm>::Steps;
 	simulation.worldOffset_y = 1.f;
-	simulation.worldOffset = 12;
+	simulation.worldOffset = 10;
 
 	simulation.maxRoughness = 10.f;
 	simulation.minRoughness = 10.f;
 
-	simulation.firstStepHeight = 0.3f;
-	simulation.stepIncrease = 0.05f;
+	simulation.firstStepHeight = 0.0f;
+	simulation.stepIncrease = 0.0f;
 
-	simulation.groundSegmentSize = 5.f;
+	simulation.groundSegmentSize = 4.f;
 	simulation.randomizeEnvironment = false;
-	simulation.worldWidth = 400;
+	simulation.worldWidth = 1000;
 	simulation.groundFrequency = 2.1f;
 
 
@@ -106,7 +120,12 @@ void runWormSimulation()
 	// Display
 	simulation.renderScale = 60;
 	window.setSimulation(&simulation);
+
+		//simulation.population[0]->neuralNet.analyze();
+
+
 	window.start();
+	
 
 }
 

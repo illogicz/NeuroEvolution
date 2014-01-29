@@ -16,6 +16,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "..\sUtils\sMath.h"
 #include "..\sEvolution\sGenome.h"
 
 using namespace std;
@@ -34,6 +35,7 @@ struct sNeuron
 	sGene *biasGene;
 	vector<sSynapse*> inputSynapses;
 	vector<sSynapse*> outputSynapses;
+	int layer;
 	void calcBias()
 	{
 		bias = biasGene->getValue();
@@ -65,6 +67,7 @@ struct sSynapse
 	sGene *weightGene;
 	sNeuron *output;
 	sNeuron *input;
+	int layer;
 	float weight;
 	void calcWeight()
 	{
@@ -133,6 +136,8 @@ public:
 		if(size < 1) return;
 		m_hiddenLayers.resize(size);
 		m_hiddenLayerCount = size;
+		m_weightDistributions.resize(size + 1, 2.f);
+		m_biasDistributions.resize(size + 2, 2.f);
 	}
 	int getHiddenLayerCount()
 	{
@@ -203,6 +208,24 @@ public:
 		m_name = name;
 	}
 
+	// Bias and weight initial distributions
+	void setWeightDistribution(int layerIndex, float distribution)
+	{
+		m_weightDistributions[layerIndex] = distribution;
+	}
+	float getWeightDistribution(int layerIndex)
+	{
+		return m_weightDistributions[layerIndex];
+	}
+	void setBiasDistribution(int layerIndex, float distribution)
+	{
+		m_biasDistributions[layerIndex] = distribution;
+	}
+	float getBiasDistribution(int layerIndex)
+	{
+		return m_biasDistributions[layerIndex];
+	}
+
 	void printStats()
 	{
 		printf(
@@ -245,38 +268,67 @@ public:
 	{
 		m_genome = &genome;
 		
-		createLayer(inputs, m_hiddenLayers[0], 0);
+		if(m_hiddenLayerCount == 0){
 
-		for(unsigned int i = 0; i < m_hiddenLayers.size()-1; i++){
-			createLayer(m_hiddenLayers[i], m_hiddenLayers[i + 1], i + 1);
+			createLayer(inputs, outputs, 0);
+
+		} else {
+			createLayer(inputs, m_hiddenLayers[0], 0);
+
+			for(unsigned int i = 0; i < m_hiddenLayers.size()-1; i++){
+				createLayer(m_hiddenLayers[i], m_hiddenLayers[i + 1], i + 1);
+			}
+
+			createLayer(m_hiddenLayers[m_hiddenLayers.size()-1], outputs, m_hiddenLayers.size());
 		}
-
-		createLayer(m_hiddenLayers[m_hiddenLayers.size()-1], outputs, m_hiddenLayers.size());
-
+		randomize();
+		
 		m_created = true;
 	}
 
+	// Initial random conditions. This needs more care and investigation
 	void randomize()
 	{
 		for(unsigned int i = 0; i < m_neurons.size(); i++){
-			float m = m_neurons[i]->biasGene->getMaximum();
-			float v = sRandom::getFloat(0,1);
-			v *= v;
-			if(sRandom::getBool()){
-				v *= -1;
-			}
-			m_neurons[i]->biasGene->setValue(v * m);
+
+			int layer = m_neurons[i]->layer;
+			float dist = m_biasDistributions[layer];
+			float bias = getRandomBias(dist);
+			m_neurons[i]->biasGene->setValue(bias);
+			//printf("bias = %f\n", bias);
 		}
+
 		for(unsigned int i = 0; i < m_synapses.size(); i++){
-			float m = m_synapses[i]->weightGene->getMaximum();
-			float v = sRandom::getFloat(0,1);
-			v *= v;
-			if(sRandom::getBool()){
-				v *= -1;
-			}
-			m_synapses[i]->weightGene->setValue(v * m);
+
+			int layer = m_synapses[i]->layer;
+			float dist = m_weightDistributions[layer];
+			float weight = getRandomWeight(dist);
+			m_synapses[i]->weightGene->setValue(weight);
+
 		}
 	}
+
+	float getRandomWeight(float distribution)
+	{
+		float v = sRandom::getFloat(0,1);
+		v = pow(v, distribution);
+		if(sRandom::getBool()){
+			v *= -1;
+		}
+		return v * m_maxWeight;
+	}
+
+	float getRandomBias(float distribution)
+	{
+		float v = sRandom::getFloat(0,1);
+		v = pow(v, distribution);
+		if(sRandom::getBool()){
+			v *= -1;
+		}
+		return v * m_maxBias;
+	}
+
+
 
 	// Builds a synapse layer. Can be overridden for custom synapse connections
 protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_outputs, int layer)
@@ -284,6 +336,7 @@ protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_
 
 		for(unsigned int i = 0; i < _outputs.size(); i++){
 			_outputs[i].order = i;
+			_outputs[i].layer = layer + 1;
 			_outputs[i].biasGene = &m_genome->addGene(getNeuronName(layer + 1,i), -m_maxBias, m_maxBias);
 			m_neurons.push_back(&_outputs[i]);
 		}
@@ -292,6 +345,7 @@ protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_
 		for(unsigned int i = 0; i < _inputs.size(); i++){
 			if(layer == 0){
 				_inputs[i].order = i;
+				_inputs[i].layer = layer;
 				_inputs[i].biasGene = &m_genome->addGene(getNeuronName(0,i), -m_maxBias, m_maxBias);
 				m_neurons.push_back(&_inputs[i]);
 			}
@@ -304,6 +358,7 @@ protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_
 				synapse->weightGene = &m_genome->addGene(getSynapseName(layer,i,j), -m_maxWeight, m_maxWeight);
 				synapse->input = &_inputs[i];
 				synapse->output = &_outputs[j];
+				synapse->layer = layer;
 
 				_inputs[i].outputSynapses.push_back(synapse);
 				_outputs[j].inputSynapses.push_back(synapse);
@@ -366,6 +421,8 @@ private: void runSynapseLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_output
 
 			// Get input activation value
 			float activation_value = _inputs[i].activation();
+
+
 
 			// Loop through synapses connected to this input
 			unsigned int j = _inputs[i].outputSynapses.size();
@@ -434,7 +491,6 @@ private:
 			 "_" + to_string(index);
 	}
 
-
 	sGenome *m_genome;
 	int m_inputCount;
 	int m_outputCount;
@@ -449,7 +505,8 @@ private:
 	vector<sNeuron> inputs;
 	vector<sNeuron> outputs;
 	vector<vector<sNeuron>> m_hiddenLayers;
-
+	vector<float> m_weightDistributions;
+	vector<float> m_biasDistributions;
 };
 
 

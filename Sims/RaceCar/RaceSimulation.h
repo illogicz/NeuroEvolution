@@ -7,14 +7,14 @@
 class sRaceFitness : public sFitnessFunction
 {
 public: 
-	sRaceFitness() : useSpeed(true), absolueDistance(false) {}
+	sRaceFitness() : useSpeed(false), absolueDistance(false) {}
 	bool useSpeed;
 	bool absolueDistance;
 	 float operator()(sPhenotype *phenotype)
 	{
 		float distance = phenotype->getPosition().x;
-		if(absolueDistance){
-			distance = abs(distance);
+		if(distance < 0){
+			distance = 0;
 		}
 		float energy = ((Worm*)phenotype)->getEneryUsed() + 2;
 		float speed = abs(distance) / float(phenotype->lifeTime + 1);
