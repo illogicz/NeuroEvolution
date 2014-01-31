@@ -14,7 +14,10 @@ public:
 	{
 		setSize(250,250);
 		backgroundColor = Color(0x7F, 0x7F, 0x7F, 0xFF);
-		backGroundRect.setFillColor(backgroundColor);	
+		backGroundRect.setFillColor(backgroundColor);
+		feedbackRadius = 10;
+		feedbackCircle.setOutlineThickness(2);
+		feedbackCircle.setFillColor(Color::Transparent);
 		padding = 13;
 		neuronRadius = 7;
 	}
@@ -42,12 +45,12 @@ public:
 		}
 
 		// Draw Neurons
-		drawNeuronLayer(net.getInputNeurons(), padding);
+		drawNeuronLayer(net.getInputNeurons(), 0);
 		for(float i = 0; i < l; i += 1){
-			float y = ((i + 1) / (l + 1)) * (height - padding * 2) + padding;
-			drawNeuronLayer(net.getHiddenNeurons(i), y);
+			//float y = ((i + 1) / (l + 1)) * (height - padding * 2) + padding;
+			drawNeuronLayer(net.getHiddenNeurons(i), i + 1);
 		}
-		drawNeuronLayer(net.getOutputNeurons(), height - padding);
+		drawNeuronLayer(net.getOutputNeurons(), l + 1);
 
 
 
@@ -59,6 +62,7 @@ public:
 	float layerSpacing;
 	float padding;
 	float neuronRadius;
+	float feedbackRadius;
 
 	void drawSynapseLayer(vector<sNeuron> &neurons, int layer)
 	{
@@ -69,7 +73,7 @@ public:
 		for(int i = 0; i < l1; i++){
 			Vector2f p1 = getNeuronPosition(layer, neurons[i].order, l1);
 			int l2 = neurons[i].outputSynapses.size();
-			float act = neurons[i].activation();
+			float act = neurons[i].lastActivation;
 			for(int j = 0; j < l2; j++){
 
 				int order = neurons[i].outputSynapses[j]->output->order;
@@ -90,19 +94,25 @@ public:
 		target->draw(v, RenderStates(getTransform()));
 	}
 
-	void drawNeuronLayer(vector<sNeuron> &neurons, float y)
+	void drawNeuronLayer(vector<sNeuron> &neurons, int layer)
 	{
 		float l = neurons.size();
 		for(int i = 0; i < l; i++){
-			float x = (float(neurons[i].order) / (l - 1)) * (width - padding * 2) + padding;
-			drawNeuron(neurons[i], x, y);
+
+			Vector2f p = getNeuronPosition(layer,neurons[i].order, l);
+			drawNeuron(neurons[i], p.x, p.y);
 		}
 
 	}
 
 	Vector2f getNeuronPosition(int layer,  int index, int l)
 	{
-		float x = (float(index) / (l - 1)) * (width - padding * 2) + padding;
+		float x;
+		if(l == 1){
+			x = width / 2;
+		} else {
+			x = (float(index) / (l - 1)) * (width - padding * 2) + padding;
+		}
 		float y = (float(layer) / (neuralNet->getHiddenLayerCount() + 1)) * (height - padding * 2) + padding;
 		return Vector2f(x, y);
 	}
@@ -124,10 +134,22 @@ public:
 		}
 		neuronCircle.setOutlineColor(Color(oc, oc, oc));
 
-		oc = ((neuron.activation() + 1.f) * 0.5f) * 0xFF;
+		oc = ((neuron.lastActivation + 1.f) * 0.5f) * 0xFF;
 		neuronCircle.setFillColor(Color(oc, oc, oc));
 
+
+		float w = neuron.feedback * neuron.lastActivation;
+		int a = abs(w / neuralNet->getMaxFeedback()) * 0xFF;
+		int c = w < 0 ? 0x00 : 0xFF;
+
+		feedbackCircle.setRadius(feedbackRadius);
+		feedbackCircle.setOutlineColor(Color(c, c, c, a));
+		feedbackCircle.setPosition(x, y - feedbackRadius);
+
+		target->draw(feedbackCircle, RenderStates(getTransform()));
 		target->draw(neuronCircle, RenderStates(getTransform()));
+
+
 
 	}
 
@@ -147,6 +169,7 @@ private:
 	RenderStates renderState;
 
 	CircleShape neuronCircle;
+	CircleShape feedbackCircle;
 	RectangleShape backGroundRect;
 	Color backgroundColor;
 

@@ -61,11 +61,6 @@ protected:
 	void resetSimulation()
 	{
 		for(unsigned int i = 0; i < population.size(); i++){
-			if(i < population.getElites() && population.getGenerationCount()){
-				//population[i]->setCustomColor(b2Color(0,0.5,0.9));
-			} else {
-				//population[i]->setCustomColor(b2Color(0,0,0));
-			}
 			world.remove(population[i]);
 			world.add(population[i]);
 		}

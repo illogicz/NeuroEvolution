@@ -227,7 +227,7 @@ protected:
 		if(vertices.size() < 3){
 			printf("split() not enough vertices : %i\n", vertices.size());
 		}
-		if(n_rec > 1024){
+		if(n_rec > 3000){
 			printf("split() overflow");
 			return;
 		}

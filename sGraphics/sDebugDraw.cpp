@@ -374,7 +374,7 @@ void sDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2V
 	circle.setOutlineThickness(1.f/50);
 	circle.setOutlineColor(color);
 	color.a *= 0.4;
-	circle.setFillColor(sf::Color(color.r*0xFF, color.g*0xFF, color.b*0xFF, 0x60));
+	circle.setFillColor(color);
 	m_target->draw(circle, states);
 
 }

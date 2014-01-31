@@ -101,6 +101,7 @@
     <ClInclude Include="sGraphics\sFitnessGraph.h" />
     <ClInclude Include="sGraphics\sGeneGraph.h" />
     <ClInclude Include="Sims\RaceCar\RaceSimulation.h" />
+    <ClInclude Include="Sims\RaceCar\Shooter.h" />
     <ClInclude Include="Sims\RaceCar\SwarmSimulation.h" />
     <ClInclude Include="Sims\RaceCar\TetraPod.h" />
     <ClInclude Include="Sims\RaceCar\Worm.h" />

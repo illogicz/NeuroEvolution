@@ -102,7 +102,7 @@ protected:
 			genome.addGene("frontMotorSpeed", 0, 100);
 		
 			// Front Suspension
-			genome.addGene("frontFrequencyHz", 0.2, 6);
+			genome.addGene("frontFrequencyHz", 0.5, 6);
 			genome.addGene("frontDampingRatio", 0.2, 0.999);
 
 			genome.copyGene("rearWheelRadius", "frontWheelRadius");
@@ -143,8 +143,8 @@ protected:
 			genome.addGene("frontMotorSpeed", 70, 70);
 		
 			// Front Suspension
-			genome.addGene("frontFrequencyHz", 10, 10);
-			genome.addGene("frontDampingRatio", 1, 1);
+			genome.addGene("frontFrequencyHz", 3, 3);
+			genome.addGene("frontDampingRatio", 0.6, 0.6);
 		
 
 			// Rear Wheel
@@ -168,7 +168,7 @@ protected:
 		} else if(bodyType == BodyType::LowVariation) {
 
 			// Small variation, generally valid phenotype
-			genome.addGene("scale", 1, 1);
+			genome.addGene("scale", 0.8, 1.2);
 			genome.addGene("chassisDensity", 1.7, 1.7);
 			genome.addGene("chassisScale_x", 0.9, 1.3);
 			genome.addGene("chassisScale_y", 0.9, 1.3);
@@ -187,8 +187,8 @@ protected:
 			genome.addGene("frontMotorSpeed", 40, 40);
 		
 			// Front Suspension
-			genome.addGene("frontFrequencyHz", 1.1, 5);
-			genome.addGene("frontDampingRatio", 0.5, 0.95);
+			genome.addGene("frontFrequencyHz", 2, 5);
+			genome.addGene("frontDampingRatio", 0.6, 0.8);
 		
 
 			// Rear Wheel
@@ -214,14 +214,29 @@ protected:
 		// Neural Network Definition
 		//---------------------------------------------------------------------------------
  
-		neuralNet.setInputCount(9);
-		neuralNet.setOutputCount(3);
 		neuralNet.setHiddenLayerCount(2);
-		neuralNet.setHiddenLayerSize(0,8);
-		neuralNet.setHiddenLayerSize(1,5);
+		neuralNet.setInputCount(10);
+		neuralNet.setHiddenLayerSize(0,6);
+		neuralNet.setHiddenLayerSize(1,3);
+		neuralNet.setOutputCount(1);
+
+
+		//neuralNet.setWeightDistribution(0,3);
+		//neuralNet.setWeightDistribution(1,2.5);
+		//neuralNet.setWeightDistribution(2,1.5);
+
+		neuralNet.setWeightDistribution(0,3.5);
+		neuralNet.setWeightDistribution(1,2.5);
+		neuralNet.setWeightDistribution(2,1.5);
+
+		neuralNet.setUseFeedback(0,true);
+		neuralNet.setMaxFeedback(1);
+		neuralNet.setFeedbackDistribution(0,2);
+
+
 		//neuralNet.setHiddenLayerSize(1,4);
 		neuralNet.setMaxBias(1);
-		neuralNet.setMaxWeight(1);
+		neuralNet.setMaxWeight(2.f);
 		neuralNet.create(genome);
 
 
@@ -305,10 +320,7 @@ protected:
 
 		// Reset neural net inputs
 		neuralNet.prepare();
-		neuralNet.setInput(0,0);
-		neuralNet.setInput(1,0);
-		neuralNet.setInput(2,0);
-		neuralNet.setInput(3,0);
+
 
 		// Initialise some values for simulation
 		setThrottle(0,0);
@@ -345,11 +357,11 @@ protected:
 	
 	virtual float getFitness() 
 	{
-		float distance = chassis.getPosition().x;
+		float distance = chassis.getPosition().x + 10;
 		//if(distance < 0)fitnessModifier = 0;
 		float speed = abs(distance) / float(lifeTime + 1);
 		//return float(pow(2, fitnessModifier * distance * speed * 0.1f)); //payloadMass;// / wheelMass;
-		return fitnessModifier * distance;// * speed; //payloadMass;// / wheelMass;
+		return fitnessModifier * distance * (speed + 1.f); //payloadMass;// / wheelMass;
 	}
 
 
@@ -372,39 +384,35 @@ protected:
 
 		// INPUT NORMALIZATION
 
-		int index = 0;
+		int input_index = 0;
 
 		// Set chassis angle input
 		float angle = chassis.getAngle() / b2_pi;
 		while(angle > 1)angle -= 2.f;
 		while(angle < -1)angle += 2.f;
-		neuralNet.setInput(index++, angle);
+		neuralNet.setInput(input_index++, angle);
 
 		// Set angular velocity input
-		neuralNet.setInput(index++, chassis.getAngularVelocity() * 0.6f);
+		neuralNet.interpolateInput(input_index++, chassis.getAngularVelocity() * 0.6f, 0.6f);
 
 		// Angular acceleration input
-		neuralNet.setInput(index++, getAngularAcceleration() * 10.f);
+		neuralNet.interpolateInput(input_index++, getAngularAcceleration() * 10.f, 0.5f);
 
 		// Front Wheel sensor input
-		float v = neuralNet.getInput(2);
-		float g = frontWheelContact ? 1.f : -1.f;
-		neuralNet.setInput(index++, v + (g - v) * 0.2f);
+		neuralNet.interpolateInput(input_index++, frontWheelContact ? 1.f : -1.f, 0.1f);
 
 		// rear wheel sensor input
-		v = neuralNet.getInput(3);
-		g = rearWheelContact ? 1.f : -1.f;
-		neuralNet.setInput(index++, v + (g - v) * 0.2f);
+		neuralNet.interpolateInput(input_index++, rearWheelContact ? 1.f : -1.f, 0.1f);
 
 		// Linear Velocity inputs
 		b2Vec2 lv = chassis.getLinearVelocity();
-		neuralNet.setInput(index++, lv.x * 0.05f);
-		neuralNet.setInput(index++, lv.y * 0.05f);
+		neuralNet.setInput(input_index++, lv.x * 0.05f);
+		neuralNet.setInput(input_index++, lv.y * 0.05f);
 
 		// Linear acceleration input
 		b2Vec2 acceration = getLinearAcceleration();
-		neuralNet.setInput(index++, acceration.x);
-		neuralNet.setInput(index++, acceration.y);
+		neuralNet.interpolateInput(input_index++, acceration.x, 0.5f);
+		neuralNet.interpolateInput(input_index++, acceration.y, 0.5f);
 		
 
 	
@@ -415,13 +423,16 @@ protected:
 
 		// OUTPUT
 
-
+		int output_index = 0;
 		//* Normal driving behaviour
 
 		// Get outputs, these control the throttle
-		float front_acc = neuralNet.getOutput(0);
-		//float rear_acc = neuralNet.getOutput(1);
-		
+		float front_acc = neuralNet.getOutput(output_index);
+		//float rear_acc = neuralNet.getOutput(index++);
+
+		// Feedback
+		neuralNet.interpolateInput(input_index++, front_acc * 1.5f, 0.1f);
+
 		front_acc = front_acc * 0.75f + 0.25f;
 		//rear_acc = rear_acc * 0.75f + 0.25f;
 
@@ -431,11 +442,13 @@ protected:
 
 		// Apply throttle, ramp up slowly during the first 2 seconds
 		// If removed they must figure it out themselves
-		//if(lifeTime <= 120){
-		//	float f = lifeTime / 240.f;
-		//	setThrottle(f * front_acc, f * rear_acc);
-		//} else {
-			setThrottle(front_acc, front_acc);
+		//if(lifeTime > 120){
+		//	if(lifeTime <= 240){
+		//		float f = float(lifeTime - 120) / 120.f;
+		//		setThrottle(f * front_acc, f * front_acc);
+		//	} else {
+				setThrottle(front_acc, front_acc);
+		//	}
 		//}
 		//*/
 		/*
@@ -449,13 +462,13 @@ protected:
 		*/
 
 
-		float damping = neuralNet.getOutput(1);
-		float freq = neuralNet.getOutput(2);
+		//float damping = neuralNet.getOutput(index++);
+		//float freq = neuralNet.getOutput(index++);
 
-		rearSuspension.setDampingRatio((damping * 0.5f) + 0.5f);
-		frontSuspension.setDampingRatio((damping * 0.5f) + 0.5f);
-		rearSuspension.setFrequencyHz(freq * 2.f + 2.5f);
-		frontSuspension.setFrequencyHz(freq * 2.f + 2.5f);
+		//rearSuspension.setDampingRatio((damping * 0.25f) + 0.65f);
+		//frontSuspension.setDampingRatio((damping * 0.25f) + 0.65f);
+		//rearSuspension.setFrequencyHz(freq * 2.f + 5.f);
+		//frontSuspension.setFrequencyHz(freq * 2.f + 5.f);
 
 
 		//---------------------------------------------------------------------------------
@@ -480,14 +493,14 @@ protected:
 		while(a < -b2_pi)a += b2_pi;
 		if(abs(a) > b2_pi * 0.85){
 			die();
-			fitnessModifier = 0.9f;
-			return;
+			fitnessModifier = 0.3f;
+			//return;
 		}
 		
 		// Kill it off if it doesn't make progress for some time
-		if(chassis.getPosition().x > progressPosition){
+		if(chassis.getPosition().x > progressPosition + 5.f){
 			progressDelay = 0;
-			progressPosition = chassis.getPosition().x + 0.3f;
+			progressPosition = chassis.getPosition().x;
 		} else {
 			if(++progressDelay > progressTimeout){
 				die();
@@ -529,7 +542,7 @@ protected:
 	
 	float payloadMass;
 	float wheelMass;
-	static const int progressTimeout = 350;
+	static const int progressTimeout = 2000;
 	int progressDelay;
 	float progressPosition;
 	float fitnessModifier;
@@ -589,8 +602,8 @@ protected:
 	{
 		if(contactPair.contains(&chassis)) {
 			if(alive){
-			//	fitnessModifier = 1.f;
-			//	deferDeath = true;
+				//fitnessModifier = 0.8f;
+				//deferDeath = true;
 			}
 		} else if(contactPair.contains(&frontWheel)){
 			frontWheelContact = true;

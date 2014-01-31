@@ -308,7 +308,7 @@ protected:
 		distance = distance < 0 ? 0 : distance;
 		float speed = 100.f * distance / (lifeTime + 1);
 		float ave_height = totalHeight / (lifeTime + 1);
-		float fitness = (1.f + distance) * (1.f + speed) * (1.f + ave_height * 10.f);
+		float fitness = (1.f + distance) * (1.f + speed); // * (1.f + ave_height * 10.f);
 
 		return fitness;
 	}
@@ -366,7 +366,7 @@ protected:
 		}
 		if(bodySense){
 			for(int i = 0; i < numSegments - 1; i++){
-				neuralNet.interpolateInput(input_index++, m_joints[i]->getAngle() * 1.5f, 0.5f);
+				neuralNet.interpolateInput(input_index++, m_joints[i]->getAngle() * 1.f, 0.5f);
 			}
 		}
 
@@ -461,6 +461,7 @@ protected:
 	{
 		for(int i = 0; i < numSegments; i++){
 			if(contactPair.contains(m_segments[i])){
+				//contactPair.contactInto->
 				m_segmentContact[i] = true;
 				return;
 			}
@@ -503,7 +504,7 @@ bool Worm::directFeedback = false;
 bool Worm::directionSense = false;
 bool Worm::bodySense = true;
 bool Worm::touchSense = true;
-float Worm::contactGain = 0.1f;
+float Worm::contactGain = 0.03f;
 
 // Death Conditions
 bool Worm::killOnStarvation = false;

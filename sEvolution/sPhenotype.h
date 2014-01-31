@@ -37,6 +37,7 @@ public:
 		lifeTime = 0;
 		alive = true;
 		m_isLeader = false;
+		m_aabb_valid = false;
 		build(world);
 	}
 
@@ -55,13 +56,18 @@ public:
 	}
 	virtual void onAfterStep()
 	{
+		m_aabb_valid = false;
 		//m_aabb = sContainer::getAABB();
 	};
 
-	//b2AABB getAABB()
-	//{
-	//	return m_aabb;
-	//}
+	b2AABB getAABB()
+	{
+		if(!m_aabb_valid){
+			m_aabb = sContainer::getAABB();
+			m_aabb_valid = true;
+		}
+		return m_aabb;
+	}
 
 	void setIsLeader(bool leader)
 	{
@@ -91,6 +97,7 @@ protected:
 	bool m_isLeader;
 	bool m_isElite;
 	b2AABB m_aabb;
+	bool m_aabb_valid;
 	virtual void addToWorld(sWorld &world)
 	{
 		born(world);

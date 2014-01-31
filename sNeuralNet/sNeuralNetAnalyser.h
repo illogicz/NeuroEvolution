@@ -15,18 +15,21 @@ public:
 		va.setPrimitiveType(sf::PrimitiveType::Lines);
 		graphWidth = 200;
 		height = 180;
-		scale = 10.f;
-		num_input_connections = 13;
-		maxWeight = 3;
-		maxBias = 1;
+		scale = 20.f;
+		num_samples = 100000;
+		currentLayer = 0;
+		inputRangeLower = -1;
+		inputRangeUpper = 1;
 	}
 
+	float inputRangeLower;
+	float inputRangeUpper;
 	float maxWeight;
 	float maxBias;
 	float graphWidth;
 	float width;
 	float height;
-	int num_input_connections;
+	int num_samples;
 
 	float getRandomWeight(float distribution)
 	{
@@ -48,11 +51,50 @@ public:
 		return v;
 	}
 
-	// Should analyze layers and set appropriate random distributions
-	void analyze(sNeuralNet &neuralNet)
+	void analyzeNetwork(sNeuralNet &neuralNet)
 	{
-		int num_samples = 500000;
-		currentLayer = 0;
+		max_y = 0;
+		float grandtotal = 0;
+		scale = 100;
+		width = graphWidth;
+
+		for(int j = 0; j < num_samples; j++){
+
+			float total = 0;
+			neuralNet.randomize();
+			neuralNet.prepare();
+			for(int i = 0; i < neuralNet.getInputCount(); i++){
+				neuralNet.setInput(i, sRandom::getFloat(inputRangeLower,inputRangeUpper));
+			}
+			neuralNet.run();
+			total += neuralNet.getOutput(0);
+			grandtotal += total;
+
+			int bucket = (total * scale) + n_buckets / 2;
+
+			if(bucket >= 0 && bucket < n_buckets){
+				dist[bucket] += 1.f;
+			}
+
+		}
+		for(int j = 0; j < n_buckets; j++){
+			max_y = dist[j] > max_y ? dist[j] : max_y;
+		}
+
+		float ave_abs = grandtotal / float(num_samples) * scale + float(n_buckets / 2);
+		sf::Color color(255,255,255);
+
+		addLine(ave_abs,0,ave_abs,dist[int(ave_abs)], color);
+
+		plotResult(color);
+		plotAxis(1);
+
+	}
+
+	// Analyze layert output distributions
+	void analyseLayers(sNeuralNet &neuralNet)
+	{
+		
 		max_y = 0;
 		int layers = neuralNet.getHiddenLayerCount() + 1;
 		width = graphWidth * layers;
@@ -75,22 +117,16 @@ public:
 				num_neurons = neuralNet.getHiddenLayerSize(i - 1);
 			}
 			float grandtotal = 0;
-			int in_range = 0;
-			int out_range = 0;
 			for(int j = 0; j < num_samples; j++){
 				float total = 0;
 				for(int i = 0; i < num_neurons; i++){
-					float input = sRandom::getFloat(-2,2);
+					float input = sRandom::getFloat(inputRangeLower,inputRangeUpper);
 					float bias = getRandomBias(biasDist) * neuralNet.getMaxBias();
 					float weight = getRandomWeight(weightDist) * neuralNet.getMaxWeight();
 					total += tanh_approx(input + bias) * weight;
 				}
 				grandtotal += abs(total);
-				if(abs(total) <= 3.f){
-					in_range++;
-				} else {
-					out_range++;
-				}
+
 
 				int bucket = (total * scale) + n_buckets / 2;
 
@@ -99,7 +135,6 @@ public:
 				}
 			}
 
-			float range = float(in_range) / num_samples;
 			for(int j = 0; j < n_buckets; j++){
 				max_y = dist[j] > max_y ? dist[j] : max_y;
 			}
@@ -113,11 +148,15 @@ public:
 
 			currentLayer++;
 		}
-		currentLayer--;
-		plotAxis();
-		currentLayer--;
-		plotAxis();
 
+
+
+		currentLayer = 0;
+		for(int i = 0; i < layers; i++){
+			plotAxis();
+			currentLayer++;
+		}
+		
 	}
 
 
@@ -135,12 +174,12 @@ public:
 		target.draw(va, getTransform() * tf);
 	}
 
-	void plotAxis()
+	void plotAxis(float w = 3.f)
 	{
 		sf::Color color(0x7f, 0x7f, 0x7f);
-		float x = n_buckets / 2 + 3 * scale;
+		float x = n_buckets / 2 + w * scale;
 		addLine(x, 0, x, max_y, color);
-		x = n_buckets / 2 - 3 * scale;
+		x = n_buckets / 2 - w * scale;
 		addLine(x, 0, x, max_y, color);
 		addLine(n_buckets / 2, 0, n_buckets / 2, max_y, color);
 	}
@@ -158,11 +197,11 @@ public:
 	void addLine(float x1, float y1, float x2, float y2, sf::Color &color)
 	{
 		sf::Vertex v;
-		v.position.x = x1 + currentLayer * graphWidth;
+		v.position.x = x1 + currentLayer * n_buckets;
 		v.position.y = y1;
 		v.color = color;
 		va.append(v);
-		v.position.x = x2 + currentLayer * graphWidth;
+		v.position.x = x2 + currentLayer * n_buckets;
 		v.position.y = y2;
 		va.append(v);
 	}

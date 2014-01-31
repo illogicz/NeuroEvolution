@@ -66,7 +66,7 @@ void runSwarmSimulation()
 
 void runWormSimulation()
 {
-	sRandom::seed(1339);
+	sRandom::seed(1368345);
 
 
 	RaceSimulation<Worm> simulation;
@@ -75,9 +75,9 @@ void runWormSimulation()
 	// Worm setup
 	Worm::touchSense = true;
 	Worm::bodySense = true;
-	Worm::maxNeuronBias = 1;
+	Worm::maxNeuronBias = 0.5f;
 	Worm::maxSynapseWeight = 3;//.f / tanh(1);
-	Worm::muscleTorque = 25; // 20
+	Worm::muscleTorque = 30; // 20
 	
 	Worm::progressTimeout = 6000;
 	Worm::progressAmount = 0.1;
@@ -99,19 +99,20 @@ void runWormSimulation()
 	//simulation.fit
 
 	// Ground
-	simulation.groundType = RaceSimulation<Worm>::Steps;
+	simulation.groundType = RaceSimulation<Worm>::GroundType::PerlinNoise;
 	simulation.worldOffset_y = 1.f;
 	simulation.worldOffset = 10;
 
-	simulation.maxRoughness = 10.f;
-	simulation.minRoughness = 10.f;
+	simulation.maxRoughness = 50.f;
+	simulation.minRoughness = 50.f;
 
 	simulation.firstStepHeight = 0.0f;
 	simulation.stepIncrease = 0.0f;
 
-	simulation.groundSegmentSize = 4.f;
-	simulation.randomizeEnvironment = false;
-	simulation.worldWidth = 1000;
+	simulation.groundSegmentSize = 0.3f;
+	simulation.randomizeEnvironment = true;
+	simulation.groundRampup = 400;
+	simulation.worldWidth = 400;
 	simulation.groundFrequency = 2.1f;
 
 
@@ -132,7 +133,7 @@ void runWormSimulation()
 
 void runCarSimulation()
 {
-	sRandom::seed(12455);
+	sRandom::seed(124555);
 
 
 	RaceSimulation<Car> simulation;
@@ -142,17 +143,23 @@ void runCarSimulation()
 	Car::bodyType = Car::BodyType::Fixed;
 
 
-	simulation.populationSize = 90;
-	simulation.elites = 1;
-	simulation.mutationRate = 0.005f;
+	simulation.populationSize = 50;
+	simulation.elites = 0;
+	simulation.mutationRate = 0.007f;
 	simulation.selectionBias = 2.f;
-	simulation.breadingPoolFraction = 0.8f;
+	simulation.breadingPoolFraction = 1.f;
+	simulation.population.setWinnersPerPrelim(5);
 
-	simulation.maxRoughness = 20;
-	simulation.minRoughness = 20;
+	simulation.maxRoughness = 150;
+	simulation.minRoughness = 150;
 	simulation.randomizeEnvironment = true;
 	
-
+	simulation.worldOffset_y = 3;
+	simulation.groundSegmentSize = 1;
+	simulation.groundRampup = 2000;
+	simulation.worldWidth = 2000;
+	simulation.perlinOctaves = 8;
+	simulation.worldOffset = 7;
 	window.setSimulation(&simulation);
 
 	window.start();
@@ -163,7 +170,7 @@ int main()
 {
 	//runBipedSimulation();
 	//runSwarmSimulation();
-	runWormSimulation();
+	//runWormSimulation();
 	runCarSimulation();
 	
 	return 0;

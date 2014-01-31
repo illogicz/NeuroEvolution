@@ -17,7 +17,7 @@ public:
 
 		width = 1280;
 		height = 720;
-		frameRate = 30;
+		frameRate = 60;
 		frameLimiter = true;
 		render_flag = true;
 		m_mouseDown = false;
@@ -63,9 +63,13 @@ public:
 
 
 
-		nnAnalyser.graphWidth = 200;
-		nnAnalyser.height = 100;
-		nnAnalyser.analyze(simulation->population[0]->neuralNet);
+		nnAnalyser1.graphWidth = 210;
+		nnAnalyser1.height = 100;
+		nnAnalyser1.analyzeNetwork(simulation->population[0]->neuralNet);
+
+		nnAnalyser2.graphWidth = 70;
+		nnAnalyser2.height = 50;
+		nnAnalyser2.analyseLayers(simulation->population[0]->neuralNet);
 
 		//geneGraphs.resize(simulation->population[0]->genome.size());
 		//plotGeneGraphs(geneGraphs);
@@ -109,7 +113,8 @@ private:
 	vector<sGeneGraph> geneGraphs;	
 	sPopulationGeneticsDisplay geneDisplay;
 	sNeuralNetDisplay neuralNetDisplay;
-	sNeuralNetworkAnalyser nnAnalyser;
+	sNeuralNetworkAnalyser nnAnalyser1;
+	sNeuralNetworkAnalyser nnAnalyser2;
 
 	void drawUI()
 	{
@@ -144,8 +149,10 @@ private:
 		sNeuralNet &neuralNet = m_simulation->population[simulationDisplay.getFocusRank()]->neuralNet;
 		neuralNetDisplay.renderNeuralNet(window, neuralNet);
 
-		nnAnalyser.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser.width, height - nnAnalyser.height);
-		nnAnalyser.draw(window);
+		nnAnalyser2.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser2.width, height - nnAnalyser2.height - nnAnalyser1.height);
+		nnAnalyser2.draw(window);
+		nnAnalyser1.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser1.width, height - nnAnalyser1.height);
+		nnAnalyser1.draw(window);
 	}
 
 	void layoutUI()
@@ -273,7 +280,7 @@ private:
 			} else if(e.type == sf::Event::KeyPressed){
 
 				// 
-				if(e.key.code == sf::Keyboard::F){
+				if(e.key.code == sf::Keyboard::Space){
 
 					frameLimiter = !frameLimiter;
 					window.setFramerateLimit(frameLimiter ? frameRate : 3000);

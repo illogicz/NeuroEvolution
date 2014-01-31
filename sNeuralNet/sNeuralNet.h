@@ -32,27 +32,26 @@ struct sNeuron
 {
 	float value;
 	float bias;
+	float feedback;
+	bool useFeedback;
 	sGene *biasGene;
+	sGene *feedbackGene;
 	vector<sSynapse*> inputSynapses;
 	vector<sSynapse*> outputSynapses;
 	int layer;
-	void calcBias()
+	float lastActivation;
+	void prepare()
 	{
+		value = 0;
 		bias = biasGene->getValue();
+		if(useFeedback){
+			feedback = feedbackGene->getValue();
+		}
 	}
 	float activation()
 	{
-		return tanh_approx(value + bias);
-	}
-
-	float tanh_approx(float x)
-	{
-		if( x < -3.f )
-			return -1.f;
-		else if( x > 3.f )
-			return 1.f;
-		else
-			return x * ( 27.f + x * x ) / ( 27.f + 9.f * x * x );
+		lastActivation = tanh_approx(value + bias);
+		return lastActivation;
 	}
 	int order; // for rendering purposes only
 };
@@ -69,7 +68,7 @@ struct sSynapse
 	sNeuron *input;
 	int layer;
 	float weight;
-	void calcWeight()
+	void prepare()
 	{
 		weight = weightGene->getValue();
 	}
@@ -95,10 +94,11 @@ public:
 		setOutputCount(1);
 		setHiddenLayerCount(1);
 		setHiddenLayerSize(0,4);
-		m_maxWeight = 1.f;
+		m_maxWeight = 3.f;
 		m_maxBias = 1.f;
+		m_maxFeedback = 1.f;
 		m_created = false;
-		m_name = "DEF";
+		m_name = "NN";
 	}
 
 	~sNeuralNet()
@@ -138,7 +138,10 @@ public:
 		m_hiddenLayerCount = size;
 		m_weightDistributions.resize(size + 1, 2.f);
 		m_biasDistributions.resize(size + 2, 2.f);
+		m_feedbackDistributions.resize(size, 2.f);
+		m_useFeedback.resize(size, false);
 	}
+
 	int getHiddenLayerCount()
 	{
 		return m_hiddenLayerCount;
@@ -176,6 +179,24 @@ public:
 		return m_maxWeight;
 	}
 
+	// Neural feedback
+	void setMaxFeedback(float maxFeedback)
+	{
+		m_maxFeedback = maxFeedback;
+	}
+	float getMaxFeedback()
+	{
+		return m_maxFeedback;
+	}
+	void setUseFeedback(int hiddenLayer, bool useFeedback)
+	{
+		m_useFeedback[hiddenLayer] = useFeedback;
+	}
+	bool getUseFeedback(int hiddenLayer)
+	{
+		return m_useFeedback[hiddenLayer];
+	}
+
 	// Set the value of an input neuron
 	// These should be normalized to about -3..3 depending on neuron counts and weight/bias limits
 	void setInput(int index, float value)
@@ -208,7 +229,7 @@ public:
 		m_name = name;
 	}
 
-	// Bias and weight initial distributions
+	// Weihgt distributions for a synapse layers
 	void setWeightDistribution(int layerIndex, float distribution)
 	{
 		m_weightDistributions[layerIndex] = distribution;
@@ -217,6 +238,8 @@ public:
 	{
 		return m_weightDistributions[layerIndex];
 	}
+
+	// Bias Distributions for neuron layers
 	void setBiasDistribution(int layerIndex, float distribution)
 	{
 		m_biasDistributions[layerIndex] = distribution;
@@ -224,6 +247,16 @@ public:
 	float getBiasDistribution(int layerIndex)
 	{
 		return m_biasDistributions[layerIndex];
+	}
+
+	// Feedback distribution
+	void setFeedbackDistribution(int layerIndex, float distribution)
+	{
+		m_feedbackDistributions[layerIndex] = distribution;
+	}
+	float getFeedbackDistribution(int layerIndex)
+	{
+		return m_feedbackDistributions[layerIndex];
 	}
 
 	void printStats()
@@ -293,42 +326,24 @@ public:
 
 			int layer = m_neurons[i]->layer;
 			float dist = m_biasDistributions[layer];
-			float bias = getRandomBias(dist);
+			float bias = getRandomDistribution(dist) * m_maxBias;
 			m_neurons[i]->biasGene->setValue(bias);
-			//printf("bias = %f\n", bias);
+			if(m_neurons[i]->useFeedback){
+				dist = m_biasDistributions[layer - 1];
+				float feedback = getRandomDistribution(dist) * m_maxFeedback;
+				m_neurons[i]->feedbackGene->setValue(feedback);
+			}
 		}
 
 		for(unsigned int i = 0; i < m_synapses.size(); i++){
 
 			int layer = m_synapses[i]->layer;
 			float dist = m_weightDistributions[layer];
-			float weight = getRandomWeight(dist);
+			float weight = getRandomDistribution(dist) * m_maxWeight;
 			m_synapses[i]->weightGene->setValue(weight);
 
 		}
 	}
-
-	float getRandomWeight(float distribution)
-	{
-		float v = sRandom::getFloat(0,1);
-		v = pow(v, distribution);
-		if(sRandom::getBool()){
-			v *= -1;
-		}
-		return v * m_maxWeight;
-	}
-
-	float getRandomBias(float distribution)
-	{
-		float v = sRandom::getFloat(0,1);
-		v = pow(v, distribution);
-		if(sRandom::getBool()){
-			v *= -1;
-		}
-		return v * m_maxBias;
-	}
-
-
 
 	// Builds a synapse layer. Can be overridden for custom synapse connections
 protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_outputs, int layer)
@@ -338,6 +353,14 @@ protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_
 			_outputs[i].order = i;
 			_outputs[i].layer = layer + 1;
 			_outputs[i].biasGene = &m_genome->addGene(getNeuronName(layer + 1,i), -m_maxBias, m_maxBias);
+			if(layer < m_hiddenLayerCount && m_useFeedback[layer]){
+				string name = getNeuronName(layer + 1,i) + "_FB";
+				_outputs[i].useFeedback = true;
+				_outputs[i].feedbackGene = &m_genome->addGene(name, -m_maxFeedback, m_maxFeedback);
+			} else {
+				_outputs[i].useFeedback = false;
+				_outputs[i].feedback = 0;
+			}
 			m_neurons.push_back(&_outputs[i]);
 		}
 
@@ -346,13 +369,15 @@ protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_
 			if(layer == 0){
 				_inputs[i].order = i;
 				_inputs[i].layer = layer;
+				_inputs[i].feedback = 0;
+				_inputs[i].useFeedback = false;
 				_inputs[i].biasGene = &m_genome->addGene(getNeuronName(0,i), -m_maxBias, m_maxBias);
 				m_neurons.push_back(&_inputs[i]);
 			}
 
 			for(unsigned int j = 0; j < _outputs.size(); j++){
 
-				sSynapse *synapse = new sSynapse; // &m_synapses[m_synapses.size()-1];
+				sSynapse *synapse = new sSynapse;
 				m_synapses.push_back(synapse);
 
 				synapse->weightGene = &m_genome->addGene(getSynapseName(layer,i,j), -m_maxWeight, m_maxWeight);
@@ -367,20 +392,28 @@ protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_
 		}
 	}
 
+	float getRandomDistribution(float distribution)
+	{
+		float v = sRandom::getFloat(0,1);
+		v = pow(v, distribution);
+		if(sRandom::getBool()){
+			v *= -1;
+		}
+		return v;
+	}
 
 	//------------------------------------------------------------------------------------------
 	// Prepare Neural Net from Genes
 	//------------------------------------------------------------------------------------------
 
-	// For performance store values from genes when they are changed
+	// Get values from genes when they are changed
 public: void prepare()
 	{
 		for(unsigned int i = 0; i < m_neurons.size(); i++){
-			m_neurons[i]->calcBias();
-			m_neurons[i]->value = 0;
+			m_neurons[i]->prepare();
 		}
 		for(unsigned int i = 0; i < m_synapses.size(); i++){
-			m_synapses[i]->calcWeight();
+			m_synapses[i]->prepare();
 		}
 		for(int i = 0; i < m_hiddenLayers.size(); i++){
 			sortHiddenLayer(i);
@@ -412,7 +445,7 @@ private: void runSynapseLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_output
 		// reset output values
 		unsigned int i = _outputs.size();
 		while(i--){
-			_outputs[i].value = 0;
+			_outputs[i].value = _outputs[i].lastActivation * _outputs[i].feedback;
 		}
 
 		// Loops through inputs
@@ -497,8 +530,10 @@ private:
 	int m_hiddenLayerCount;
 	float m_maxWeight;
 	float m_maxBias;
+	float m_maxFeedback;
 	bool m_created;
 	string m_name;
+	vector<bool> m_useFeedback;
 	vector<int> m_hiddenLayerSize;
 	vector<sSynapse*> m_synapses;
 	vector<sNeuron*> m_neurons;
@@ -507,6 +542,8 @@ private:
 	vector<vector<sNeuron>> m_hiddenLayers;
 	vector<float> m_weightDistributions;
 	vector<float> m_biasDistributions;
+	vector<float> m_feedbackDistributions;
+
 };
 
 

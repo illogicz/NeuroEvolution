@@ -47,15 +47,15 @@ public:
 		maxRoughness = 4;
 		groundSegmentSize = 0.5f;
 		groundType = GroundType::PerlinNoise;
-		perlinOctaves = 3;
+		perlinOctaves = 5;
 		perlinFrequency = 8;
 		groundFrequency = 2.f;
 		firstStepHeight = 0.1;
 		stepIncrease = 0.05f;
-
+		groundRampup = 50;
 		ground.vertexSplitBaseWeight = 1.f;
 		ground.doubleSolveWeight = 2.f;
-		ground.segmentSplitBaseWeight = 10.f;
+		ground.segmentSplitBaseWeight = 1.f;
 		ground.lengthWeight = 0.5f;
 		ground.dotWeight = 1.f;
 
@@ -89,6 +89,7 @@ public:
 	float perlinOctaves;
 	float groundFrequency;
 	float groundSegmentSize;
+	float groundRampup;
 	float firstStepHeight;
 	float stepIncrease;
 	sRaceFitness fitnessFunction;
@@ -173,7 +174,6 @@ protected:
 		ground.add(worldOffset, start_h);
 		ground.setPosition(3.f - worldOffset, worldOffset_y - start_h);
 		int index = 0;
-		float rampup = 50;
 		float lasth = start_h;
 		float stepHeight = firstStepHeight;
 		printf("%f \n", groundSegmentSize);
@@ -189,8 +189,8 @@ protected:
 				}
 			} else {
 				float y = getHeightValue(x, perlin) * h;
-				if(x < rampup){
-					y = start_h + (y - start_h) * (x / rampup);
+				if(x < groundRampup){
+					y = start_h + (y - start_h) * (x / groundRampup);
 				}
 				ground.add(x, y);
 			}
