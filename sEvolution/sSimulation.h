@@ -88,19 +88,13 @@ protected:
 
 	void calcRankings()
 	{
-		population.sortPhenotypes();
 
-		float bestFitness = -100;
-		float bestLiveFitness = -100;
-		float worstFitness = 1000000.f;
+		population.sortPhenotypes();
 		sPhenotype *lastLeader = leader;
 		leader = population[0];
 		//leader->setIsLeader(false);
-		for(int i=0;i <population.size(); i++){
-			if(population[i]->alive){
-				liveLeader = population[i];
-				break;
-			}
+		for(int i = 0; i < population.size(); i++){
+			population[i]->setRank(i);
 		}
 		int i = population.size();
 		while(i--){

@@ -62,6 +62,11 @@ public:
 		if(m_inWorld)_joint->SetMotorSpeed(motorSpeed);
 	}
 
+	float getMotorSpeed()
+	{
+		return _jointDef.motorSpeed;
+	}
+
 	void setEnableMotor(bool enableMotor)
 	{
 		_jointDef.enableMotor = enableMotor;

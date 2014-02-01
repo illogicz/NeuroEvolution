@@ -321,28 +321,40 @@ public:
 
 	// Initial random conditions. This needs more care and investigation
 	void randomize()
-	{
-		for(unsigned int i = 0; i < m_neurons.size(); i++){
+	{  
+		//int maxruns = 100; // temp
+		//while(maxruns--){
+			for(unsigned int i = 0; i < m_neurons.size(); i++){
 
-			int layer = m_neurons[i]->layer;
-			float dist = m_biasDistributions[layer];
-			float bias = getRandomDistribution(dist) * m_maxBias;
-			m_neurons[i]->biasGene->setValue(bias);
-			if(m_neurons[i]->useFeedback){
-				dist = m_biasDistributions[layer - 1];
-				float feedback = getRandomDistribution(dist) * m_maxFeedback;
-				m_neurons[i]->feedbackGene->setValue(feedback);
+				int layer = m_neurons[i]->layer;
+				float dist = m_biasDistributions[layer];
+				float bias = getRandomDistribution(dist) * m_maxBias;
+				m_neurons[i]->biasGene->setValue(bias);
+				if(m_neurons[i]->useFeedback){
+					dist = m_feedbackDistributions[layer - 1];
+					float feedback = getRandomDistribution(dist, false) * m_maxFeedback;
+					m_neurons[i]->feedbackGene->setValue(feedback);
+				}
 			}
-		}
 
-		for(unsigned int i = 0; i < m_synapses.size(); i++){
+			for(unsigned int i = 0; i < m_synapses.size(); i++){
 
-			int layer = m_synapses[i]->layer;
-			float dist = m_weightDistributions[layer];
-			float weight = getRandomDistribution(dist) * m_maxWeight;
-			m_synapses[i]->weightGene->setValue(weight);
+				int layer = m_synapses[i]->layer;
+				float dist = m_weightDistributions[layer];
+				float weight = getRandomDistribution(dist) * m_maxWeight;
+				m_synapses[i]->weightGene->setValue(weight);
 
-		}
+			}
+
+			//prepare();
+			//run();
+			
+			//if(abs(getOutput(0)) < 0.5f){
+			//	break;
+			//	printf("%f \n", getOutput(0));
+			//}
+
+		//}
 	}
 
 	// Builds a synapse layer. Can be overridden for custom synapse connections
@@ -356,7 +368,7 @@ protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_
 			if(layer < m_hiddenLayerCount && m_useFeedback[layer]){
 				string name = getNeuronName(layer + 1,i) + "_FB";
 				_outputs[i].useFeedback = true;
-				_outputs[i].feedbackGene = &m_genome->addGene(name, -m_maxFeedback, m_maxFeedback);
+				_outputs[i].feedbackGene = &m_genome->addGene(name, 0, m_maxFeedback);
 			} else {
 				_outputs[i].useFeedback = false;
 				_outputs[i].feedback = 0;
@@ -392,11 +404,11 @@ protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_
 		}
 	}
 
-	float getRandomDistribution(float distribution)
+	float getRandomDistribution(float distribution, bool neg = true)
 	{
 		float v = sRandom::getFloat(0,1);
 		v = pow(v, distribution);
-		if(sRandom::getBool()){
+		if(neg && sRandom::getBool()){
 			v *= -1;
 		}
 		return v;
@@ -415,9 +427,9 @@ public: void prepare()
 		for(unsigned int i = 0; i < m_synapses.size(); i++){
 			m_synapses[i]->prepare();
 		}
-		for(int i = 0; i < m_hiddenLayers.size(); i++){
-			sortHiddenLayer(i);
-		}
+		//for(int i = 0; i < m_hiddenLayers.size(); i++){
+		//	sortHiddenLayer(i);
+		//}
 	}
 
 

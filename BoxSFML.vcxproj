@@ -104,6 +104,7 @@
     <ClInclude Include="Sims\RaceCar\Shooter.h" />
     <ClInclude Include="Sims\RaceCar\SwarmSimulation.h" />
     <ClInclude Include="Sims\RaceCar\TetraPod.h" />
+    <ClInclude Include="Sims\RaceCar\TopDownCar.h" />
     <ClInclude Include="Sims\RaceCar\Worm.h" />
     <ClInclude Include="Sims\RaceCar\WormSegment.h" />
     <ClInclude Include="sNeuralNet\sNeuralNetAnalyser.h" />

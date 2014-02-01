@@ -1,6 +1,6 @@
 #pragma once
 #include "sBody.h"
-
+#include "sJoint.h"
 
 class sRevoluteJoint : public sJoint
 {

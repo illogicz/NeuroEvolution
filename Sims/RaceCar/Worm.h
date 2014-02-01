@@ -149,10 +149,19 @@ public:
 		}
 		neuralNet.setInputCount(inputCount);
 		neuralNet.setOutputCount(outputCount);
-		neuralNet.setHiddenLayerCount(1);
-		neuralNet.setHiddenLayerSize(0,(inputCount + outputCount)/2);//inputCount);
-		neuralNet.setWeightDistribution(0,5);
-		neuralNet.setWeightDistribution(1,4);
+		neuralNet.setHiddenLayerCount(2);
+		neuralNet.setHiddenLayerSize(0,(inputCount + outputCount)/2+1);//inputCount);
+		neuralNet.setHiddenLayerSize(1,(inputCount + outputCount)/2-1);//inputCount);
+
+		neuralNet.setWeightDistribution(0,6);
+		neuralNet.setWeightDistribution(1,5.5);
+		neuralNet.setWeightDistribution(2,5);
+
+		neuralNet.setUseFeedback(0,true);
+		neuralNet.setUseFeedback(1,true);
+		neuralNet.setMaxFeedback(1.5);
+		neuralNet.setFeedbackDistribution(0,4);
+		neuralNet.setFeedbackDistribution(1,4);
 
 		//neuralNet.setHiddenLayerSize(1,(inputCount + outputCount)/2);//inputCount);
 		neuralNet.setMaxBias(maxNeuronBias);
@@ -485,7 +494,7 @@ protected:
 int Worm::numSegments = 7;
 float Worm::length = 5.f;
 //Worm:://thickness = 0.35f;
-float Worm::thickness = 0.23f;
+float Worm::thickness = 0.21f;
 float Worm::maxJointAngle = 1.3f;
 
 // Movement Abilities

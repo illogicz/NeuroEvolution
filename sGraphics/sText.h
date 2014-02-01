@@ -23,13 +23,19 @@ public:
 		          const string &text, 
 		          float x, float y, 
 				  float size = 16, 
-				  const sf::Color &color = sf::Color::White)
+				  const sf::Color &color = sf::Color::White,
+				  bool center = false)
 	{
 		if(m_fontLoaded){
+
 			m_textField.setCharacterSize(size);
-			m_textField.setPosition(x, y);
 			m_textField.setColor(color);
 			m_textField.setString(text);
+			if(center){
+				m_textField.setPosition(x - m_textField.getLocalBounds().width / 2, y);
+			} else {
+				m_textField.setPosition(x, y);
+			}
 			target.draw(m_textField);
 		}
 	}

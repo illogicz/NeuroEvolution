@@ -216,7 +216,7 @@ public:
 	}
 	float32 getAngularVelocity()
 	{
-		return m_inWorld ? m_body->GetAngle() : m_state.angle;
+		return m_inWorld ? m_body->GetAngularVelocity(): m_state.angularVelocity;
 	}
 
 

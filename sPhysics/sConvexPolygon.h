@@ -58,13 +58,14 @@ protected:
 
 	void addToWorld(sWorld &world)
 	{
-		int n = m_vertices.size();
-		b2Vec2 *verts = new b2Vec2[n];
-		for(int i = 0; i < n; i++){
-			verts[i] = m_vertices[i];
-		}
-		s_shape.Set(verts, n);
-
+		//int n = m_vertices.size();
+		//b2Vec2 *verts = new b2Vec2[n];
+		//for(int i = 0; i < n; i++){
+		//	verts[i] = m_vertices[i];
+		//}
+		//s_shape.Set(verts, n);
+		s_shape.Set(&m_vertices[0], m_vertices.size());
+		
 		sUniformBody::addToWorld(world);
 	}
 

@@ -51,16 +51,16 @@ protected:
 
 		// Front wheel
 		frontWheel.setFilter(filter);
-		frontWheel.setFriction(1.f);
+		frontWheel.setFriction(2.f);
 		frontWheel.setRestitution(0.0f);
-		frontWheel.setAngularDamping(0.7f);
+		frontWheel.setAngularDamping(0.1f);
 		frontWheel.setLinearDamping(0.1f);
 
 		// Rear wheel
 		rearWheel.setFilter(filter);
-		rearWheel.setFriction(1.f);
+		rearWheel.setFriction(2.f);
 		rearWheel.setRestitution(0.0f);
-		rearWheel.setAngularDamping(0.7f);
+		rearWheel.setAngularDamping(0.1f);
 		rearWheel.setLinearDamping(0.1f);
 
 		// Front suspension
@@ -143,8 +143,8 @@ protected:
 			genome.addGene("frontMotorSpeed", 70, 70);
 		
 			// Front Suspension
-			genome.addGene("frontFrequencyHz", 3, 3);
-			genome.addGene("frontDampingRatio", 0.6, 0.6);
+			genome.addGene("frontFrequencyHz", 2.5, 2.5);
+			genome.addGene("frontDampingRatio", 0.8, 0.8);
 		
 
 			// Rear Wheel
@@ -157,7 +157,7 @@ protected:
 			genome.copyGene("rearWheelAnchor_y", "frontWheelAnchor_y");
 
 			// Rear Motor
-			genome.addGene("rearMotorTorque", 250, 250);
+			genome.addGene("rearMotorTorque", 200, 200);
 			genome.addGene("rearMotorSpeed", 150, 150);
 
 			// Rear Suspension
@@ -219,7 +219,7 @@ protected:
 		neuralNet.setHiddenLayerSize(0,6);
 		neuralNet.setHiddenLayerSize(1,3);
 		neuralNet.setOutputCount(1);
-
+		 
 
 		//neuralNet.setWeightDistribution(0,3);
 		//neuralNet.setWeightDistribution(1,2.5);
@@ -230,13 +230,13 @@ protected:
 		neuralNet.setWeightDistribution(2,1.5);
 
 		neuralNet.setUseFeedback(0,true);
-		neuralNet.setMaxFeedback(1);
+		neuralNet.setMaxFeedback(2.f / tanh_approx(1));
 		neuralNet.setFeedbackDistribution(0,2);
 
 
 		//neuralNet.setHiddenLayerSize(1,4);
-		neuralNet.setMaxBias(1);
-		neuralNet.setMaxWeight(2.f);
+		neuralNet.setMaxBias(0.5f);
+		neuralNet.setMaxWeight(2.f / tanh_approx(1));
 		neuralNet.create(genome);
 
 
@@ -359,9 +359,9 @@ protected:
 	{
 		float distance = chassis.getPosition().x + 10;
 		//if(distance < 0)fitnessModifier = 0;
-		float speed = abs(distance) / float(lifeTime + 1);
+		float speed = abs(distance) / float(lifeTime + 1) * 60.f;
 		//return float(pow(2, fitnessModifier * distance * speed * 0.1f)); //payloadMass;// / wheelMass;
-		return fitnessModifier * distance * (speed + 1.f); //payloadMass;// / wheelMass;
+		return fitnessModifier * distance * (speed); //payloadMass;// / wheelMass;
 	}
 
 
@@ -390,30 +390,35 @@ protected:
 		float angle = chassis.getAngle() / b2_pi;
 		while(angle > 1)angle -= 2.f;
 		while(angle < -1)angle += 2.f;
-		neuralNet.setInput(input_index++, angle);
+		neuralNet.setInput(input_index++, angle * b2_pi);
 
 		// Set angular velocity input
-		neuralNet.interpolateInput(input_index++, chassis.getAngularVelocity() * 0.6f, 0.6f);
+		neuralNet.interpolateInput(input_index++, chassis.getAngularVelocity() * 0.3f, 0.5f);
 
 		// Angular acceleration input
-		neuralNet.interpolateInput(input_index++, getAngularAcceleration() * 10.f, 0.5f);
+		neuralNet.interpolateInput(input_index++, getAngularAcceleration() * 1.f, 0.5f);
 
 		// Front Wheel sensor input
-		neuralNet.interpolateInput(input_index++, frontWheelContact ? 1.f : -1.f, 0.1f);
+		neuralNet.interpolateInput(input_index++, frontWheelContact ? 2.f : -0.f, 0.1f);
 
 		// rear wheel sensor input
-		neuralNet.interpolateInput(input_index++, rearWheelContact ? 1.f : -1.f, 0.1f);
+		neuralNet.interpolateInput(input_index++, rearWheelContact ? 2.f : -0.f, 0.1f);
 
 		// Linear Velocity inputs
 		b2Vec2 lv = chassis.getLinearVelocity();
-		neuralNet.setInput(input_index++, lv.x * 0.05f);
-		neuralNet.setInput(input_index++, lv.y * 0.05f);
+		neuralNet.interpolateInput(input_index++, lv.x * 0.03f, 0.5f);
+		neuralNet.interpolateInput(input_index++, lv.y * 0.05f, 0.5f);
 
 		// Linear acceleration input
 		b2Vec2 acceration = getLinearAcceleration();
 		neuralNet.interpolateInput(input_index++, acceration.x, 0.5f);
 		neuralNet.interpolateInput(input_index++, acceration.y, 0.5f);
 		
+		//if(isLeader()){
+			//printf("%f \n", rearWheel.getAngularVelocity() / genome.getValue("rearMotorSpeed"));
+		//}
+		float rw_lv = 2.f * rearWheel.getAngularVelocity() / genome.getValue("rearMotorSpeed");
+		neuralNet.interpolateInput(input_index++, rw_lv, 1);
 
 	
 		// Run neural net ////////////////////////////////
@@ -431,9 +436,9 @@ protected:
 		//float rear_acc = neuralNet.getOutput(index++);
 
 		// Feedback
-		neuralNet.interpolateInput(input_index++, front_acc * 1.5f, 0.1f);
+		//neuralNet.interpolateInput(input_index++, front_acc * 1.5f, 0.1f);
 
-		front_acc = front_acc * 0.75f + 0.25f;
+		//front_acc = front_acc * 0.75f + 0.25f;
 		//rear_acc = rear_acc * 0.75f + 0.25f;
 
 		// Color the wheel according to throttle values
@@ -558,13 +563,17 @@ protected:
 		//if(rear < 0) rear *= 0.5f;
 
 		//t *= payloadMass;
-		//frontSuspension.setMaxMotorTorque(abs(front) * genome.getValue("frontMotorTorque"));
-		//rearSuspension.setMaxMotorTorque(abs(rear) * genome.getValue("rearMotorTorque"));
-		frontSuspension.setMaxMotorTorque(genome.getValue("frontMotorTorque"));
-		rearSuspension.setMaxMotorTorque(genome.getValue("rearMotorTorque"));
+		frontSuspension.setMaxMotorTorque(abs(front) * genome.getValue("frontMotorTorque"));
+		rearSuspension.setMaxMotorTorque(abs(rear) * genome.getValue("rearMotorTorque"));
+		//frontSuspension.setMaxMotorTorque(genome.getValue("frontMotorTorque"));
+		//rearSuspension.setMaxMotorTorque(genome.getValue("rearMotorTorque"));
 
-		frontSuspension.setMotorSpeed(genome.getValue("frontMotorSpeed") * front);
-		rearSuspension.setMotorSpeed(genome.getValue("rearMotorSpeed") * rear);
+		float c = frontSuspension.getMotorSpeed();
+		float t = genome.getValue("frontMotorSpeed") * front;
+		float v = c + (t - c) * 1.f;
+		frontSuspension.setMotorSpeed(v);
+		rearSuspension.setMotorSpeed(v);
+
 	}
 
 	b2Color getAccelatorColor(float acc)

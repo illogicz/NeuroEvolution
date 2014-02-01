@@ -18,8 +18,9 @@ public:
 		scale = 20.f;
 		num_samples = 100000;
 		currentLayer = 0;
-		inputRangeLower = -1;
-		inputRangeUpper = 1;
+		inputRangeLower = -2;
+		inputRangeUpper = 2;
+		cycles = 10;
 	}
 
 	float inputRangeLower;
@@ -30,6 +31,7 @@ public:
 	float width;
 	float height;
 	int num_samples;
+	int cycles;
 
 	float getRandomWeight(float distribution)
 	{
@@ -63,10 +65,12 @@ public:
 			float total = 0;
 			neuralNet.randomize();
 			neuralNet.prepare();
-			for(int i = 0; i < neuralNet.getInputCount(); i++){
-				neuralNet.setInput(i, sRandom::getFloat(inputRangeLower,inputRangeUpper));
+			for(int k = 0; k < cycles; k++){
+				for(int i = 0; i < neuralNet.getInputCount(); i++){
+					neuralNet.setInput(i, sRandom::getFloat(inputRangeLower,inputRangeUpper));
+				}
+				neuralNet.run();
 			}
-			neuralNet.run();
 			total += neuralNet.getOutput(0);
 			grandtotal += total;
 

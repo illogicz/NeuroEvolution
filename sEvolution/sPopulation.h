@@ -172,6 +172,10 @@ public:
 	{
 		m_mutationRate = mutationRate;
 	}
+	float getMutationRate()
+	{
+		return m_mutationRate;
+	}	
 
 	void setBreadingPoolFraction(float breadingPoolFraction)
 	{

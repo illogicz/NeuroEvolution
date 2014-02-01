@@ -195,9 +195,9 @@ private:
 		SetFocus(handle);
 	}
 
-	void drawText(string text, float x, float y, float a = 255)
+	void drawText(string text, float x, float y, float a = 255, bool center = false)
 	{
-		sText::drawText(window, text, x, y, 18, sf::Color(255,255,255,a));
+		sText::drawText(window, text, x, y, 18, sf::Color(255,255,255,a), center);
 	}
 
 	void showMessage(string message)
@@ -209,7 +209,11 @@ private:
 	{
 		if(messageTimeout){
 			messageTimeout--;
-			drawText(m_message, 600, 120);
+			int a = 255;
+			if(messageTimeout < 30){
+				a *= messageTimeout / 30.f;
+			}
+			drawText(m_message, width / 2, 120, a, true);
 		}
 		
 	}
@@ -279,22 +283,46 @@ private:
 			// Keyboard input
 			} else if(e.type == sf::Event::KeyPressed){
 
-				// 
+				// Framerate control
 				if(e.key.code == sf::Keyboard::Space){
 
 					frameLimiter = !frameLimiter;
 					window.setFramerateLimit(frameLimiter ? frameRate : 3000);
-					//window.setVerticalSyncEnabled(frameLimiter);
 
 				} else if(e.key.code == sf::Keyboard::R){
 					render_flag = !render_flag;
 
+				} else if(e.key.code == sf::Keyboard::F){
+					frameRate = 90 - frameRate;
+					window.setFramerateLimit(frameLimiter ? frameRate : 3000);
+					showMessage("Framerate: " + to_string(frameRate));
+
+
+				// View targeting
 				} else if(e.key.code == sf::Keyboard::Home){
-					simulationDisplay.focusFirst();
+					simulationDisplay.focusFirst(); 
 
 				} else if(e.key.code == sf::Keyboard::End){
 					simulationDisplay.focusLast();
 
+				} else if(e.key.code == sf::Keyboard::PageUp){
+					simulationDisplay.focusNext();
+
+				} else if(e.key.code == sf::Keyboard::PageDown){
+					simulationDisplay.focusPrev();
+
+				} else if(e.key.code == sf::Keyboard::Delete){
+					simulationDisplay.getFocusTarget()->die();
+
+				} else if(e.key.code == sf::Keyboard::Insert){
+					simulationDisplay.toggleLockFocus();
+					if(simulationDisplay.getLockFocus()){
+						showMessage("View: Individual");
+					} else {
+						showMessage("View: Rank");
+					}
+
+				// Elites
 				} else if(e.key.code == sf::Keyboard::Up){
 					int e = m_simulation->population.getElites() + 1;
 					m_simulation->population.setElites(e);
@@ -304,7 +332,8 @@ private:
 					int e = m_simulation->population.getElites() - 1;
 					m_simulation->population.setElites(e);
 					showMessage("Elites:"+to_string(m_simulation->population.getElites()));
-				} 
+
+				}
 
 			} else if(e.type == sf::Event::MouseButtonPressed){ 
 
@@ -328,13 +357,6 @@ private:
 			}
 		}
 
-		if(hasFocus()){
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::PageUp)){
-				simulationDisplay.focusNext();
-			} else if(sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown)){
-				simulationDisplay.focusPrev();
-			}
-		}
 
 		// Release outside window
 		if(m_mouseDown && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)){
@@ -364,7 +386,7 @@ private:
 		
 
 		//-----------------------------------------------------------------------------------
-		// Render Simulation
+		// Rendering
 		//-----------------------------------------------------------------------------------
 
 		// Draw simultion
@@ -380,17 +402,16 @@ private:
 			window.setView(view);
 
 
-	
 			drawUI();
 
 			// Display Contents
 			window.display();
-			//printf("display?");
+
 		}
 
 
 		//-----------------------------------------------------------------------------------
-		// Framerate and Timing
+		// Framerate Timing
 		//-----------------------------------------------------------------------------------
 
 		frameCounter++;

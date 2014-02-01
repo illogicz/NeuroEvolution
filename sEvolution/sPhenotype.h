@@ -87,6 +87,16 @@ public:
 		return m_isElite;
 	}
 
+	void setRank(int rank)
+	{
+		m_rank = rank;
+	}
+
+	int getRank()
+	{
+		return m_rank;
+	}
+
 	// Brain
 	sNeuralNet neuralNet;
 
@@ -94,6 +104,7 @@ public:
 
 protected:
 
+	int m_rank;
 	bool m_isLeader;
 	bool m_isElite;
 	b2AABB m_aabb;

@@ -66,7 +66,7 @@ void runSwarmSimulation()
 
 void runWormSimulation()
 {
-	sRandom::seed(1368345);
+	sRandom::seed(13523345);
 
 
 	RaceSimulation<Worm> simulation;
@@ -133,7 +133,7 @@ void runWormSimulation()
 
 void runCarSimulation()
 {
-	sRandom::seed(124555);
+	sRandom::seed(128955);
 
 
 	RaceSimulation<Car> simulation;
@@ -150,10 +150,11 @@ void runCarSimulation()
 	simulation.breadingPoolFraction = 1.f;
 	simulation.population.setWinnersPerPrelim(5);
 
-	simulation.maxRoughness = 150;
-	simulation.minRoughness = 150;
+	simulation.maxRoughness = 5;
+	simulation.minRoughness = 5;
 	simulation.randomizeEnvironment = true;
 	
+	simulation.perlinFrequency = 4;
 	simulation.worldOffset_y = 3;
 	simulation.groundSegmentSize = 1;
 	simulation.groundRampup = 2000;
@@ -170,7 +171,7 @@ int main()
 {
 	//runBipedSimulation();
 	//runSwarmSimulation();
-	//runWormSimulation();
+	runWormSimulation();
 	runCarSimulation();
 	
 	return 0;
