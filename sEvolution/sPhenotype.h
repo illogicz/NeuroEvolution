@@ -16,6 +16,8 @@ class sPhenotype : public sContainer, public sStepListener
 {
 public:
 
+	sPhenotype() : m_isFocus(false){}
+
 	// Derived phenotypes should implement these
 	virtual void init(sWorld &world) = 0;
 	virtual void build(sWorld &world) = 0;
@@ -69,29 +71,21 @@ public:
 		return m_aabb;
 	}
 
-	void setIsLeader(bool leader)
-	{
-		m_isLeader = leader;
-	}
+
 	bool isLeader()
 	{
 		return m_isLeader;
 	}
 
-	void setIsElite(bool elite)
-	{
-		m_isElite = elite;
-	}
 	bool isElite()
 	{
 		return m_isElite;
 	}
 
-	void setRank(int rank)
+	bool isFocus()
 	{
-		m_rank = rank;
+		return m_isFocus;
 	}
-
 	int getRank()
 	{
 		return m_rank;
@@ -103,10 +97,32 @@ public:
 	sFitnessFunction *fitnessFunction;
 
 protected:
+	friend class sSimulationDisplay;
+	friend class sPopulation;
+	friend class sSimulation;
+
+
+	void setIsLeader(bool leader)
+	{
+		m_isLeader = leader;
+	}
+	void setIsElite(bool elite)
+	{
+		m_isElite = elite;
+	}
+	void setIsFocus(bool isFocus)
+	{
+		m_isFocus = isFocus;
+	}
+	void setRank(int rank)
+	{
+		m_rank = rank;
+	}
 
 	int m_rank;
 	bool m_isLeader;
 	bool m_isElite;
+	bool m_isFocus;
 	b2AABB m_aabb;
 	bool m_aabb_valid;
 	virtual void addToWorld(sWorld &world)

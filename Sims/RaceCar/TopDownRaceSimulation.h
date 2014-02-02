@@ -32,8 +32,11 @@ public:
 	TopDownRaceSimulation()
 	{
 
-		ground.setSize(120,65);
-		ground.setPosition(0,3);
+		width = 150;
+		height = 80;
+
+		ground.setSize(width,height);
+		ground.setPosition(0,0);
 
 		setGravity(0,0);
 		world.setGroundBody(&ground);
@@ -42,9 +45,9 @@ public:
 		simulationTime = 100000;
 
 		staticView = true;
-		renderScale = 10;
+		renderScale = 8;
 
-		populationSize = 20;
+		populationSize = 50;
 	}
 
 	~TopDownRaceSimulation()
@@ -53,18 +56,24 @@ public:
 			delete population[i];
 		}
 	}
-
+	
 	int populationSize;
 	float simulationTime;
 	RaceFitness fitnessFunction;
-
+	float width;
+	float height;
 protected:
 
 	void initPhenotypes()
 	{
 
+		int w = sqrt(populationSize);
+		int h = ceil(float(populationSize) / w);
+
 		for(int i = 0; i < populationSize; i++){
 			TopDownCar *car = new TopDownCar;
+			car->position.x = float((i % w) + 1) / (w+1) * width - width / 2;
+			car->position.y = float((i / w) + 1) / (h+1) * height - height / 2;
 			car->init(world);
 			population.addPhenotype(car);
 			world.add(car);
@@ -96,6 +105,8 @@ protected:
 	void buildEnvironment()
 	{
 
+		ground.setSize(width,height);
+		ground.setPosition(0,0);
 
 
 	}

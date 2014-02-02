@@ -30,7 +30,7 @@ struct sSynapse;
 
 struct sNeuron
 {
-	float value;
+	float accumulator;
 	float bias;
 	float feedback;
 	bool useFeedback;
@@ -42,7 +42,7 @@ struct sNeuron
 	float lastActivation;
 	void prepare()
 	{
-		value = 0;
+		accumulator = 0;
 		lastActivation = 0;
 		bias = biasGene->getValue();
 		if(useFeedback){
@@ -51,7 +51,7 @@ struct sNeuron
 	}
 	float activation()
 	{
-		lastActivation = tanh_approx(value + bias);
+		lastActivation = tanh_approx(accumulator + bias);
 		return lastActivation;
 	}
 	int order; // for rendering purposes only
@@ -65,12 +65,25 @@ struct sNeuron
 struct sSynapse
 {
 	sGene *weightGene;
+	sGene *enabledGene;
 	sNeuron *output;
 	sNeuron *input;
 	int layer;
 	float weight;
+	bool enabled;
+	float enableThreshold;
+
+	float getValue()
+	{
+		if(enabled){
+			return input->lastActivation * weight;
+		}
+		return 0;
+	}
+
 	void prepare()
 	{
+		enabled = enabledGene->getValue() < enableThreshold;
 		weight = weightGene->getValue();
 	}
 };
@@ -141,6 +154,7 @@ public:
 		m_biasDistributions.resize(size + 2, 2.f);
 		m_feedbackDistributions.resize(size, 2.f);
 		m_useFeedback.resize(size, false);
+		m_synapseThresholds.resize(size + 1, 0.1f);
 	}
 
 	int getHiddenLayerCount()
@@ -204,19 +218,19 @@ public:
 	{
 		if(index >= m_inputCount)return;
 
-		inputs[index].value = value;
+		inputs[index].accumulator = value;
 	}
 	void interpolateInput(int index, float value, float t)
 	{
 		if(index >= m_inputCount)return;
 
-		inputs[index].value += (value - inputs[index].value) * t;
+		inputs[index].accumulator += (value - inputs[index].accumulator) * t;
 	}
 	float getInput(int index)
 	{
 		if(index >= m_inputCount)return 0.f;
 
-		return inputs[index].value;
+		return inputs[index].accumulator;
 	}
 
 	// Return activated output value beteem -1 and 1
@@ -258,6 +272,16 @@ public:
 	float getFeedbackDistribution(int layerIndex)
 	{
 		return m_feedbackDistributions[layerIndex];
+	}
+
+	// Synapse thresholds
+	void setSynapseThreshold(int layerIndex, float threshold)
+	{
+		m_synapseThresholds[layerIndex] = threshold;
+	}
+	float getSynapseThreshold(int layerIndex)
+	{
+		return m_synapseThresholds[layerIndex];
 	}
 
 	void printStats()
@@ -384,7 +408,7 @@ protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_
 				_inputs[i].layer = layer;
 				_inputs[i].feedback = 0;
 				_inputs[i].useFeedback = false;
-				_inputs[i].biasGene = &m_genome->addGene(getNeuronName(0,i), -0, 0);
+				_inputs[i].biasGene = &m_genome->addGene(getNeuronName(0,i), -m_maxBias, m_maxBias);
 				m_neurons.push_back(&_inputs[i]);
 			}
 
@@ -393,7 +417,9 @@ protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_
 				sSynapse *synapse = new sSynapse;
 				m_synapses.push_back(synapse);
 
-				synapse->weightGene = &m_genome->addGene(getSynapseName(layer,i,j), -m_maxWeight, m_maxWeight);
+				synapse->weightGene = &m_genome->addGene(getSynapseName(layer,i,j) + "_W", -m_maxWeight, m_maxWeight);
+				synapse->enabledGene = &m_genome->addGene(getSynapseName(layer,i,j) + "_E", 0,1);
+				synapse->enableThreshold = 3.f / _outputs.size();//m_synapseThresholds[layer];
 				synapse->input = &_inputs[i];
 				synapse->output = &_outputs[j];
 				synapse->layer = layer;
@@ -458,7 +484,7 @@ private: void runSynapseLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_output
 		// reset output values
 		unsigned int i = _outputs.size();
 		while(i--){
-			_outputs[i].value = _outputs[i].lastActivation * _outputs[i].feedback;
+			_outputs[i].accumulator = _outputs[i].lastActivation * _outputs[i].feedback;
 		}
 
 		// Loops through inputs
@@ -477,7 +503,9 @@ private: void runSynapseLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_output
 				// Add to output neurons value, this is the activation value of the input 
 				// neuron multiplied by the synapse weight
 				sSynapse *synapse = _inputs[i].outputSynapses[j];
-				synapse->output->value += activation_value * synapse->weight;
+				if(synapse->enabled){
+					synapse->output->accumulator += activation_value * synapse->weight;
+				}
 			}
 		}
 		
@@ -556,6 +584,7 @@ private:
 	vector<float> m_weightDistributions;
 	vector<float> m_biasDistributions;
 	vector<float> m_feedbackDistributions;
+	vector<float> m_synapseThresholds;
 
 };
 

@@ -50,7 +50,6 @@ protected:
 
 	void addToWorld(sWorld &world)
 	{
-		printf("rectanle add to world \n");
 		s_shape.SetAsBox(m_size.x, m_size.y);		
 		sUniformBody::addToWorld(world);
 	}

@@ -16,7 +16,7 @@ public:
 		graphWidth = 200;
 		height = 180;
 		scale = 20.f;
-		num_samples = 100000;
+		num_samples = 30000;
 		currentLayer = 0;
 		inputRangeLower = -2;
 		inputRangeUpper = 2;
@@ -114,22 +114,25 @@ public:
 			for(int i = 0; i < n_buckets; i++){
 				dist[i] = 0;
 			}
-			int num_neurons;
-			if(i == 0){
-				num_neurons = neuralNet.getInputCount();
-			} else {
-				num_neurons = neuralNet.getHiddenLayerSize(i - 1);
-			}
+
 			float grandtotal = 0;
 			for(int j = 0; j < num_samples; j++){
-				float total = 0;
-				for(int i = 0; i < num_neurons; i++){
-					float input = sRandom::getFloat(inputRangeLower,inputRangeUpper);
-					float bias = getRandomBias(biasDist) * neuralNet.getMaxBias();
-					float weight = getRandomWeight(weightDist) * neuralNet.getMaxWeight();
-					total += tanh_approx(input + bias) * weight;
+			float total = 0;
+
+				neuralNet.randomize();
+				neuralNet.prepare();
+				for(int k = 0; k < cycles; k++){
+					for(int i = 0; i < neuralNet.getInputCount(); i++){
+						neuralNet.setInput(i, sRandom::getFloat(inputRangeLower,inputRangeUpper));
+					}
+					neuralNet.run();
 				}
-				grandtotal += abs(total);
+				if(i < layers-1){
+					total += neuralNet.getHiddenNeurons(i)[0].accumulator;
+				} else {
+					total += neuralNet.getOutputNeurons()[0].accumulator;
+				}
+				grandtotal += total;
 
 
 				int bucket = (total * scale) + n_buckets / 2;

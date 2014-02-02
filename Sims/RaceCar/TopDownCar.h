@@ -29,10 +29,11 @@ public:
 		visionFOV = 2.5;
 		minRayLength = 1;
 		maxRayLength = 30;
+		touchSense = true;
+		neuralFeedback = true;
 		fitnessFunction = &raceFitness;
 		id = id_counter++;
-		position.x = -50 + id * 5;
-		position.y = 20;
+
 	}
 
 	int visionResolution;
@@ -41,25 +42,27 @@ public:
 	float maxStearingAngle;
 	float width;
 	float height;
+	bool touchSense;
+	bool neuralFeedback;
 	b2Vec2 position;
 
 	virtual void init(sWorld &world)
 	{
-		lifeFilter.categoryBits = 0x01;
-		lifeFilter.maskBits = 0x01;
-		lifeFilter.groupIndex = -1 - id;
-		deathFilter.groupIndex = -1 - id;
-		deathFilter.categoryBits = 0x02;
-		deathFilter.maskBits = 0x02;
+		chassisFilter.categoryBits = 0x01;
+		chassisFilter.maskBits = 0x01;
+		//chassisFilter.groupIndex = -1 - id;
+
+		wheelFilter.categoryBits = 0x02;
+		wheelFilter.maskBits = 0x03;
 
 
 		chassis.setSize(width,height);
-		chassis.setFilter(lifeFilter);
+		chassis.setFilter(chassisFilter);
 		chassis.setLinearDamping(0.5);
 		frontLeftWheel.setSize(0.3, 0.7);
-		frontLeftWheel.setFilter(lifeFilter);
+		frontLeftWheel.setFilter(wheelFilter);
 		frontRightWheel.setSize(0.3, 0.7);
-		frontRightWheel.setFilter(lifeFilter);
+		frontRightWheel.setFilter(wheelFilter);
 
 		//frontRightWheel.copy(frontLeftWheel);
 		rearRightWheel.copy(frontLeftWheel);
@@ -113,23 +116,31 @@ public:
 		world.addContactListener(this, &rearRightWheel);
 
 
-		neuralNet.setInputCount(visionResolution);
+		int input_count = visionResolution;
+		if(touchSense){
+			input_count++;
+		}
+		if(neuralFeedback){
+			input_count += 2;
+		}
+		neuralNet.setInputCount(input_count);
 		neuralNet.setHiddenLayerCount(2);
-		neuralNet.setHiddenLayerSize(0,visionResolution + 2);
+		neuralNet.setHiddenLayerSize(0,input_count);
 		neuralNet.setHiddenLayerSize(1,5);
 
 
 		neuralNet.setUseFeedback(0,true);
-		neuralNet.setFeedbackDistribution(0,3);
+		neuralNet.setMaxFeedback(1);
+		neuralNet.setFeedbackDistribution(0,12);
 
-		neuralNet.setMaxWeight(2.6);
-		neuralNet.setWeightDistribution(0,7);
-		neuralNet.setWeightDistribution(1,8);
-		neuralNet.setWeightDistribution(2,4);
+		neuralNet.setMaxWeight(2);
+		neuralNet.setWeightDistribution(0,4);
+		neuralNet.setWeightDistribution(1,3);
+		neuralNet.setWeightDistribution(2,3);
 
 		neuralNet.setMaxBias(1);
-		neuralNet.setBiasDistribution(1,3);
-		neuralNet.setBiasDistribution(2,5);
+		neuralNet.setBiasDistribution(1,12);
+		neuralNet.setBiasDistribution(2,12);
 
 		neuralNet.setOutputCount(2);
 		neuralNet.create(genome);
@@ -145,16 +156,12 @@ public:
 		rearRightWheel.setType(DYNAMIC_BODY);
 		rearLeftWheel.setType(DYNAMIC_BODY);
 
-		chassis.setFilter(lifeFilter);
-		frontLeftWheel.setFilter(lifeFilter);
-		frontRightWheel.setFilter(lifeFilter);
-		rearRightWheel.setFilter(lifeFilter);
-		rearLeftWheel.setFilter(lifeFilter);
-
 		frontLeftJoint.setLimits(0, 0);
 		frontRightJoint.setLimits(0, 0);
 
+
 		resetPositions();
+
 
 		deferDeath = false;
 		totalAccelerator = 0;
@@ -179,11 +186,11 @@ public:
 		rearRightWheel.setType(STATIC_BODY);
 		rearLeftWheel.setType(STATIC_BODY);
 
-		chassis.setFilter(deathFilter);
-		frontLeftWheel.setFilter(deathFilter);
-		frontRightWheel.setFilter(deathFilter);
-		rearRightWheel.setFilter(deathFilter);
-		rearLeftWheel.setFilter(deathFilter);
+		//chassis.setFilter(deathFilter);
+		//frontLeftWheel.setFilter(deathFilter);
+		//frontRightWheel.setFilter(deathFilter);
+		//rearRightWheel.setFilter(deathFilter);
+		//rearLeftWheel.setFilter(deathFilter);
 
 	}
 	virtual void step()
@@ -198,7 +205,7 @@ public:
 		}
 
 		if(num_contacts){
-			fitnessModifier *= 0.999;
+			fitnessModifier *= 0.995;
 			setCustomColor(b2Color(1,0,0));
 		} else {
 			if(isElite()){
@@ -208,7 +215,6 @@ public:
 			}
 		}
 
-		totalSpeed += chassis.getLinearVelocity().Length();
 
 		applyWheelPhysics(frontLeftWheel);
 		applyWheelPhysics(frontRightWheel);
@@ -235,17 +241,35 @@ public:
 			 } else {
 				 ip = p2;
 			 }
-			 if(isLeader()){
+			 if(isFocus()){
 				 int c = 200 * (1.f - result.fraction) + 55;
 				 m_world->getDebugDraw()->addLine(p1,ip, sf::Color(255,255,255,c));
 			 }
-			 neuralNet.setInput(input_index++, 1.f - result.fraction);
+			 neuralNet.setInput(input_index++, result.fraction * 2 - 1.f);
+		}
+		if(touchSense){
+			neuralNet.setInput(input_index++, num_contacts ? 1 : 0);
+		}
+		if(neuralFeedback){
+			neuralNet.interpolateInput(input_index++, neuralNet.getOutput(0), 0.5);
+			neuralNet.interpolateInput(input_index++, neuralNet.getOutput(1), 0.5);
 		}
 
 		neuralNet.run();
 
-		setStearing(neuralNet.getOutput(0));
+		float steering_output = neuralNet.getOutput(0);
+
+		setStearing(steering_output);
 		setAccelerator(neuralNet.getOutput(1));
+
+		float forwardSpeed = -b2Dot(chassis.getLinearVelocity(), b2Rot(chassis.getAngle()).GetYAxis());
+
+		// dont penalise for going backwards
+		if(forwardSpeed < 0)forwardSpeed = 0;
+		//if(isFocus()){
+		//	printf("forward speed = %f \n", forwardSpeed);
+		//}
+		totalSpeed += forwardSpeed * (1 - abs(steering_output));
 
 
 	}
@@ -291,18 +315,26 @@ private:
 		rearRightWheel.zeroState();
 		rearLeftWheel.zeroState();
 
-		chassis.setPosition(position);
-		frontLeftWheel.setPosition(position.x - width, position.y - height);
-		frontRightWheel.setPosition(position.x + width, position.y - height);
-		rearRightWheel.setPosition(position.x - width, position.y + height);
-		rearLeftWheel.setPosition(position.x + width, position.y + height);
+		b2Vec2 p = position + b2Vec2(sRandom::getFloat(-4, 3), sRandom::getFloat(-4, 3));
+
+		chassis.setPosition(p);
+		frontLeftWheel.setPosition(p.x - width, p.y - height);
+		frontRightWheel.setPosition(p.x + width, p.y - height);
+		rearRightWheel.setPosition(p.x - width, p.y + height);
+		rearLeftWheel.setPosition(p.x + width, p.y + height);
+
+		frontLeftJoint.setAnchor(frontLeftWheel.getPosition());
+		frontRightJoint.setAnchor(frontRightWheel.getPosition());
+		rearLeftJoint.setAnchor(rearLeftWheel.getPosition());
+		rearRightJoint.setAnchor(rearRightWheel.getPosition());
+
 	}
 
 	static int id_counter;
 	int id;
 	bool deferDeath;
-	b2Filter lifeFilter;
-	b2Filter deathFilter;
+	b2Filter chassisFilter;
+	b2Filter wheelFilter;
 	float totalAccelerator;
 	float totalSpeed;
 	float fitnessModifier;

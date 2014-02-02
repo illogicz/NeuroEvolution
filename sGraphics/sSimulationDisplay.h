@@ -26,13 +26,16 @@ public:
 	{
 
 		float scale = m_simulation->renderScale;
+
+		updateFocus();
+
 		if(!m_simulation->staticView){
 
 			if(!m_lockPosition){
 
 				b2Vec2 wp = b2Vec2(float(m_view.getCenter().x) / scale, float(m_view.getCenter().y) / scale);
 				//b2Vec2 p = m_focusLeader ? m_simulation->leader->getPosition() : m_simulation->trailer->getPosition();
-				b2Vec2 p = getFocusPosition();
+				b2Vec2 p = m_focusTarget->getPosition();
 				p.y = wp.y + 0.1f * (p.y - wp.y);
 				float32 dx = p.x - wp.x;// + simulation.leader->getVelocity().x / scale;
 				//if(abs(dx) > 5) dx *= abs(dx) / 5;
@@ -51,7 +54,6 @@ public:
 					if(a < 0.05)a = 0.05;
 					m_simulation->population[i]->setAlpha(a);
 				}
-				m_focusChanged = false;
 
 			//}
 		}
@@ -95,10 +97,10 @@ public:
 			m_focusRank = rank;
 			m_focusChanged = true;
 		//}
-		if(m_lockFocus){
-			m_focusTarget = m_simulation->population[m_focusRank];
-		}
+		updateFocus();
+
 	}
+
 	int getFocusRank()
 	{
 		if(m_lockFocus){
@@ -110,11 +112,7 @@ public:
 
 	sPhenotype *getFocusTarget()
 	{
-		if(m_lockFocus){
-			return m_focusTarget;
-		} else {
-			return m_simulation->population[m_focusRank]; 
-		}
+		return m_focusTarget;
 	}
 
 	b2Vec2 getFocusPosition()
@@ -203,7 +201,17 @@ public:
 
 private:
 
-
+	void updateFocus()
+	{
+		if(m_focusTarget){
+			m_focusTarget->setIsFocus(false);
+		}
+		if(!m_lockFocus || m_focusChanged){
+			m_focusTarget = m_simulation->population[m_focusRank];
+		}
+		m_focusChanged = false;
+		m_focusTarget->setIsFocus(true);
+	}
 
 	void drawStatistics()
 	{

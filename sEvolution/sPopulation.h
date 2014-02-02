@@ -16,6 +16,8 @@ struct sGeneration
 
 class sPopulation
 {
+
+
 public:
 
 	sPopulation()

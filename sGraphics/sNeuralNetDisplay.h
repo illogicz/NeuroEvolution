@@ -76,18 +76,22 @@ public:
 			float act = neurons[i].lastActivation;
 			for(int j = 0; j < l2; j++){
 
-				int order = neurons[i].outputSynapses[j]->output->order;
+				sSynapse *synapse = neurons[i].outputSynapses[j];
+				if(synapse->enabled){
 
-				Vector2f p2 = getNeuronPosition(layer + 1, order, l2);
+					int order = synapse->output->order;
 
-				float w = neurons[i].outputSynapses[j]->weight * act;
-				//int c = (w / maxw + 1.f) * 0.5f * 0xFF;
+					Vector2f p2 = getNeuronPosition(layer + 1, order, l2);
 
-				int a = abs(w / maxw) * 0xFF;
-				int c = w < 0 ? 0x00 : 0xFF;
+					float w = synapse->weight * act;
+					//int c = (w / maxw + 1.f) * 0.5f * 0xFF;
 
-				v.append(Vertex(p1,Color(c, c, c, a)));
-				v.append(Vertex(p2,Color(c, c, c, a)));
+					int a = abs(w / maxw) * 0xFF;
+					int c = w < 0 ? 0x00 : 0xFF;
+
+					v.append(Vertex(p1,Color(c, c, c, a)));
+					v.append(Vertex(p2,Color(c, c, c, a)));
+				}
 			}
 		}
 		

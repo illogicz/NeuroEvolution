@@ -20,6 +20,8 @@ public:
 		frameRate = 60;
 		frameLimiter = true;
 		render_flag = true;
+		render_ui = true;
+		render_graphs = true;
 		m_mouseDown = false;
 		m_message = "";
 		messageTimeout = 0;
@@ -94,6 +96,8 @@ private:
 	float height;
 	bool frameLimiter;
 	bool render_flag;
+	bool render_ui;
+	bool render_graphs;
 	int frameRate;
 
 	// Display
@@ -117,12 +121,27 @@ private:
 	void drawUI()
 	{
 
-		// Draw Graphs
-		window.draw(fitnessGraph);
+		drawMessage();
 
-		geneDisplay.mousePosition = sf::Vector2f(mousePosition.x, mousePosition.y);
-		window.draw(geneDisplay);
-			
+		if(!render_ui)return;
+
+		// Draw Graphs
+
+		if(render_graphs){
+			window.draw(fitnessGraph);
+
+			geneDisplay.mousePosition = sf::Vector2f(mousePosition.x, mousePosition.y);
+			window.draw(geneDisplay);
+
+			sNeuralNet &neuralNet = m_simulation->population[simulationDisplay.getFocusRank()]->neuralNet;
+			neuralNetDisplay.renderNeuralNet(window, neuralNet);
+
+			nnAnalyser2.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser2.width, height - nnAnalyser2.height - nnAnalyser1.height);
+			nnAnalyser2.draw(window);
+			nnAnalyser1.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser1.width, height - nnAnalyser1.height);
+			nnAnalyser1.draw(window);
+		}
+
 		int popSize = m_simulation->population.size();
 		if(m_simulation->population.prelimsComplete()){
 			drawText("Generation: " + to_string(m_simulation->population.getGenerationCount() + 1), 10,44);
@@ -132,7 +151,7 @@ private:
 			int prelimSize = m_simulation->population.getPrelimWinnerCount();
 			drawText("Population: " + to_string(prelimSize) + " / " + to_string(popSize), 10,62);
 		}
-		drawMessage();
+		
 
 		if((m_simulation->speedUp || !frameLimiter)){
 			sf::CircleShape triangle(17, 3);
@@ -143,14 +162,6 @@ private:
 			triangle.setPosition(width / 2 + 13, 50);
 			window.draw(triangle);
 		}
-
-		sNeuralNet &neuralNet = m_simulation->population[simulationDisplay.getFocusRank()]->neuralNet;
-		neuralNetDisplay.renderNeuralNet(window, neuralNet);
-
-		nnAnalyser2.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser2.width, height - nnAnalyser2.height - nnAnalyser1.height);
-		nnAnalyser2.draw(window);
-		nnAnalyser1.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser1.width, height - nnAnalyser1.height);
-		nnAnalyser1.draw(window);
 	}
 
 	void layoutUI()
@@ -290,6 +301,12 @@ private:
 
 				} else if(e.key.code == sf::Keyboard::R){
 					render_flag = !render_flag;
+
+				} else if(e.key.code == sf::Keyboard::U){
+					render_ui = !render_ui;
+
+				} else if(e.key.code == sf::Keyboard::G){
+					render_graphs = !render_graphs;
 
 				} else if(e.key.code == sf::Keyboard::F){
 					frameRate = 90 - frameRate;
