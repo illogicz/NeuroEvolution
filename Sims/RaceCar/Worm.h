@@ -39,6 +39,7 @@ public:
 	static bool killOnLackOffProgress;
 	static int progressTimeout;
 	static float progressAmount;
+	static int maxLifeTime;
 
 	static float startEnery;
 	static bool killOnStarvation;
@@ -54,10 +55,6 @@ public:
 	static float maxPulse;
 	static float contactGain;
 	static float lateralDamping;
-
-	// Brain
-	static float maxNeuronBias;
-	static float maxSynapseWeight;
 	
 	// Senses
 	static bool pulseFeedback;
@@ -65,9 +62,12 @@ public:
 	static bool bodySense;
 	static bool directionSense;
 	static bool touchSense;
+	static bool orientationSense;
+
+	// Muscles
+	static bool muscleModel;
 
 
-	
 	vector<b2Vec2> directionTargets;
 	
 
@@ -120,10 +120,12 @@ public:
 
 		
 		for(int i = 0; i <= numSegments; i++){
-			genome.addGene("WSW_" + to_string(i), 0.07, 0.35);
+			//genome.addGene("WSW_" + to_string(i), 0.07, 0.35);
+			genome.addGene("WSW_" + to_string(i), 0.35, 0.35);
 		}
 		for(int i = 0; i < numSegments; i++){
-			genome.addGene("WSL_" + to_string(i), 1, 3);
+			//genome.addGene("WSL_" + to_string(i), 1, 3);
+			genome.addGene("WSL_" + to_string(i), 1, 1);
 		}		
 				
 		
@@ -138,8 +140,11 @@ public:
 			inputCount += 2;
 			outputCount++;
 		}
-		if(bodySense){ // as opposed to touch sense
+		if(bodySense){
 			inputCount += numSegments - 1;
+		}
+		if(orientationSense){
+			inputCount++;
 		}
 		if(touchSense){
 			inputCount += numSegments;
@@ -147,25 +152,28 @@ public:
 		if(directionSense){
 			inputCount += directionTargets.size();
 		}
+		if(muscleModel){
+			outputCount += numSegments - 1;
+		}
 		neuralNet.setInputCount(inputCount);
 		neuralNet.setOutputCount(outputCount);
 		neuralNet.setHiddenLayerCount(2);
-		neuralNet.setHiddenLayerSize(0,(inputCount + outputCount)/2+1);//inputCount);
-		neuralNet.setHiddenLayerSize(1,(inputCount + outputCount)/2-1);//inputCount);
+		neuralNet.setHiddenLayerSize(0,(inputCount + outputCount)/2);//inputCount);
+		neuralNet.setHiddenLayerSize(1,(inputCount + outputCount)/2);//inputCount);
 
-		neuralNet.setWeightDistribution(0,6);
-		neuralNet.setWeightDistribution(1,5.5);
-		neuralNet.setWeightDistribution(2,5);
+		neuralNet.setWeightDistribution(0,7);
+		neuralNet.setWeightDistribution(1,8);
+		neuralNet.setWeightDistribution(2,9);
 
-		neuralNet.setUseFeedback(0,true);
-		neuralNet.setUseFeedback(1,true);
-		neuralNet.setMaxFeedback(1.5);
-		neuralNet.setFeedbackDistribution(0,4);
-		neuralNet.setFeedbackDistribution(1,4);
+		neuralNet.setUseFeedback(0,false);
+		neuralNet.setUseFeedback(1,false);
+		neuralNet.setMaxFeedback(1);
+		neuralNet.setFeedbackDistribution(0,3);
+		neuralNet.setFeedbackDistribution(1,3);
 
 		//neuralNet.setHiddenLayerSize(1,(inputCount + outputCount)/2);//inputCount);
-		neuralNet.setMaxBias(maxNeuronBias);
-		neuralNet.setMaxWeight(maxSynapseWeight);
+		neuralNet.setMaxBias(0.3);
+		neuralNet.setMaxWeight(3);
 		neuralNet.create(genome);
 
 	}
@@ -183,12 +191,12 @@ protected:
 
 	float getSegmentThickness(int index)
 	{
-		//float(sin(float(index) / numSegments * b2_pi) * thickness * 0.4f + 0.15f);
-		return genome.getValue("WSW_" + to_string(index)) / geneThicknessTotal * thickness * numSegments;
+		return 0.15f;
+		//return float(sin(float(index) / numSegments * b2_pi) * thickness * 0.4f + 0.15f);
+		//return genome.getValue("WSW_" + to_string(index)) / geneThicknessTotal * thickness * numSegments;
 	}
 	float getSegmentLength(int index)
 	{
-		//float(sin(float(index) / numSegments * b2_pi) * thickness * 0.4f + 0.15f);
 		return (genome.getValue("WSL_" + to_string(index))) / geneLengthTotal * length;
 	}
 	float geneLengthTotal;
@@ -213,8 +221,11 @@ protected:
 		for(int i = 0; i < numSegments; i++){
 
 			m_segmentContact[i] = false;
-
-			m_segments[i]->setType(DYNAMIC_BODY);
+			if(i == numSegments - 1){
+				m_segments[i]->setType(STATIC_BODY);
+			} else {
+				m_segments[i]->setType(DYNAMIC_BODY);
+			}
 			//m_segmentContact[i] = false;
 
 			WormSegment* segment = m_segments[i];
@@ -238,6 +249,9 @@ protected:
 				float jx = x + w;
 				joint->setAnchor(jx,0);
 				joint->setMotorSpeed(0);
+				if(muscleModel){
+					joint->setMaxMotorTorque(0);
+				}
 			}
 
 
@@ -286,7 +300,7 @@ protected:
 		pulsePosition = 0.f;
 		feedBackValue = 0.f;
 		eneryUsed = 0.f;
-		
+		total_x = 0;
 		// Set a custom color for elites
 		if(isElite()){
 			setCustomColor(b2Color(0,1,1));
@@ -311,15 +325,16 @@ protected:
 
 
 	float totalHeight;
+	float total_x;
 	float getFitness() // override
 	{
-		float distance = getAABB().upperBound.x;
-		distance = distance < 0 ? 0 : distance;
+		float distance = getAABB().upperBound.x + length;
+		//distance = distance < 0 ? 0 : distance;
 		float speed = 100.f * distance / (lifeTime + 1);
 		float ave_height = totalHeight / (lifeTime + 1);
-		float fitness = (1.f + distance) * (1.f + speed); // * (1.f + ave_height * 10.f);
+		float fitness = distance; //(1.f + distance * distance) * (1.f + speed); // * (1.f + ave_height * 10.f);
 
-		return fitness;
+		return total_x;
 	}
 
 	float getProgress()
@@ -343,6 +358,7 @@ protected:
 			return;
 		}
 		
+		total_x += getAABB().upperBound.x + length;
 
 		for(int i = 0; i < numSegments-1; i++){
 			eneryUsed += abs(m_joints[i]->getMotorTorque());
@@ -378,7 +394,10 @@ protected:
 				neuralNet.interpolateInput(input_index++, m_joints[i]->getAngle() * 1.f, 0.5f);
 			}
 		}
-
+		if(orientationSense){
+			b2Vec2 dv = m_segments[0]->getPosition() - m_segments[m_segments.size()-1]->getPosition();
+			neuralNet.setInput(input_index++, atan2(dv.y, dv.x));
+		}
 		if(pulseFeedback){
 			neuralNet.setInput(input_index++, sin(pulsePosition));
 			neuralNet.setInput(input_index++, cos(pulsePosition));
@@ -386,7 +405,7 @@ protected:
 
 		if(directionSense){
 
-			WormSegment &segment = *m_segments[m_segments.size()-1];
+			WormSegment &segment = *m_segments[0];
 			float32 a = segment.getAngle();
 
 			for(int i = 0; i < directionTargets.size(); i++){
@@ -407,10 +426,29 @@ protected:
 		// OUTPUT
 
 		int output_index = 0;
-		for(int i = 0; i < numSegments - 1; i++){
-			float o = neuralNet.getOutput(output_index++) * maxJointAngle;
-			float a = m_joints[i]->getAngle();
-			m_joints[i]->setMotorSpeed((o - a) / m_world->timeStep * muscleSpeed);
+		if(muscleModel){
+
+			for(int i = 0; i < numSegments - 1; i++){
+				float o1 = neuralNet.getOutput(output_index++);
+				float o2 = neuralNet.getOutput(output_index++);
+				o1 = o1 < 0 ? 0 : o1;
+				o2 = o2 < 0 ? 0 : o2;
+				float c = m_joints[i]->getMaxMotorTorque();
+				float t = max(o1,o2) * muscleTorque * 5.f + 5.f;
+				m_joints[i]->setMaxMotorTorque(c + (t - c) * 1.0f);
+
+				//float a = m_joints[i]->getAngle();
+				c = m_joints[i]->getMotorSpeed();
+				t = (o1 - o2) / m_world->timeStep * muscleSpeed * 0.1f;// * 0.1f;
+				m_joints[i]->setMotorSpeed(c + (t - c));
+			}
+
+		} else {
+			for(int i = 0; i < numSegments - 1; i++){
+				float o = neuralNet.getOutput(output_index++) * maxJointAngle * 0.9f;
+				float a = m_joints[i]->getAngle();
+				m_joints[i]->setMotorSpeed((o - a) / m_world->timeStep * muscleSpeed * 0.1f);
+			}
 		}
 		if(pulseFeedback){
 			pulsePosition += neuralNet.getOutput(output_index++) * maxPulse;
@@ -434,6 +472,9 @@ protected:
 					return;
 				}
 			}
+		}
+		if(lifeTime > maxLifeTime && maxLifeTime > 0){
+			die();
 		}
 	}
 
@@ -495,17 +536,14 @@ int Worm::numSegments = 7;
 float Worm::length = 5.f;
 //Worm:://thickness = 0.35f;
 float Worm::thickness = 0.21f;
-float Worm::maxJointAngle = 1.3f;
+float Worm::maxJointAngle = 1.4f;
 
 // Movement Abilities
 float Worm::muscleTorque = 20;
 float Worm::muscleSpeed = 0.05f;
 float Worm::maxPulse = 0.2f;
 float Worm::lateralDamping = 0;
-
-// Neural Net settings
-float Worm::maxNeuronBias = 1.0;
-float Worm::maxSynapseWeight = 2.f / tanh(1);
+bool Worm::muscleModel = true;
 
 // Senses
 bool Worm::pulseFeedback = false;
@@ -513,7 +551,8 @@ bool Worm::directFeedback = false;
 bool Worm::directionSense = false;
 bool Worm::bodySense = true;
 bool Worm::touchSense = true;
-float Worm::contactGain = 0.03f;
+bool Worm::orientationSense = true;
+float Worm::contactGain = 0.1f;
 
 // Death Conditions
 bool Worm::killOnStarvation = false;
@@ -521,4 +560,5 @@ float Worm::startEnery = 3000;
 float Worm::baseMetabolism = 0.2;
 bool Worm::killOnLackOffProgress = true;
 int Worm::progressTimeout = 3600;
+int Worm::maxLifeTime = 0;
 float Worm::progressAmount = 1;

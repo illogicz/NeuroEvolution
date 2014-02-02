@@ -247,6 +247,47 @@ public:
 	}
 
 	//-------------------------------------------------------------------------------
+	// Forces
+
+	void applyForce(const b2Vec2 &force, const b2Vec2 &point)
+	{
+		if(m_inWorld){
+			m_body->ApplyForce(force, point, true);
+		}
+	}
+	void applyForceToCenter(const b2Vec2 &force)
+	{
+		if(m_inWorld){
+			m_body->ApplyForceToCenter(force, true);
+		}
+	}
+	void applyTorque(float torque)
+	{
+		if(m_inWorld){
+			m_body->ApplyTorque(torque, true);
+		}
+	}
+
+	
+	//-------------------------------------------------------------------------------
+	// Impulses
+
+	void applyImpulse(const b2Vec2 &force, const b2Vec2 &point)
+	{
+		if(m_inWorld){
+			m_body->ApplyLinearImpulse(force, point, true);
+		}
+	}
+
+	void applyAngularImpulse(float angularImpulse)
+	{
+		if(m_inWorld){
+			m_body->ApplyAngularImpulse(angularImpulse, true);
+		}
+	}
+
+
+	//-------------------------------------------------------------------------------
 	// Awake
 
 	bool isAwake()

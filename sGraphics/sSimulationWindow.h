@@ -25,9 +25,9 @@ public:
 		messageTimeout = 0;
 
 
-		settings.antialiasingLevel = 8;
+		settings.antialiasingLevel = 4;
 		window.create(sf::VideoMode(unsigned int(width), unsigned int(height)), "", sf::Style::Default, settings);
-		window.setPosition(sf::Vector2i(0,300));
+		window.setPosition(sf::Vector2i(0,150));
 		window.setFramerateLimit(frameRate);
 		//window.setVerticalSyncEnabled(true);
 
@@ -63,16 +63,14 @@ public:
 
 
 
+		sNeuralNet &ann = simulation->population[0]->neuralNet;
 		nnAnalyser1.graphWidth = 210;
 		nnAnalyser1.height = 100;
-		nnAnalyser1.analyzeNetwork(simulation->population[0]->neuralNet);
+		nnAnalyser1.analyzeNetwork(ann);
 
-		nnAnalyser2.graphWidth = 70;
+		nnAnalyser2.graphWidth = nnAnalyser1.graphWidth / (ann.getHiddenLayerCount() + 1);
 		nnAnalyser2.height = 50;
-		nnAnalyser2.analyseLayers(simulation->population[0]->neuralNet);
-
-		//geneGraphs.resize(simulation->population[0]->genome.size());
-		//plotGeneGraphs(geneGraphs);
+		nnAnalyser2.analyseLayers(ann);
 
 	}
 
@@ -238,6 +236,7 @@ private:
 
 	bool stepSimulation()
 	{
+		simulationDisplay.clearDebugDraw();
 		bool newGen = m_simulation->step();
 		if(newGen){
 			simulationDisplay.setCenter(0,0);
@@ -324,15 +323,26 @@ private:
 
 				// Elites
 				} else if(e.key.code == sf::Keyboard::Up){
-					int e = m_simulation->population.getElites() + 1;
-					m_simulation->population.setElites(e);
-					showMessage("Elites:"+to_string(m_simulation->population.getElites()));
+					if(sf::Keyboard::isKeyPressed(sf::Keyboard::E)){
+						int e = m_simulation->population.getElites() + 1;
+						m_simulation->population.setElites(e);
+						showMessage("Elites:"+to_string(m_simulation->population.getElites()));
+
+					} else if(sf::Keyboard::isKeyPressed(sf::Keyboard::M)){
+						m_simulation->population.increaseMutationRate();
+						showMessage("Mutation Rate:"+to_string(m_simulation->population.getMutationRate()));
+					}
 
 				}  else if(e.key.code == sf::Keyboard::Down){
-					int e = m_simulation->population.getElites() - 1;
-					m_simulation->population.setElites(e);
-					showMessage("Elites:"+to_string(m_simulation->population.getElites()));
+					if(sf::Keyboard::isKeyPressed(sf::Keyboard::E)){
+						int e = m_simulation->population.getElites() - 1;
+						m_simulation->population.setElites(e);
+						showMessage("Elites:"+to_string(m_simulation->population.getElites()));
 
+					} else if(sf::Keyboard::isKeyPressed(sf::Keyboard::M)){
+						m_simulation->population.decreaseMutationRate();
+						showMessage("Mutation Rate:"+to_string(m_simulation->population.getMutationRate()));
+					}
 				}
 
 			} else if(e.type == sf::Event::MouseButtonPressed){ 

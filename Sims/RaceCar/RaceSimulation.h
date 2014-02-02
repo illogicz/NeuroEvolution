@@ -142,7 +142,7 @@ protected:
 	void buildEnvironment()
 	{
 		if(ground.isInWorld()){
-			// Don't regenrate if we don;t randomize
+			// Don't regenrate if we don't randomize
 			if(!randomizeEnvironment)return;
 
 			// Remove and reset

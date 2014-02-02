@@ -7,9 +7,8 @@
 
 struct b2AABB;
 
-// This class implements debug drawing callbacks that are invoked
-// inside b2World::Step.
-// 
+
+
 class sDebugDraw// : public b2Draw
 {
 public:
@@ -18,24 +17,17 @@ public:
 	{
 		triangles.setPrimitiveType(sf::PrimitiveType::Triangles);
 		lines.setPrimitiveType(sf::PrimitiveType::Lines);
+		clear();
 	}
 
-
-	void prepare(sf::RenderTarget *target)
+	void clear()
 	{
-		m_target = target;
 		triangles_index = lines_index = 0;
 	}
 
-	void finalize()
+	void setTarget(sf::RenderTarget *target)
 	{
-		// draw triangles
-		triangles.resize(triangles_index);
-		m_target->draw(triangles, states);
-
-		// draw lines
-		lines.resize(lines_index);
-		m_target->draw(lines, states);
+		m_target = target;
 	}
 
 	enum
@@ -68,6 +60,8 @@ public:
 		view_center = states.transform.getInverse().transformPoint(v.getCenter());
 	}
 
+	void addTriangle(const b2Vec2 &v1, const b2Vec2 &v2, const b2Vec2 &v3, sf::Color &c);
+	void addLine(const b2Vec2 &v1, const b2Vec2 &v2, sf::Color &c);
 	void DrawDebugData(sWorld &world);
 	void DrawGrid(const b2AABB &aabb);       
 	void DrawShape(b2Fixture* fixture, const b2Transform& xf, sf::Color& color);
@@ -82,8 +76,6 @@ public:
     void DrawString(int x, int y, const char* string, ...); 
     void DrawString(const b2Vec2& p, const char* string, ...);
     void DrawAABB(b2AABB* aabb, sf::Color& color);
-	void addTriangle(const b2Vec2 &v1, const b2Vec2 &v2, const b2Vec2 &v3, sf::Color &c);
-	void addLine(const b2Vec2 &v1, const b2Vec2 &v2, sf::Color &c);
 
 private:
 

@@ -14,6 +14,7 @@ public:
 	{
 		world.setGravity(b2Vec2(0,10));
 		elites = 1;
+		
 		mutationRate = 0.01f;
 		selectionBias = 1.5f;
 		breadingPoolFraction = 1.0;

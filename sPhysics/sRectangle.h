@@ -19,7 +19,16 @@ public:
 		setPosition(b2Vec2(x, y));
 		setAngle(angle);
 	}
+	sRectangle(sRectangle &rect) : sUniformBody(rect)
+	{
 
+		_copy(rect);
+	}
+	void copy(sRectangle &rect)
+	{
+		sUniformBody::copy(rect);
+		_copy(rect);
+	}
 
 
 
@@ -51,6 +60,13 @@ protected:
 	static b2PolygonShape s_shape;
 	static b2FixtureDef s_fixtureDef;
 	static b2BodyDef s_bodyDef;
+
+private:
+
+	void _copy(sRectangle &rect)
+	{
+		m_size = rect.getSize();
+	}
 };
 
 b2PolygonShape sRectangle::s_shape;

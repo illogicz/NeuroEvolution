@@ -277,6 +277,17 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 			DrawTransform(xf);
 		}
 	}
+
+	// draw triangles
+	triangles.resize(triangles_index);
+	m_target->draw(triangles, states);
+
+	// draw lines
+	lines.resize(lines_index);
+	m_target->draw(lines, states);
+
+	triangles_index = lines_index = 0;
+
 }
 
 
@@ -369,6 +380,7 @@ void sDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2V
 	lines[lines_index].color = color;
 	lines_index++;
 
+	// TODO : implement circles in vertex arrays
 	sf::CircleShape circle(radius, 20);
 	circle.setPosition(center.x-radius, center.y-radius);
 	circle.setOutlineThickness(1.f/50);

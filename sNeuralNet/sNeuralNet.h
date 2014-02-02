@@ -43,6 +43,7 @@ struct sNeuron
 	void prepare()
 	{
 		value = 0;
+		lastActivation = 0;
 		bias = biasGene->getValue();
 		if(useFeedback){
 			feedback = feedbackGene->getValue();
@@ -383,7 +384,7 @@ protected: virtual void createLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_
 				_inputs[i].layer = layer;
 				_inputs[i].feedback = 0;
 				_inputs[i].useFeedback = false;
-				_inputs[i].biasGene = &m_genome->addGene(getNeuronName(0,i), -m_maxBias, m_maxBias);
+				_inputs[i].biasGene = &m_genome->addGene(getNeuronName(0,i), -0, 0);
 				m_neurons.push_back(&_inputs[i]);
 			}
 

@@ -81,8 +81,8 @@ protected:
 			worm->fitnessFunction = &fitnessFunction;
 			worm->progressTimeout = 3000;
 			worm->progressAmount = 0.03f;
-			worm->maxNeuronBias = 0;
-			worm->maxSynapseWeight = 3;
+			//worm->maxNeuronBias = 0;
+			//worm->maxSynapseWeight = 3;
 			worm->muscleSpeed = 0.1;
 			worm->muscleTorque = 1;
 			worm->lateralDamping = 0.8;

@@ -15,7 +15,7 @@ using std::make_pair;
 
 class sBody;
 class sJoint;
-
+class sDebugDraw;
 
 
 struct sContactPair
@@ -40,6 +40,16 @@ struct sContactPairCompare
 		if(left.body1 != right.body1) return left.body1 < right.body1;
 		return left.body2 < right.body2;
 	}
+};
+
+struct sRayCastOutput
+{
+	bool found;
+	b2Vec2 point;
+	float fraction;
+	b2Vec2 normal;
+	sBody *body;
+	b2Fixture *fixture;
 };
 
 class sContactListener
@@ -112,7 +122,24 @@ public:
 		b2world.QueryAABB(&cb, aabb);
 		return cb.bodies;
 	}
-
+	sRayCastOutput rayCastClosest(const b2Vec2 &point1, const b2Vec2 &point2, set<sBody*> *ignoreList = nullptr)
+	{
+		raycastCallback.onlyClosest = true;
+		raycastCallback.any = false;
+		raycastCallback.output.found = false;
+		raycastCallback.output.fraction = 1;
+		raycastCallback.ignoreList = ignoreList;
+		b2world.RayCast(&raycastCallback,point1, point2);
+		return raycastCallback.output;
+	}
+	bool rayCastAny(const b2Vec2 &point1, const b2Vec2 &point2)
+	{
+		raycastCallback.any = true;
+		raycastCallback.output.found = false;
+		raycastCallback.output.fraction = 1;
+		b2world.RayCast(&raycastCallback,point1, point2);
+		return raycastCallback.output.found;
+	}
 
 	void setGravity(b2Vec2 grav)
 	{
@@ -173,17 +200,6 @@ public:
 
 	}
 
-	// TODO: Bad, exposes box2d interface.
-	void addContactListsner(sContactListener &listener, b2FixtureDef *body1, b2FixtureDef *body2 = NULL)
-	{
-
-	}
-	void removeContactListener(sContactListener &listener, b2FixtureDef *body1, b2FixtureDef *b2FixtureDef = NULL)
-	{
-
-	}
-	
-
 	void setGroundBody(sBody *groundBody)
 	{
 		m_groundBody = groundBody;
@@ -193,6 +209,21 @@ public:
 		return m_groundBody;
 	}
 
+
+	//---------------------------------------------------------------------------------------
+	// Debug draw binding
+	//---------------------------------------------------------------------------------------
+
+	sDebugDraw *getDebugDraw()
+	{
+		return m_debugDraw;
+	}
+	void setDebugDraw(sDebugDraw *debugDraw)
+	{
+		m_debugDraw = debugDraw;
+	}
+
+
 	 //temp public
 protected:
 
@@ -200,7 +231,7 @@ protected:
 
 private:
 
-
+	sDebugDraw *m_debugDraw;
 	sBody* m_groundBody;
 
 	sContainer::addToWorld;       // disable
@@ -228,7 +259,6 @@ private:
 		bool ReportFixture(b2Fixture* fixture){
 			if(fixture->TestPoint(m_position)){
 				bodies.push_back((sBody*)fixture->GetBody()->GetUserData());
-				//return false;
 			}
 			return true;
 		}
@@ -246,7 +276,38 @@ private:
 		}
 		vector<sBody*> bodies;
 	};
-	
+
+
+	class RaycastQueryCallback : public b2RayCastCallback
+	{
+	public:
+
+		bool onlyClosest;
+		bool any;
+
+		set<sBody*> *ignoreList;
+		sRayCastOutput output;
+
+		float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction)
+		{
+
+			sBody* body = (sBody*)fixture->GetBody()->GetUserData();
+			if(ignoreList != nullptr){
+				if(ignoreList->find(body) != ignoreList->end()){
+					return 1;
+				}
+			}
+
+			output.found = true;
+			output.point = point;
+			output.normal = normal;
+			output.fraction = fraction;
+			output.fixture = fixture;
+			return any ? 0 : fraction;
+
+		}
+	};
+	RaycastQueryCallback raycastCallback;
 
 	//-----------------------------------------------------------------------------------
 	// Contact Events

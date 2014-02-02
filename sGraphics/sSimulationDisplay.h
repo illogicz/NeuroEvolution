@@ -64,13 +64,16 @@ public:
 
 		m_debugDraw.setTransform(trans);
 		m_debugDraw.setView(m_view);
-		m_debugDraw.prepare(target);
+		m_debugDraw.setTarget(target);
 		m_debugDraw.DrawDebugData(m_simulation->world);
-		m_debugDraw.finalize();
-
 		// Reset view to default
 		// target->setView(target->getDefaultView());
 
+	}
+
+	void clearDebugDraw()
+	{
+		m_debugDraw.clear();
 	}
 
 	void setSize(float width, float height)
@@ -158,6 +161,7 @@ public:
 		m_simulation = simulation;
 		m_mouseJoint.setBodyA(simulation->world.getGroundBody());
 		m_simulation->world.add(&m_mouseJoint);
+		m_simulation->world.setDebugDraw(&m_debugDraw);
 		setFocusRank(0);
 	}
 

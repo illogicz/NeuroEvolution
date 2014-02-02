@@ -170,12 +170,28 @@ public:
 
 	void setMutationRate(float mutationRate)
 	{
+		if(mutationRate < 0)mutationRate = 0;
+		if(mutationRate > 1)mutationRate = 1;
 		m_mutationRate = mutationRate;
 	}
 	float getMutationRate()
 	{
 		return m_mutationRate;
 	}	
+	void increaseMutationRate()
+	{
+		if(m_mutationRate < 0.00001){
+			m_mutationRate = 0.000001;
+		}
+		setMutationRate(m_mutationRate * 1.1);
+	}
+	void decreaseMutationRate()
+	{
+		if(m_mutationRate < 0.00001){
+			m_mutationRate = 0.000000;
+		}
+		setMutationRate(m_mutationRate / 1.1);
+	}
 
 	void setBreadingPoolFraction(float breadingPoolFraction)
 	{

@@ -5,6 +5,7 @@
 #include "Sims\RaceCar\TetraPod.h"
 #include "Sims\RaceCar\RaceSimulation.h"
 #include "Sims\RaceCar\SwarmSimulation.h"
+#include "Sims\RaceCar\TopDownRaceSimulation.h"
 #include "sGraphics\sSimulationWindow.h"
 
 
@@ -73,17 +74,17 @@ void runWormSimulation()
 	sSimulationWindow window;
 
 	// Worm setup
-	Worm::touchSense = true;
+	Worm::touchSense = false;
 	Worm::bodySense = true;
-	Worm::maxNeuronBias = 0.5f;
-	Worm::maxSynapseWeight = 3;//.f / tanh(1);
+	Worm::muscleModel = true;
 	Worm::muscleTorque = 30; // 20
 	
-	Worm::progressTimeout = 6000;
-	Worm::progressAmount = 0.1;
+	Worm::progressTimeout = 3600;
+	Worm::progressAmount = 2;
 	
-	Worm::killOnLackOffProgress = true;
-	Worm::killOnStarvation = true;
+	Worm::killOnLackOffProgress = false;
+	Worm::killOnStarvation = false;
+	Worm::maxLifeTime = 600;
 	Worm::startEnery = 10000;
 
 	// Population and selection settings
@@ -95,12 +96,12 @@ void runWormSimulation()
 	simulation.population.setWinnersPerPrelim(10);
 	simulation.fitnessFunction.useSpeed = true;
 	simulation.fitnessFunction.absolueDistance = false;
-	//simulation.setGravity(0,0);
+	simulation.setGravity(0,7.f);
 	//simulation.fit
 
 	// Ground
 	simulation.groundType = RaceSimulation<Worm>::GroundType::PerlinNoise;
-	simulation.worldOffset_y = 1.f;
+	simulation.worldOffset_y = 6.f;
 	simulation.worldOffset = 10;
 
 	simulation.maxRoughness = 50.f;
@@ -113,9 +114,9 @@ void runWormSimulation()
 	simulation.randomizeEnvironment = true;
 	simulation.groundRampup = 400;
 	simulation.worldWidth = 400;
-	simulation.groundFrequency = 2.1f;
-
-
+	simulation.groundFrequency = 3.1f;
+	simulation.perlinFrequency = 8;
+	simulation.perlinOctaves = 8;
 	//simulation.groundType = RaceSimulation<Worm>::GroundType::SinWaves;
 
 	// Display
@@ -167,8 +168,23 @@ void runCarSimulation()
 
 }
 
+void runTopDownRace()
+{
+	sRandom::seed(128955);
+
+	TopDownRaceSimulation simulation;
+	sSimulationWindow window;
+	simulation.mutationRate = 0.005;
+	simulation.elites = 0;
+
+	window.setSimulation(&simulation);
+	window.start();
+
+}
 int main()
 {
+
+	runTopDownRace();
 	//runBipedSimulation();
 	//runSwarmSimulation();
 	runWormSimulation();
