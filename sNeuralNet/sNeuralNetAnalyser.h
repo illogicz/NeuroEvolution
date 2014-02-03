@@ -64,7 +64,7 @@ public:
 
 			float total = 0;
 			neuralNet.randomize();
-			neuralNet.prepare();
+			neuralNet.update();
 			for(int k = 0; k < cycles; k++){
 				for(int i = 0; i < neuralNet.getInputCount(); i++){
 					neuralNet.setInput(i, sRandom::getFloat(inputRangeLower,inputRangeUpper));
@@ -100,15 +100,12 @@ public:
 	{
 		
 		max_y = 0;
-		int layers = neuralNet.getHiddenLayerCount() + 1;
-		width = graphWidth * layers;
+		int layers = neuralNet.getLayerCount();
+		width = graphWidth * (layers - 1);
 
 
-		for(int i = 0; i < layers; i++){
+		for(int i = 1; i < layers; i++){
 
-
-			float weightDist = neuralNet.getWeightDistribution(i);
-			float biasDist = neuralNet.getBiasDistribution(i);
 
 			sf::Color color(sRandom::getInt(50,0xFF), sRandom::getInt(50,0xFF), sRandom::getInt(50,0xFF));
 			for(int i = 0; i < n_buckets; i++){
@@ -120,18 +117,15 @@ public:
 			float total = 0;
 
 				neuralNet.randomize();
-				neuralNet.prepare();
+				neuralNet.update();
 				for(int k = 0; k < cycles; k++){
 					for(int i = 0; i < neuralNet.getInputCount(); i++){
 						neuralNet.setInput(i, sRandom::getFloat(inputRangeLower,inputRangeUpper));
 					}
 					neuralNet.run();
 				}
-				if(i < layers-1){
-					total += neuralNet.getHiddenNeurons(i)[0].accumulator;
-				} else {
-					total += neuralNet.getOutputNeurons()[0].accumulator;
-				}
+
+				total += neuralNet.getNeurons(i)[0].accumulator;
 				grandtotal += total;
 
 
@@ -159,7 +153,7 @@ public:
 
 
 		currentLayer = 0;
-		for(int i = 0; i < layers; i++){
+		for(int i = 1; i < layers; i++){
 			plotAxis();
 			currentLayer++;
 		}

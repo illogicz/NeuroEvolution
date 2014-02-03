@@ -123,26 +123,38 @@ public:
 		if(neuralFeedback){
 			input_count += 2;
 		}
-		neuralNet.setInputCount(input_count);
-		neuralNet.setHiddenLayerCount(2);
-		neuralNet.setHiddenLayerSize(0,input_count);
-		neuralNet.setHiddenLayerSize(1,5);
+
+		if(true){
+
+			neuralNet.setLayerCount(3);
+			neuralNet.setLayerSize(0, input_count);
+			neuralNet.setLayerSize(1,input_count - 2);
+			neuralNet.setLayerSize(2, 2);
+			neuralNet.setMaxWeight(2);
 
 
-		neuralNet.setUseFeedback(0,true);
-		neuralNet.setMaxFeedback(1);
-		neuralNet.setFeedbackDistribution(0,12);
+		} else {
+			/*
+			neuralNet.setHiddenLayerCount(1);
+			neuralNet.setHiddenLayerSize(0,6);
 
-		neuralNet.setMaxWeight(2);
-		neuralNet.setWeightDistribution(0,4);
-		neuralNet.setWeightDistribution(1,3);
-		neuralNet.setWeightDistribution(2,3);
 
-		neuralNet.setMaxBias(1);
-		neuralNet.setBiasDistribution(1,12);
-		neuralNet.setBiasDistribution(2,12);
+			neuralNet.setUseFeedback(0,true);
+			neuralNet.setMaxFeedback(1);
+			neuralNet.setFeedbackDistribution(0,12);
 
-		neuralNet.setOutputCount(2);
+			neuralNet.setMaxWeight(2);
+			neuralNet.setWeightDistribution(0,4);
+			neuralNet.setWeightDistribution(1,3);
+
+			neuralNet.setMaxBias(1);
+			neuralNet.setBiasDistribution(1,12);
+			neuralNet.setBiasDistribution(1,12);
+			neuralNet.setBiasDistribution(2,12);
+			*/
+
+		}
+		
 		neuralNet.create(genome);
 
 	}
@@ -168,8 +180,9 @@ public:
 		totalSpeed = 0;
 		fitnessModifier = 1;
 		num_contacts = 0;
+		fitnessScore = 0;
 
-		neuralNet.prepare();
+		neuralNet.update();
 
 		if(isElite()){
 			setCustomColor(b2Color(0,1,1));
@@ -204,16 +217,6 @@ public:
 			die();
 		}
 
-		if(num_contacts){
-			fitnessModifier *= 0.995;
-			setCustomColor(b2Color(1,0,0));
-		} else {
-			if(isElite()){
-				setCustomColor(b2Color(0,1,1));
-			} else {
-				setCustomColor(b2Color(0,0,0));
-			}
-		}
 
 
 		applyWheelPhysics(frontLeftWheel);
@@ -262,14 +265,33 @@ public:
 		setStearing(steering_output);
 		setAccelerator(neuralNet.getOutput(1));
 
+
+
+
+
+		
+		if(num_contacts){
+			fitnessScore *= 0.99;
+			setCustomColor(b2Color(1,0,0));
+		} else {
+			if(isElite()){
+				setCustomColor(b2Color(0,1,1));
+			} else {
+				setCustomColor(b2Color(0,0,0));
+			}
+		}
 		float forwardSpeed = -b2Dot(chassis.getLinearVelocity(), b2Rot(chassis.getAngle()).GetYAxis());
 
 		// dont penalise for going backwards
-		if(forwardSpeed < 0)forwardSpeed = 0;
+		//if(forwardSpeed < 0)forwardSpeed = 0;
 		//if(isFocus()){
 		//	printf("forward speed = %f \n", forwardSpeed);
 		//}
-		totalSpeed += forwardSpeed * (1 - abs(steering_output));
+		if(forwardSpeed > 0){
+			fitnessScore += forwardSpeed * (2 - abs(steering_output));
+		} else {
+			//fitnessScore += forwardSpeed * 0.1;
+		}
 
 
 	}
@@ -283,7 +305,12 @@ public:
 	}
 	virtual float getFitness()
 	{
-	    return fitnessModifier * totalSpeed; //(*fitnessFunction)(this);		
+		//if(totalSpeed > 0){
+		//	return totalSpeed * fitnessModifier;
+		//} else {
+		//	return 0;
+		//}
+		return fitnessScore;
 	};	
 
 
@@ -303,7 +330,7 @@ public:
 	float minRayLength;
 	float maxRayLength;
 
-
+	float fitnessScore;
 
 private:
 
@@ -315,7 +342,7 @@ private:
 		rearRightWheel.zeroState();
 		rearLeftWheel.zeroState();
 
-		b2Vec2 p = position + b2Vec2(sRandom::getFloat(-4, 3), sRandom::getFloat(-4, 3));
+		b2Vec2 p = position + b2Vec2(sRandom::getFloat(-5, 5), sRandom::getFloat(-2, 2));
 
 		chassis.setPosition(p);
 		frontLeftWheel.setPosition(p.x - width, p.y - height);

@@ -109,13 +109,15 @@ protected:
 			inputCount += 2;
 			outputCount++;
 		}
-		neuralNet.setInputCount(inputCount);
-		neuralNet.setOutputCount(outputCount);
-		neuralNet.setHiddenLayerCount(1);
+		neuralNet.setLayerCount(3);
+		neuralNet.setLayerSize(0, inputCount);
+		neuralNet.setLayerSize(1,outputCount);
+		neuralNet.setLayerSize(2, outputCount);
 		//neuralNet.setHiddenLayerSize(0,(outputCount + inputCount) / 2);
-		neuralNet.setHiddenLayerSize(0,outputCount);
+		/*
 		neuralNet.setMaxBias(0.5);
 		neuralNet.setMaxWeight(1.f / tanh_approx(1));
+		*/
 		neuralNet.create(genome);
 	}
 
@@ -259,7 +261,7 @@ protected:
 		jointSpeed = genome.getValue("jointSpeed");;
 
 		// Reset neural net inputs
-		neuralNet.prepare();
+		neuralNet.update();
 
 
 		// Initialise some values for simulation

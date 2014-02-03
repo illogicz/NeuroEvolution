@@ -24,12 +24,10 @@ public:
 
 	virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const
 	{
-		states.transform *= getTransform();
-
-		target.draw(backGroundRect, states);
-		target.draw(bestVertices, states);
-		target.draw(worstVertices, states);
-		target.draw(averageVertices, states);
+		target.draw(backGroundRect, getTransform());
+		target.draw(bestVertices, getTransform());
+		target.draw(worstVertices, getTransform());
+		target.draw(averageVertices, getTransform());
 	}
 
 	void renderGraph(sPopulation &population)
@@ -40,31 +38,36 @@ public:
 		averageVertices.resize(l);
 		worstVertices.resize(l);
 		backGroundRect.setSize(size);
-		float maxFitness = 0;
+		float maxFitness = -100000;
+		float minFitness = 100000;
 		for(int i = 0 ; i < l; i++){
 			sGeneration &gen = population.getGeneration(i);
 			if(gen.bestFitness > maxFitness){
 				maxFitness = gen.bestFitness;
 			}
+			if(gen.worstFitness < minFitness){
+				minFitness = gen.worstFitness;
+			}
 		}
+
+		float range = maxFitness - minFitness;
+
 		for(int i = 0 ; i < l; i++){
 			sGeneration &gen = population.getGeneration(i);
 
 			bestVertices[i].position.x = float(i) / l * size.x;
-			bestVertices[i].position.y = floor(size.y - gen.bestFitness / maxFitness * size.y) + 0.5f;
+			bestVertices[i].position.y = (maxFitness - gen.bestFitness) / range * size.y;
 			bestVertices[i].color = bestFitnessColor;
 
 			averageVertices[i].position.x = float(i) / l * size.x;
-			averageVertices[i].position.y = floor(size.y - gen.averageFitness/ maxFitness * size.y) + 0.5f;
+			averageVertices[i].position.y = (maxFitness - gen.averageFitness) / range * size.y;
 			averageVertices[i].color = averageFitnessColor;
 
 			worstVertices[i].position.x = float(i) / l * size.x;
-			worstVertices[i].position.y = floor(size.y - gen.worstFitness / maxFitness * size.y) + 0.5f;
+			worstVertices[i].position.y = (maxFitness - gen.worstFitness) / range * size.y;
 			worstVertices[i].color = worstColor;
 
-
-		}
-		
+		}		
 		
 	}
 
@@ -76,7 +79,7 @@ public:
 	}
 
 private:
-
+	sf::Transform graphTransform;
 	sf::RectangleShape backGroundRect;
 	sf::Vector2f size;
 	sf::Color backgroundColor;

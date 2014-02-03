@@ -70,7 +70,7 @@ public:
 		nnAnalyser1.height = 100;
 		nnAnalyser1.analyzeNetwork(ann);
 
-		nnAnalyser2.graphWidth = nnAnalyser1.graphWidth / (ann.getHiddenLayerCount() + 1);
+		nnAnalyser2.graphWidth = nnAnalyser1.graphWidth / (ann.getLayerCount() - 1);
 		nnAnalyser2.height = 50;
 		nnAnalyser2.analyseLayers(ann);
 

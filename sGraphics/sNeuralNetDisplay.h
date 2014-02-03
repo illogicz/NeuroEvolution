@@ -18,8 +18,10 @@ public:
 		feedbackRadius = 10;
 		feedbackCircle.setOutlineThickness(2);
 		feedbackCircle.setFillColor(Color::Transparent);
+		feedbackCircle.scale(0.5,1);
 		padding = 13;
 		neuronRadius = 7;
+		vertices.setPrimitiveType(PrimitiveType::Lines);
 	}
 
 	void setSize(float w, float h)
@@ -35,26 +37,34 @@ public:
 		neuralNet = &net;
 		target = &tar;
 
-		target->draw(backGroundRect, RenderStates(getTransform()));
+		neuronCircle.setRadius(neuronRadius);
+		neuronCircle.setOutlineColor(sf::Color::Transparent);
+		neuronCircle.setOutlineThickness(0);
 		
-		// Draw Synapse Layers
-		drawSynapseLayer(net.getInputNeurons(), 0);
-		float l = net.getHiddenLayerCount();
-		for(float i = 0; i < l; i += 1){
-			drawSynapseLayer(net.getHiddenNeurons(i), i + 1);
+		biasCircle.setRadius(neuronRadius + 2);
+		biasCircle.setOutlineColor(sf::Color::Transparent);
+		biasCircle.setOutlineThickness(0);
+
+
+
+
+		vertices.clear();
+
+		target->draw(backGroundRect, RenderStates(getTransform()));
+	
+		vector<sSynapse*> *synapses = &neuralNet->getSynapses();
+		for(int i = 0; i < synapses->size(); i++){
+			drawSynapse((*synapses)[i]);
+		}
+		target->draw(vertices, RenderStates(getTransform()));
+
+		vector<sNeuron*> *neurons = &neuralNet->getNeurons();
+		for(int i = 0; i < neurons->size(); i++){
+			drawNeuron((*neurons)[i]);
 		}
 
-		// Draw Neurons
-		drawNeuronLayer(net.getInputNeurons(), 0);
-		for(float i = 0; i < l; i += 1){
-			//float y = ((i + 1) / (l + 1)) * (height - padding * 2) + padding;
-			drawNeuronLayer(net.getHiddenNeurons(i), i + 1);
-		}
-		drawNeuronLayer(net.getOutputNeurons(), l + 1);
 
-
-
-
+		
 	}
 
 	float neuronSize;
@@ -64,93 +74,75 @@ public:
 	float neuronRadius;
 	float feedbackRadius;
 
-	void drawSynapseLayer(vector<sNeuron> &neurons, int layer)
+	void drawSynapse(sSynapse *synapse)
 	{
-		VertexArray v;
-		v.setPrimitiveType(PrimitiveType::Lines);
-		int l1 = neurons.size();
-		float maxw = neuralNet->getMaxWeight();
-		for(int i = 0; i < l1; i++){
-			Vector2f p1 = getNeuronPosition(layer, neurons[i].order, l1);
-			int l2 = neurons[i].outputSynapses.size();
-			float act = neurons[i].lastActivation;
-			for(int j = 0; j < l2; j++){
 
-				sSynapse *synapse = neurons[i].outputSynapses[j];
-				if(synapse->enabled){
+		if(synapse->enabled){
 
-					int order = synapse->output->order;
 
-					Vector2f p2 = getNeuronPosition(layer + 1, order, l2);
+			if(synapse->input == synapse->output){  // feedback
 
-					float w = synapse->weight * act;
-					//int c = (w / maxw + 1.f) * 0.5f * 0xFF;
+				float w = synapse->weight * synapse->input->activation;
+				int a = abs(w / neuralNet->getMaxWeight()) * 0xFF;
+				int c = w < 0 ? 0x00 : 0xFF;
 
-					int a = abs(w / maxw) * 0xFF;
-					int c = w < 0 ? 0x00 : 0xFF;
+				Vector2f p = getNeuronPosition(synapse->input);
 
-					v.append(Vertex(p1,Color(c, c, c, a)));
-					v.append(Vertex(p2,Color(c, c, c, a)));
-				}
+				feedbackCircle.setRadius(feedbackRadius);
+				feedbackCircle.setOutlineColor(Color(c, c, c, a));
+				feedbackCircle.setPosition(p.x, p.y - feedbackRadius);
+
+				target->draw(feedbackCircle, RenderStates(getTransform()));
+
+			} else if(synapse->input->biasNeuron){  // bias
+								
+				int c = synapse->weight / neuralNet->getMaxWeight() * 0xFF;
+				biasCircle.setFillColor(sf::Color(c,c,c));
+				float r = biasCircle.getRadius();
+				biasCircle.setPosition(getNeuronPosition(synapse->output) - Vector2f(r,r));
+				target->draw(biasCircle, RenderStates(getTransform()));
+
+			} else {                                // normal
+
+				Vector2f p1 = getNeuronPosition(synapse->input);
+				Vector2f p2 = getNeuronPosition(synapse->output);
+
+				float w = synapse->weight * synapse->input->activation;
+
+				int a = abs(w / neuralNet->getMaxWeight()) * 0xFF;
+				int c = w < 0 ? 0x00 : 0xFF;
+
+				vertices.append(Vertex(p1,Color(c, c, c, a)));
+				vertices.append(Vertex(p2,Color(c, c, c, a)));
 			}
 		}
+
 		
-		target->draw(v, RenderStates(getTransform()));
 	}
 
-	void drawNeuronLayer(vector<sNeuron> &neurons, int layer)
-	{
-		float l = neurons.size();
-		for(int i = 0; i < l; i++){
-
-			Vector2f p = getNeuronPosition(layer,neurons[i].order, l);
-			drawNeuron(neurons[i], p.x, p.y);
-		}
-
-	}
-
-	Vector2f getNeuronPosition(int layer,  int index, int l)
+	Vector2f getNeuronPosition(sNeuron *neuron)
 	{
 		float x;
+		int l = neuralNet->getLayerSize(neuron->layer);
 		if(l == 1){
 			x = width / 2;
 		} else {
-			x = (float(index) / (l - 1)) * (width - padding * 2) + padding;
+			x = (float(neuron->order) / (l - 1)) * (width - padding * 2) + padding;
 		}
-		float y = (float(layer) / (neuralNet->getHiddenLayerCount() + 1)) * (height - padding * 2) + padding;
+		float y = (float(neuron->layer) / (neuralNet->getLayerCount() - 1)) * (height - padding * 2) + padding;
 		return Vector2f(x, y);
 	}
 
-	void drawNeuron(sNeuron &neuron, float x, float y)
+	void drawNeuron(sNeuron *neuron)
 	{
-		neuronCircle.setPosition(x - neuronRadius, y - neuronRadius);
-		neuronCircle.setRadius(neuronRadius);
-		if(neuralNet->getMaxBias() > 0){
-			neuronCircle.setOutlineThickness(3);
-		} else {
-			neuronCircle.setOutlineThickness(0);
-		}
-		int oc;
-		if(neuralNet->getMaxBias()){
-			oc = (((neuron.bias / neuralNet->getMaxBias()) + 1.f) * 0.5f) * 0xFF;
-		} else {
-			oc = 0x7F;
-		}
-		neuronCircle.setOutlineColor(Color(oc, oc, oc));
 
-		oc = ((neuron.lastActivation + 1.f) * 0.5f) * 0xFF;
+		Vector2f p = getNeuronPosition(neuron);
+
+		neuronCircle.setPosition(p.x - neuronRadius, p.y - neuronRadius);
+
+		int oc = ((neuron->activation + 1.f) * 0.5f) * 0xFF;
 		neuronCircle.setFillColor(Color(oc, oc, oc));
 
-
-		float w = neuron.feedback * neuron.lastActivation;
-		int a = abs(w / neuralNet->getMaxFeedback()) * 0xFF;
-		int c = w < 0 ? 0x00 : 0xFF;
-
-		feedbackCircle.setRadius(feedbackRadius);
-		feedbackCircle.setOutlineColor(Color(c, c, c, a));
-		feedbackCircle.setPosition(x, y - feedbackRadius);
-
-		target->draw(feedbackCircle, RenderStates(getTransform()));
 		target->draw(neuronCircle, RenderStates(getTransform()));
 
 
@@ -168,11 +160,13 @@ public:
 private:
 
 
+	sf::VertexArray vertices;
 	sNeuralNet *neuralNet;
 	RenderTarget *target;
 	RenderStates renderState;
 
 	CircleShape neuronCircle;
+	CircleShape biasCircle;
 	CircleShape feedbackCircle;
 	RectangleShape backGroundRect;
 	Color backgroundColor;

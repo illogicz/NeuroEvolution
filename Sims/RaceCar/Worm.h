@@ -155,11 +155,13 @@ public:
 		if(muscleModel){
 			outputCount += numSegments - 1;
 		}
-		neuralNet.setInputCount(inputCount);
-		neuralNet.setOutputCount(outputCount);
-		neuralNet.setHiddenLayerCount(2);
-		neuralNet.setHiddenLayerSize(0,(inputCount + outputCount)/2);//inputCount);
-		neuralNet.setHiddenLayerSize(1,(inputCount + outputCount)/2);//inputCount);
+		neuralNet.setLayerCount(4);
+		neuralNet.setLayerSize(0,inputCount);
+		neuralNet.setLayerSize(1,(inputCount + outputCount)/2);//inputCount);
+		neuralNet.setLayerSize(2,(inputCount + outputCount)/2);//inputCount);
+		neuralNet.setLayerSize(3,outputCount);
+		
+		/*
 
 		neuralNet.setWeightDistribution(0,7);
 		neuralNet.setWeightDistribution(1,8);
@@ -174,6 +176,9 @@ public:
 		//neuralNet.setHiddenLayerSize(1,(inputCount + outputCount)/2);//inputCount);
 		neuralNet.setMaxBias(0.3);
 		neuralNet.setMaxWeight(3);
+
+		*/
+
 		neuralNet.create(genome);
 
 	}
@@ -288,7 +293,7 @@ protected:
 		}
 	
 		// Zero inputs and update weight and biases from genes
-		neuralNet.prepare();
+		neuralNet.update();
 
 
 		// Reset some values for this run

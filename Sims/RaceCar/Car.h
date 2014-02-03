@@ -214,17 +214,17 @@ protected:
 		// Neural Network Definition
 		//---------------------------------------------------------------------------------
  
-		neuralNet.setHiddenLayerCount(2);
-		neuralNet.setInputCount(10);
-		neuralNet.setHiddenLayerSize(0,6);
-		neuralNet.setHiddenLayerSize(1,3);
-		neuralNet.setOutputCount(1);
+		neuralNet.setLayerCount(4);
+		neuralNet.setLayerSize(0,10);
+		neuralNet.setLayerSize(1,6);
+		neuralNet.setLayerSize(2,3);
+		neuralNet.setLayerSize(3,1);
 		 
 
 		//neuralNet.setWeightDistribution(0,3);
 		//neuralNet.setWeightDistribution(1,2.5);
 		//neuralNet.setWeightDistribution(2,1.5);
-
+		/*
 		neuralNet.setWeightDistribution(0,3.5);
 		neuralNet.setWeightDistribution(1,2.5);
 		neuralNet.setWeightDistribution(2,1.5);
@@ -236,7 +236,8 @@ protected:
 
 		//neuralNet.setHiddenLayerSize(1,4);
 		neuralNet.setMaxBias(0.5f);
-		neuralNet.setMaxWeight(2.f / tanh_approx(1));
+		neuralNet.setMaxWeight(2.f / tanh_approx(1));]
+		*/
 		neuralNet.create(genome);
 
 
@@ -319,7 +320,7 @@ protected:
 		wheelMass += genome.getValue("frontWheelDensity") * genome.getValue("frontWheelRadius") * scale * genome.getValue("frontWheelRadius") * scale;
 
 		// Reset neural net inputs
-		neuralNet.prepare();
+		neuralNet.update();
 
 
 		// Initialise some values for simulation
