@@ -42,12 +42,12 @@ public:
 		world.setGroundBody(&ground);
 		world.add(&ground);
 
-		simulationTime = 100000;
+		//simulationTime = 100000;
 
 		staticView = true;
 		renderScale = 8;
 
-		populationSize = 50;
+		populationSize = 40;
 	}
 
 	~TopDownRaceSimulation()
@@ -58,7 +58,7 @@ public:
 	}
 	
 	int populationSize;
-	float simulationTime;
+	//float simulationTime;
 	RaceFitness fitnessFunction;
 	float width;
 	float height;
@@ -67,8 +67,8 @@ protected:
 	void initPhenotypes()
 	{
 
-		int w = sqrt(populationSize);
-		int h = ceil(float(populationSize) / w);
+		int w = ceil(sqrt(populationSize)) + 1;
+		int h = floor(float(populationSize) / w);
 
 		for(int i = 0; i < populationSize; i++){
 			TopDownCar *car = new TopDownCar;

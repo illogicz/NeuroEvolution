@@ -178,14 +178,13 @@ protected:
 			outputCount++;
 		}
 		neuralNet.setLayerCount(3);
-		neuralNet.setLayerSize(0,inputCount);
-		neuralNet.setLayerSize(1,outputCount);
-		neuralNet.setLayerSize(2,outputCount);
+		neuralNet.setNeuronLayer(0,inputCount);
+		neuralNet.setNeuronLayer(1,outputCount);
+		neuralNet.setNeuronLayer(2,outputCount);
 		//neuralNet.setHiddenLayerSize(1,outputCount);
 		//neuralNet.setHiddenLayerSize(1,4);
 		//neuralNet.setMaxBias(0);
 		//neuralNet.setMaxWeight(2);
-		neuralNet.create(genome);
 
 	}
 

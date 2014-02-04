@@ -23,7 +23,10 @@ public:
 	{
 		width = 1;
 		height = 2;
-		maxEngineForce = 50;
+		maxEngineForce = 200;
+		damping = 1.5;
+		grip = 3;
+		slideDamping = 0.5;
 		maxStearingAngle = 1;
 		visionResolution = 9;
 		visionFOV = 2.5;
@@ -42,6 +45,10 @@ public:
 	float maxStearingAngle;
 	float width;
 	float height;
+	float damping;
+	float grip;
+	float slideDamping;
+	float topSpeed;
 	bool touchSense;
 	bool neuralFeedback;
 	b2Vec2 position;
@@ -58,13 +65,16 @@ public:
 
 		chassis.setSize(width,height);
 		chassis.setFilter(chassisFilter);
-		chassis.setLinearDamping(0.5);
+		chassis.setLinearDamping(damping);
+		chassis.setAngularDamping(damping);
+
+		frontLeftWheel.copy(chassis);
 		frontLeftWheel.setSize(0.3, 0.7);
 		frontLeftWheel.setFilter(wheelFilter);
-		frontRightWheel.setSize(0.3, 0.7);
-		frontRightWheel.setFilter(wheelFilter);
+		//frontRightWheel.setSize(0.3, 0.7);
+		//frontRightWheel.setFilter(wheelFilter);
 
-		//frontRightWheel.copy(frontLeftWheel);
+		frontRightWheel.copy(frontLeftWheel);
 		rearRightWheel.copy(frontLeftWheel);
 		rearLeftWheel.copy(frontLeftWheel);
 
@@ -116,22 +126,27 @@ public:
 		world.addContactListener(this, &rearRightWheel);
 
 
-		int input_count = visionResolution;
+		int input_count = visionResolution + 1;
 		if(touchSense){
 			input_count++;
 		}
 		if(neuralFeedback){
-			input_count += 2;
+			input_count += 1;
 		}
 
 		if(true){
 
 			neuralNet.setLayerCount(3);
-			neuralNet.setLayerSize(0, input_count);
-			neuralNet.setLayerSize(1,input_count - 2);
-			neuralNet.setLayerSize(2, 2);
-			neuralNet.setMaxWeight(2);
+			neuralNet.setNeuronLayer(0, input_count);
+			neuralNet.setNeuronLayer(1,8, true);
+			//neuralNet.setLayerSize(2,input_count - 6);
+			neuralNet.setNeuronLayer(2, 2);
+			neuralNet.addSynapseLayer(0,2);
 
+			neuralNet.setMaxWeight(2);
+			neuralNet.setConnectionsPerNeuron(6);
+			neuralNet.setWeightExponent(3);
+			
 
 		} else {
 			/*
@@ -155,8 +170,6 @@ public:
 
 		}
 		
-		neuralNet.create(genome);
-
 	}
 
 	virtual void build(sWorld &world)
@@ -223,14 +236,20 @@ public:
 		applyWheelPhysics(frontRightWheel);
 		applyWheelPhysics(rearRightWheel);
 		applyWheelPhysics(rearLeftWheel);
+		float forwardSpeed = -b2Dot(chassis.getLinearVelocity(), b2Rot(chassis.getAngle()).GetYAxis());
 
 		int input_index = 0;
-		for(int i = 0; i < visionResolution; i++){
-			 float a = float(i) / (visionResolution - 1) - 0.5f;
-			 a *= visionFOV;
-			 a += chassis.getAngle();
-			 a += b2_pi;
+		for(int i = 0; i <= visionResolution; i++){
 
+			  float a;
+			 if(i < visionResolution){
+				 a = float(i) / (visionResolution - 1) - 0.5f;
+				 a *= visionFOV;
+				 a += chassis.getAngle();
+				 a += b2_pi;
+			 } else {
+				 a = chassis.getAngle();
+			 }
 			 b2Vec2 p1 = b2Rot(a).GetYAxis();
 			 b2Vec2 p2(p1);
 			 p1 *= minRayLength;
@@ -253,9 +272,10 @@ public:
 		if(touchSense){
 			neuralNet.setInput(input_index++, num_contacts ? 1 : 0);
 		}
+
 		if(neuralFeedback){
-			neuralNet.interpolateInput(input_index++, neuralNet.getOutput(0), 0.5);
-			neuralNet.interpolateInput(input_index++, neuralNet.getOutput(1), 0.5);
+			//neuralNet.interpolateInput(input_index++, neuralNet.getOutput(0), 0.5);
+			neuralNet.setInput(input_index++, forwardSpeed * 0.02);
 		}
 
 		neuralNet.run();
@@ -266,12 +286,8 @@ public:
 		setAccelerator(neuralNet.getOutput(1));
 
 
-
-
-
-		
 		if(num_contacts){
-			fitnessScore *= 0.99;
+			fitnessModifier *= 0.995;
 			setCustomColor(b2Color(1,0,0));
 		} else {
 			if(isElite()){
@@ -280,19 +296,14 @@ public:
 				setCustomColor(b2Color(0,0,0));
 			}
 		}
-		float forwardSpeed = -b2Dot(chassis.getLinearVelocity(), b2Rot(chassis.getAngle()).GetYAxis());
 
-		// dont penalise for going backwards
-		//if(forwardSpeed < 0)forwardSpeed = 0;
-		//if(isFocus()){
-		//	printf("forward speed = %f \n", forwardSpeed);
+		//if(forwardSpeed > 0){
+			fitnessScore += forwardSpeed * (1 - abs(steering_output));
+		//}// else {
+		//	//fitnessScore += forwardSpeed;
 		//}
-		if(forwardSpeed > 0){
-			fitnessScore += forwardSpeed * (2 - abs(steering_output));
-		} else {
-			//fitnessScore += forwardSpeed * 0.1;
-		}
 
+		//fitnessScore += chassis.getLinearVelocity().Length();
 
 	}
 	virtual b2Vec2 getPosition()
@@ -310,7 +321,17 @@ public:
 		//} else {
 		//	return 0;
 		//}
-		return fitnessScore;
+		
+	//	if(fitnessScore < 1){
+	//		fitnessScore = 1;
+	//	}
+		//return fitnessScore * fitnessModifier;
+		float score = fitnessScore;
+		if(score < 1){
+			score = 1;
+		}
+		return score * fitnessModifier;
+
 	};	
 
 
@@ -394,7 +415,7 @@ private:
 		b2Vec2 v = b2Mul(b2Rot(-body.getAngle()), body.getLinearVelocity());
 
 		float t = 1.0;
-		if(v.x > 5) t = 0.5;
+		if(v.x > grip) t = slideDamping;
 		v.x *= 1.f - t;
 
 		body.setLinearVelocity(b2Mul(b2Rot(body.getAngle()), v));

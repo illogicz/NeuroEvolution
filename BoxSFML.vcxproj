@@ -100,7 +100,10 @@
     <ClInclude Include="Sims\RaceCar\Car.h" />
     <ClInclude Include="sGraphics\sFitnessGraph.h" />
     <ClInclude Include="sGraphics\sGeneGraph.h" />
+    <ClInclude Include="Sims\RaceCar\PoleBalanceSimulation.h" />
+    <ClInclude Include="Sims\RaceCar\PoleCart.h" />
     <ClInclude Include="Sims\RaceCar\RaceSimulation.h" />
+    <ClInclude Include="Sims\RaceCar\RaceTrack.h" />
     <ClInclude Include="Sims\RaceCar\Shooter.h" />
     <ClInclude Include="Sims\RaceCar\SwarmSimulation.h" />
     <ClInclude Include="Sims\RaceCar\TetraPod.h" />

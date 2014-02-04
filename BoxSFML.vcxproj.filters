@@ -168,6 +168,15 @@
     <ClInclude Include="Sims\RaceCar\TopDownRaceSimulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Sims\RaceCar\RaceTrack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\RaceCar\PoleCart.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\RaceCar\PoleBalanceSimulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoxSFML.cpp">

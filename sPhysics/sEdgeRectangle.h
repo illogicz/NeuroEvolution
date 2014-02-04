@@ -20,6 +20,20 @@ public:
 		setPosition(b2Vec2(x, y));
 		setAngle(angle);
 	}
+	sEdgeRectangle(sEdgeRectangle &rect) : sUniformBody(rect)
+	{
+		_copy(rect);
+	}
+	void copy(const sEdgeRectangle &rect)
+	{
+		sUniformBody::copy(rect);
+		_copy(rect);
+	}
+	sEdgeRectangle& operator=(const sEdgeRectangle& rect)
+	{
+		copy(rect);
+		return *this;
+	}
 
 	void setSize(b2Vec2 size)
 	{
@@ -61,6 +75,11 @@ protected:
 		sUniformBody::addToWorld(world);
 	}
 	*/
+
+	void _copy(const sEdgeRectangle &rect)
+	{
+		m_size = rect.m_size;
+	}
 
 	b2Vec2 m_size;
 

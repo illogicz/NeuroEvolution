@@ -182,14 +182,14 @@ public:
 	}	
 	void increaseMutationRate()
 	{
-		if(m_mutationRate < 0.00001){
+		if(m_mutationRate < 0.000001){
 			m_mutationRate = 0.000001;
 		}
 		setMutationRate(m_mutationRate * 1.1);
 	}
 	void decreaseMutationRate()
 	{
-		if(m_mutationRate < 0.00001){
+		if(m_mutationRate < 0.000001){
 			m_mutationRate = 0.000000;
 		}
 		setMutationRate(m_mutationRate / 1.1);

@@ -215,10 +215,10 @@ protected:
 		//---------------------------------------------------------------------------------
  
 		neuralNet.setLayerCount(4);
-		neuralNet.setLayerSize(0,10);
-		neuralNet.setLayerSize(1,6);
-		neuralNet.setLayerSize(2,3);
-		neuralNet.setLayerSize(3,1);
+		neuralNet.setNeuronLayer(0,10);
+		neuralNet.setNeuronLayer(1,6);
+		neuralNet.setNeuronLayer(2,3);
+		neuralNet.setNeuronLayer(3,1);
 		 
 
 		//neuralNet.setWeightDistribution(0,3);
@@ -238,7 +238,6 @@ protected:
 		neuralNet.setMaxBias(0.5f);
 		neuralNet.setMaxWeight(2.f / tanh_approx(1));]
 		*/
-		neuralNet.create(genome);
 
 
 	}

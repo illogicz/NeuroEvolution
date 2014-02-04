@@ -51,12 +51,12 @@ public:
 		m_alpha = 1.f;
 	}
 	//virtual ~sObject(){}
-	sObject(sObject &object) : m_type(object.m_type)
+	sObject(const sObject &object) : m_type(object.m_type)
 	{
 		m_inWorld = false;
 	}
 
-	virtual void copy(sObject &object)
+	virtual void copy(const sObject &object)
 	{
 	}
 

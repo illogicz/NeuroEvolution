@@ -41,6 +41,11 @@ struct sSynapse
 	{
 		enabled = enabledGene->getValue() < enableThreshold;
 		float v = weightGene->getValue();
+
+		if(input == output){ // disable inhibitory feedback
+			v = v / 2 + 0.5f; 
+		}
+
 		weight = pow(abs(v), exponent) * (v < 0 ? -1: 1) * maxWeight;
 	}
 
@@ -55,6 +60,7 @@ struct sNeuron
 {
 	bool biasNeuron;
 	bool inputNeuron;
+	float inputValue;
 	vector<sSynapse*> inputSynapses;
 	vector<sSynapse*> outputSynapses;
 	float accumulator;
@@ -64,18 +70,17 @@ struct sNeuron
 	void reset()
 	{
 		accumulator = 0;
-		activation = 0;
+		activation = biasNeuron ? 1 : 0;
+		inputValue = 0;
 	}
 
 	void activate()
 	{
-		if(biasNeuron) activation = 1;
-		if(!inputNeuron){
-			accumulator = 0;
-			for(int i = 0; i < inputSynapses.size(); i++){
-				if(inputSynapses[i]->enabled){
-					accumulator += inputSynapses[i]->input->activation * inputSynapses[i]->weight;
-				}
+		if(biasNeuron) return;
+		accumulator = inputNeuron ? inputValue : 0;
+		for(int i = 0; i < inputSynapses.size(); i++){
+			if(inputSynapses[i]->enabled){
+				accumulator += inputSynapses[i]->input->activation * inputSynapses[i]->weight;
 			}
 		}
 		activation = tanh_approx(accumulator);
@@ -108,7 +113,9 @@ public:
 		m_connectionsPerNeuron = 5.f;
 		m_created = false;
 		m_biasNeuron.biasNeuron = true;
+		m_biasNeuron.id = 0;
 		m_name = "NN";
+		m_neuronID = 0;
 	}
 
 	~sNeuralNet()
@@ -118,25 +125,11 @@ public:
 		}
 	}
 
-	// Sets the number of input neurons
-	void setInputCount(int size)
+	void setGenome(sGenome &genome)
 	{
-		setLayerSize(0,size);
-	}
-	int getInputCount()
-	{
-		return getLayerSize(0);
+		m_genome = &genome;
 	}
 
-	// Sets the number of output neurons
-	void setOutputCount(int size)
-	{
-		setLayerSize(m_layers.size()-1, size);
-	}
-	int getOutputCount()
-	{
-		return getLayerSize(m_layers.size()-1);
-	}
 
 	// Sets the number of hidden layers, should be 1 or more
 	void setLayerCount(int size)
@@ -149,17 +142,7 @@ public:
 		return m_layers.size();
 	}
 
-	// Sets the number of neurons in the scefied hidden layer
-	void setLayerSize(int index, int size)
-	{
-		if(index >= getLayerCount()) return;
-		m_layers[index].resize(size);
-		if(index == 0){
-			m_inputCount = size;
-		} else if(index == m_layers.size() - 1){
-			m_outputCount = size;
-		}
-	}
+
 	int getLayerSize(int index)
 	{
 		if(index >= getLayerCount()) return 0;
@@ -183,18 +166,18 @@ public:
 	{
 		if(index >= m_inputCount)return;
 
-		m_layers[0][index].accumulator = value;
+		m_layers[0][index].inputValue = value;
 	}
 	void interpolateInput(int index, float value, float t)
 	{
 		if(index >= m_inputCount)return;
-
-		m_layers[0][index].accumulator += (value - m_layers[0][index].accumulator) * t;
+		sNeuron &neuron = m_layers[0][index];
+		neuron.inputValue += (value - neuron.inputValue) * t;
 	}
 	float getInput(int index)
 	{
 		if(index >= m_inputCount)return 0.f;
-		return m_layers[0][index].accumulator;
+		return m_layers[0][index].inputValue;
 	}
 
 	// Return activated output value beteem -1 and 1
@@ -268,47 +251,6 @@ public:
 	// Create Neural Net
 	//------------------------------------------------------------------------------------------
 	
-	// Generates the network, a genome must be supplied, which is used for weight and bias values
-	// TODO: add initial condition other than random, such as all 0, start dumb?
-	void create(sGenome &genome)
-	{
-		m_genome = &genome;
-		
-		int id = 0;
-		for(int j = 0; j < m_layers.size(); j++){
-			for(int i = 0; i < m_layers[j].size(); i++){
-
-				sNeuron &neuron = m_layers[j][i];
-				neuron.layer = j;
-				neuron.order = i;
-				neuron.id = id++;
-				neuron.biasNeuron = false;
-				neuron.inputNeuron = j == 0;
-				m_neurons.push_back(&neuron);
-			}
-		}
-
-		for(int i = 0; i < m_layers.size() - 1; i++){
-			createSynapseLayer(m_layers[i], m_layers[i+1]);
-		}
-
-		for(int i = 0; i < m_layers.size(); i++){
-			createFeedbackSynapses(m_layers[i]);
-		}
-
-		for(int j = 1; j < m_layers.size(); j++){
-			for(int i = 0; i < m_layers[j].size(); i++){
-				sNeuron *neuron = &m_layers[j][i];
-				int num_synapses = neuron->inputSynapses.size();
-				float thresh = m_connectionsPerNeuron / num_synapses;
-				for(int k = 0; k < num_synapses; k++){
-					neuron->inputSynapses[k]->enableThreshold = thresh;
-				}
-			}
-		}
-
-		m_created = true;
-	}
 
 	// Initial random conditions. This needs more care and investigation
 	void randomize()
@@ -319,8 +261,51 @@ public:
 		}
 	}
 
+	// Sets the number of neurons in the specified
+	void setNeuronLayer(int layer, int size, bool bias = true, bool feedback = false)
+	{
+		if(layer >= getLayerCount()) return;
+		m_layers[layer].resize(size);
+		if(layer == 0){
+			m_inputCount = size;
+		} else if(layer == m_layers.size() - 1){
+			m_outputCount = size;
+		}
+
+
+		for(int i = 0; i < size; i++){
+
+			sNeuron &neuron = m_layers[layer][i];
+			neuron.layer = layer;
+			neuron.order = i;
+			neuron.id = ++m_neuronID;
+			neuron.biasNeuron = false;
+			neuron.inputNeuron = layer == 0;
+			m_neurons.push_back(&neuron);
+
+		}
+
+		if(bias){
+			createBiasSynapses(m_layers[layer]);
+		}
+		if(feedback){
+			createFeedbackSynapses(m_layers[layer]);
+		}
+
+	}
+
+	void addSynapseLayer(int input_layer, int output_layer)
+	{
+		createSynapseLayer(m_layers[input_layer], m_layers[output_layer]);
+	}
+
+	void addFeedback(int layer)
+	{
+		createFeedbackSynapses(m_layers[layer]);
+	}
+
 	// Builds a synapse layer.
-protected: 
+private: 
 	
 
 	void createFeedbackSynapses(vector<sNeuron> &neurons)
@@ -330,10 +315,16 @@ protected:
 		}
 	}
 
+	void createBiasSynapses(vector<sNeuron> &neurons)
+	{
+		for(int i = 0; i < neurons.size(); i++){
+			addSynapse(&m_biasNeuron, &neurons[i]);
+		}
+	}
+
 	void createSynapseLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_outputs)
 	{
 		for(unsigned int j = 0; j < _outputs.size(); j++){
-			addSynapse(&m_biasNeuron, &_outputs[j]);
 			for(unsigned int i = 0; i < _inputs.size(); i++){
 				addSynapse(&_inputs[i], &_outputs[j]);
 			}
@@ -362,12 +353,54 @@ protected:
 	// Get values from genes when they are changed
 public: void update()
 	{
+
+		if(!m_created){
+			for(int i = 0; i < m_layers.size() - 1; i++){
+				createSynapseLayer(m_layers[i], m_layers[i+1]);
+			}
+			m_created = true;
+		}
+
 		for(unsigned int i = 0; i < m_neurons.size(); i++){
 			m_neurons[i]->reset();
 		}
 		for(unsigned int i = 0; i < m_synapses.size(); i++){
 			m_synapses[i]->update(m_maxWeight, m_weightExponent);
 		}
+
+		for(int j = 0; j < m_layers.size(); j++){
+			for(int i = 0; i < m_layers[j].size(); i++){
+				sNeuron *neuron = &m_layers[j][i];
+				int num_synapses = neuron->inputSynapses.size();
+				float thresh = m_connectionsPerNeuron / num_synapses;
+				if(j == 0)thresh = 0.3;
+				for(int k = 0; k < num_synapses; k++){
+					neuron->inputSynapses[k]->enableThreshold = thresh;
+				}
+			}
+		}
+
+		// Force random connection on neurons with no outputs
+		for(int j = 0; j < m_layers.size() - 1; j++){
+			for(int i = 0; i < m_layers[j].size(); i++){
+				sNeuron *neuron = &m_layers[j][i];
+				int num_synapses = neuron->outputSynapses.size();
+				bool connected = false;
+				for(int k = 0; k < num_synapses; k++){
+					sSynapse *synapse = neuron->outputSynapses[k];
+					if(synapse->enabled && synapse->output != neuron){
+						connected = true;
+						break;
+					}
+				}
+				if(!connected){
+					int r = sRandom::getInt(0,num_synapses - 1);
+					neuron->outputSynapses[r]->enabledGene->setValue(sRandom::getFloat(0.0,0.1));
+					neuron->outputSynapses[r]->update(m_maxWeight, m_weightExponent);
+				}
+			}
+		}
+
 		//for(int i = 0; i < m_hiddenLayers.size(); i++){
 		//	sortHiddenLayer(i);
 		//}
@@ -379,25 +412,16 @@ public: void update()
 	//------------------------------------------------------------------------------------------
 	
 
-public: void run()
+    void run()
 	{
 		if(!m_created) return;
 
 		for(unsigned int i = 0; i < m_layers.size(); i++){
-			runNeuronLayer(m_layers[i]);
+			for(int j = 0; j < m_layers[i].size(); j++){
+				m_layers[i][j].activate();
+			}
 		}
 	}
-
-private: 
-	
-	
-	void runNeuronLayer(vector<sNeuron> &neurons)
-	{
-		for(int i = 0; i < neurons.size(); i++){
-			neurons[i].activate();
-		}
-	}
-
 
 
 private:
@@ -447,7 +471,7 @@ private:
 	sGenome *m_genome;
 	int m_inputCount;
 	int m_outputCount;
-
+	int m_neuronID;
 	float m_maxWeight;
 	float m_weightExponent;
 	float m_connectionsPerNeuron;

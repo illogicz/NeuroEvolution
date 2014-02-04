@@ -6,6 +6,7 @@
 #include "Sims\RaceCar\RaceSimulation.h"
 #include "Sims\RaceCar\SwarmSimulation.h"
 #include "Sims\RaceCar\TopDownRaceSimulation.h"
+#include "Sims\RaceCar\PoleBalanceSimulation.h"
 #include "sGraphics\sSimulationWindow.h"
 
 
@@ -181,9 +182,24 @@ void runTopDownRace()
 	window.start();
 
 }
+
+void runPoleBalancing()
+{
+	sRandom::seed(128955);
+
+	PoleBalanceSimulation simulation;
+	sSimulationWindow window;
+	simulation.mutationRate = 0.005;
+	simulation.elites = 0;
+
+	window.setSimulation(&simulation);
+	window.start();
+
+}
+
 int main()
 {
-
+	runPoleBalancing();
 	runTopDownRace();
 	//runBipedSimulation();
 	//runSwarmSimulation();

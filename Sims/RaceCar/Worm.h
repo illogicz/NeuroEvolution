@@ -156,10 +156,10 @@ public:
 			outputCount += numSegments - 1;
 		}
 		neuralNet.setLayerCount(4);
-		neuralNet.setLayerSize(0,inputCount);
-		neuralNet.setLayerSize(1,(inputCount + outputCount)/2);//inputCount);
-		neuralNet.setLayerSize(2,(inputCount + outputCount)/2);//inputCount);
-		neuralNet.setLayerSize(3,outputCount);
+		neuralNet.setNeuronLayer(0,inputCount);
+		neuralNet.setNeuronLayer(1,(inputCount + outputCount)/2);//inputCount);
+		neuralNet.setNeuronLayer(2,(inputCount + outputCount)/2);//inputCount);
+		neuralNet.setNeuronLayer(3,outputCount);
 		
 		/*
 
@@ -178,8 +178,6 @@ public:
 		neuralNet.setMaxWeight(3);
 
 		*/
-
-		neuralNet.create(genome);
 
 	}
 

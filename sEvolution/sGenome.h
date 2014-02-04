@@ -12,8 +12,6 @@ class sGenome
 
 public:
 
-	//sGenome mate(Genome &s);
-
 	// Adds a gene with name and range, fills it with random data
 	// If it exist already, it simply returns the existing gene
 	sGene& addGene(string name, double min, double max, int bits = 16)

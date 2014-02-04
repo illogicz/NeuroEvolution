@@ -18,7 +18,7 @@ public:
 	{
 		_copy(body);
 	}
-	virtual void copy(sUniformBody &body)
+	virtual void copy(const sUniformBody &body)
 	{
 		sBody::copy(body);
 		_copy(body);
@@ -94,7 +94,7 @@ protected:
 
 private:
 
-	void _copy(sUniformBody &body)
+	void _copy(const sUniformBody &body)
 	{
 		m_density = body.m_density;
 		m_friction = body.m_friction;

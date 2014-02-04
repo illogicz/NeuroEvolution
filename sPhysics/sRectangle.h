@@ -21,15 +21,18 @@ public:
 	}
 	sRectangle(sRectangle &rect) : sUniformBody(rect)
 	{
-
 		_copy(rect);
 	}
-	void copy(sRectangle &rect)
+	void copy(const sRectangle &rect)
 	{
 		sUniformBody::copy(rect);
 		_copy(rect);
 	}
-
+	sRectangle& operator=(const sRectangle& rect)
+	{
+		copy(rect);
+		return *this;
+	}
 
 
 	void setSize(b2Vec2 size)
@@ -40,7 +43,7 @@ public:
 	{
 		setSize(b2Vec2(width, height));
 	}
-	b2Vec2 getSize()
+	b2Vec2 getSize() const
 	{
 		return m_size;
 	}
@@ -62,7 +65,7 @@ protected:
 
 private:
 
-	void _copy(sRectangle &rect)
+	void _copy(const sRectangle &rect)
 	{
 		m_size = rect.getSize();
 	}

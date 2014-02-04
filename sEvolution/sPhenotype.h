@@ -16,7 +16,10 @@ class sPhenotype : public sContainer, public sStepListener
 {
 public:
 
-	sPhenotype() : m_isFocus(false){}
+	sPhenotype() : m_isFocus(false)
+	{
+		neuralNet.setGenome(genome);
+	}
 
 	// Derived phenotypes should implement these
 	virtual void init(sWorld &world) = 0;

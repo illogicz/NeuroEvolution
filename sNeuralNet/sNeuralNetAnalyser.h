@@ -66,7 +66,7 @@ public:
 			neuralNet.randomize();
 			neuralNet.update();
 			for(int k = 0; k < cycles; k++){
-				for(int i = 0; i < neuralNet.getInputCount(); i++){
+				for(int i = 0; i < neuralNet.getLayerSize(0); i++){
 					neuralNet.setInput(i, sRandom::getFloat(inputRangeLower,inputRangeUpper));
 				}
 				neuralNet.run();
@@ -119,7 +119,7 @@ public:
 				neuralNet.randomize();
 				neuralNet.update();
 				for(int k = 0; k < cycles; k++){
-					for(int i = 0; i < neuralNet.getInputCount(); i++){
+					for(int i = 0; i < neuralNet.getLayerSize(0); i++){
 						neuralNet.setInput(i, sRandom::getFloat(inputRangeLower,inputRangeUpper));
 					}
 					neuralNet.run();

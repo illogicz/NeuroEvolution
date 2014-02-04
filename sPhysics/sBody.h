@@ -86,7 +86,7 @@ public:
 			removeFromWorld(*m_world);
 		}
 	}
-	void copy(sBody &body)
+	void copy(const sBody &body)
 	{
 		sObject::copy(body);
 		_copy(body);
@@ -119,7 +119,7 @@ public:
 	// State
 
 	// TODO: possibly change this so that deriving classes can use derived states
-	sBodyState getState()
+	sBodyState getState() const
 	{
 		if(m_inWorld){
 			sBodyState state;
@@ -348,7 +348,7 @@ protected:
 
 private :
 
-	void _copy(sBody &body)
+	void _copy(const sBody &body)
 	{
 		m_density = body.m_density;
 		m_bodyType = body.m_bodyType;
