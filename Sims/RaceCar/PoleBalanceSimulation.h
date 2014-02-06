@@ -1,6 +1,7 @@
 #pragma once
 #include "../../sEvolution/sSimulation.h"
 #include "PoleCart.h"
+#include "CircleBalance.h"
 #include "../../sPhysics/sEdgeRectangle.h"
 #include "../../sPhysics/sCircle.h"
 #include "../../sUtils/perlin.h"
@@ -27,7 +28,7 @@ public:
 		built = false;
 		staticView = true;
 		renderScale = 10;
-
+		world.setGravity(b2Vec2(0,10));
 		populationSize = rows * cols;
 	}
 
@@ -56,20 +57,13 @@ protected:
 
 		for(int i = 0; i < rows; i++){
 			for(int j = 0; j < cols; j++){
-				PoleCart *cart = new PoleCart;
+				CircleBalance *cart = new CircleBalance;
 				cart->position.y = i * 12 - 24;
 				cart->position.x = float(j) / (cols - 1) * 100 - 50;
-				cart->init(world);
-				population.addPhenotype(cart);
-				world.add(cart);
-				if(!i){
-					cart->neuralNet.printStats();
-					cart->genome.printStats();
-				}
+				cart->groundBody = &groundBodies[i];
+				addPhenotype(cart);
 			}
 		}
-		population.printStats();
-
 	}
 
 
@@ -98,7 +92,7 @@ protected:
 		groundBodies.resize(rows);
 		for(int i = 0; i < rows; i++){
 			groundBodies[i].setSize(width,height);
-			groundBodies[i].setFriction(0);
+			groundBodies[i].setFriction(2);
 			groundBodies[i].setPosition(0, i * 12 - 30);
 			groundBodies[i].setType(STATIC_BODY);
 			world.add(&groundBodies[i]);

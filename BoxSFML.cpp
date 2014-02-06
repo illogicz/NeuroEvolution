@@ -28,8 +28,8 @@ void runBipedSimulation()
 
 	//simulation.groundSegmentSize = 0.1f;
 	simulation.groundFrequency = 20.f;
-	simulation.maxRoughness = 0;
-	simulation.minRoughness = 0;
+	simulation.maxRoughness = 1;
+	simulation.minRoughness = 1;
 	simulation.randomizeEnvironment = false;
 	simulation.renderScale = 50;
 	simulation.worldWidth = 800;
@@ -200,7 +200,7 @@ void runPoleBalancing()
 int main()
 {
 	runPoleBalancing();
-	runTopDownRace();
+	//runTopDownRace();
 	//runBipedSimulation();
 	//runSwarmSimulation();
 	runWormSimulation();

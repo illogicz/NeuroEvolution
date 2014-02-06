@@ -73,9 +73,9 @@ public:
 		return float(grayToBinary(m_data)) / ((1 << m_bits));
 	}
 
-	void random()
+	void random(float limit = 1.f)
 	{
-		m_data = sRandom::getInt(0, (1 << m_bits) - 1);
+		m_data = sRandom::getInt(0, ((1 << m_bits) - 1) * limit);
 	}
 
 	void invert()

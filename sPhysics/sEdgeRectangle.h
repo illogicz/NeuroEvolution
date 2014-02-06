@@ -39,14 +39,14 @@ public:
 	{
 		m_size = size;
 
-		b2Vec2 points[4];
-		float width = m_size.x;
-		float height = -m_size.y;
-		points[0] = b2Vec2(-width/2, -height/2);
-		points[1] = b2Vec2(-width/2, height/2);
-		points[2] = b2Vec2(width/2, height/2);
-		points[3] = b2Vec2(width/2, -height/2);
-		__shape.CreateLoop(points, 4);
+		//b2Vec2 points[4];
+		//float width = m_size.x;
+		//float height = -m_size.y;
+		//points[0] = b2Vec2(-width/2, -height/2);
+		//points[1] = b2Vec2(-width/2, height/2);
+		//points[2] = b2Vec2(width/2, height/2);
+		//points[3] = b2Vec2(width/2, -height/2);
+		//__shape.CreateLoop(points, 4);
 
 	}
 	void setSize(float32 width, float32 height)
@@ -61,8 +61,8 @@ public:
 
 protected:
 
-	/*
-	void addToWorld(b2World &world)
+	
+	void addToWorld(sWorld &world)
 	{
 		b2Vec2 points[4];
 		float width = m_size.x;
@@ -74,7 +74,7 @@ protected:
 		__shape.CreateLoop(points, 4);
 		sUniformBody::addToWorld(world);
 	}
-	*/
+	
 
 	void _copy(const sEdgeRectangle &rect)
 	{

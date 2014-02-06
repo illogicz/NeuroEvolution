@@ -39,11 +39,12 @@ struct sSynapse
 	float enableThreshold;
 	void update(float maxWeight, float exponent)
 	{
+		if(enableThreshold > 0.9)enableThreshold = 0.9; // hacky must figure out better way
 		enabled = enabledGene->getValue() < enableThreshold;
 		float v = weightGene->getValue();
 
-		if(input == output){ // disable inhibitory feedback
-			v = v / 2 + 0.5f; 
+		if(input == output){ // disable inhibitory feedback, causes jitter
+			v = abs(v); 
 		}
 
 		weight = pow(abs(v), exponent) * (v < 0 ? -1: 1) * maxWeight;
@@ -109,11 +110,13 @@ public:
 	sNeuralNet()
 	{
 		m_maxWeight = 3.f;
+		m_initialMaxWeight = m_maxWeight;
 		m_weightExponent = 2.f;
 		m_connectionsPerNeuron = 5.f;
 		m_created = false;
 		m_biasNeuron.biasNeuron = true;
 		m_biasNeuron.id = 0;
+		m_biasNeuron.reset();
 		m_name = "NN";
 		m_neuronID = 0;
 	}
@@ -159,6 +162,10 @@ public:
 		return m_maxWeight;
 	}
 
+	void setInitialMaxWeight(float maxWeight)
+	{
+		m_initialMaxWeight = maxWeight;
+	}
 
 	// Set the value of an input neuron
 	// These should be normalized to about -3..3 depending on neuron counts and weight/bias limits
@@ -255,8 +262,9 @@ public:
 	// Initial random conditions. This needs more care and investigation
 	void randomize()
 	{  
+		float maxw = m_initialMaxWeight / m_maxWeight;
 		for(unsigned int i = 0; i < m_synapses.size(); i++){
-			m_synapses[i]->weightGene->random();
+			m_synapses[i]->weightGene->setValue(sRandom::getFloat(-maxw, maxw));
 			m_synapses[i]->enabledGene->random();
 		}
 	}
@@ -358,6 +366,7 @@ public: void update()
 			for(int i = 0; i < m_layers.size() - 1; i++){
 				createSynapseLayer(m_layers[i], m_layers[i+1]);
 			}
+			randomize();
 			m_created = true;
 		}
 
@@ -368,6 +377,7 @@ public: void update()
 			m_synapses[i]->update(m_maxWeight, m_weightExponent);
 		}
 
+		// Hacky
 		for(int j = 0; j < m_layers.size(); j++){
 			for(int i = 0; i < m_layers[j].size(); i++){
 				sNeuron *neuron = &m_layers[j][i];
@@ -380,7 +390,7 @@ public: void update()
 			}
 		}
 
-		// Force random connection on neurons with no outputs
+		// Force random connection on neurons with no outputs - hacky
 		for(int j = 0; j < m_layers.size() - 1; j++){
 			for(int i = 0; i < m_layers[j].size(); i++){
 				sNeuron *neuron = &m_layers[j][i];
@@ -473,6 +483,7 @@ private:
 	int m_outputCount;
 	int m_neuronID;
 	float m_maxWeight;
+	float m_initialMaxWeight;
 	float m_weightExponent;
 	float m_connectionsPerNeuron;
 

@@ -380,6 +380,17 @@ void sDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2V
 	lines[lines_index].color = color;
 	lines_index++;
 
+
+	sf::Color fillColor = color;
+	fillColor.a *= 0.4;
+	b2Vec2 p1 = center + b2Vec2(0,radius);
+	for(int i = 0; i < 20; i++){
+		b2Vec2 p2 = center + b2Mul(b2Rot(b2_pi * 2 * float(i+1) / 20), b2Vec2(0,radius));
+		addTriangle(center, p1, p2, fillColor);
+		addLine(p1, p2, color);
+		p1 = p2;
+	}
+	/*
 	// TODO : implement circles in vertex arrays
 	sf::CircleShape circle(radius, 20);
 	circle.setPosition(center.x-radius, center.y-radius);
@@ -388,7 +399,7 @@ void sDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2V
 	color.a *= 0.4;
 	circle.setFillColor(color);
 	m_target->draw(circle, states);
-
+	*/
 }
 
 void sDebugDraw::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, sf::Color& color)

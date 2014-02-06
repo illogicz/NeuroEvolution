@@ -17,8 +17,7 @@ public:
 		b2Filter filter;
 		filter.groupIndex = -1;
 		pole1Height = 5;
-		pole2Height = 1.111;
-		pole3Height = 3.234;
+		pole2Height = b2_pi / 2;
 		velocityInfo = false;
 
 		cart.setPosition(0,-1);
@@ -28,19 +27,12 @@ public:
 
 		pole1.setLinearDamping(0);
 		pole1.setAngularDamping(0);
-		pole1.setSize(0.5,pole1Height);
 		pole1.setFilter(filter);
 		joint1.setBodies(&cart, &pole1);
 
 		pole2.copy(pole1);
-		pole2.setSize(0.5,pole2Height);
 		pole2.setFilter(filter);
 		joint2.setBodies(&cart, &pole2);
-
-		pole3.copy(pole1);
-		pole3.setSize(0.5,pole3Height);
-		pole3.setFilter(filter);
-		joint3.setBodies(&cart, &pole3);
 
 
 		add(&cart);
@@ -51,33 +43,31 @@ public:
 		add(&pole2);
 		add(&joint2);
 
-		//add(&pole3);
-		//add(&joint3);
 
 		world.addContactListener(this, &pole1);
 		world.addContactListener(this, &pole2);
-		world.addContactListener(this, &pole3);
 
 
+		genome.setUseMutationRateGene(true, 0,0.007);
 
 		neuralNet.setLayerCount(3);
-		neuralNet.setNeuronLayer(0,velocityInfo ? 8 : 3, true, true);
-		neuralNet.setNeuronLayer(1,4, true, true);
-		//neuralNet.setNeuronLayer(2,5, true, true);
+		neuralNet.setNeuronLayer(0,velocityInfo ? 7 : 3, true, true);
+		neuralNet.setNeuronLayer(1,5, true, true);
 		neuralNet.setNeuronLayer(2,1, true, true);
+		//neuralNet.setNeuronLayer(3,1, true, true);
 		neuralNet.addSynapseLayer(0,2);	
 		//neuralNet.addSynapseLayer(0,3);	
-		neuralNet.setWeightExponent(1);	
+		//neuralNet.addSynapseLayer(0,3);	
+		neuralNet.setWeightExponent(2);	
 		neuralNet.setConnectionsPerNeuron(10);	
 		neuralNet.setMaxWeight(3);
-
+		neuralNet.setInitialMaxWeight(2);
 
 	}
 
 	bool velocityInfo;
 	float pole1Height;
 	float pole2Height;
-	float pole3Height;
 
 	b2Vec2 position;
 
@@ -86,12 +76,18 @@ public:
 		cart.setType(KINEMATIC_BODY);
 		pole1.setType(DYNAMIC_BODY);
 		pole2.setType(DYNAMIC_BODY);
-		pole3.setType(DYNAMIC_BODY);
+		//pole3.setType(DYNAMIC_BODY);
 
 		cart.zeroState();
 		pole1.zeroState();
 		pole2.zeroState();
-		pole3.zeroState();
+		//pole3.zeroState();
+
+		pole1.setSize(0.5,pole1Height);
+		pole2.setSize(0.5,pole2Height);
+		//pole3.setSize(0.3,pole3Height);
+
+
 
 		cart.setPosition(position.x,position.y - 1);
 
@@ -101,14 +97,13 @@ public:
 		pole2.setPosition(position.x + 1, position.y - 1 - pole2Height);
 		joint2.setAnchor(position.x + 1, position.y - 1);
 
-		pole3.setPosition(position.x + 1, position.y - 1 - pole3Height);
-		joint3.setAnchor(position.x + 1, position.y - 1);
+		//pole3.setPosition(position.x + 0.5, position.y - 1 - pole3Height - pole1Height * 2);
+		//joint3.setAnchor(position.x + 0.5, position.y - 1  - pole1Height * 2);
 
-		float unbalance = 0.05;
+		float unbalance = 0.1;
 
 		float a1 = sRandom::getFloat(-unbalance, unbalance);
 		float a2 = sRandom::getFloat(-unbalance, unbalance);
-		float a3 = sRandom::getFloat(-unbalance, unbalance);
 
 		b2Vec2 p = pole1.getPosition();
 		p -= joint1.getAnchor();
@@ -124,12 +119,6 @@ public:
 		pole2.setPosition(p);
 		pole2.setAngle(a2);
 
-		p = pole3.getPosition();
-		p -= joint3.getAnchor();
-		p = b2Mul(b2Rot(a3),p);
-		p += joint3.getAnchor();
-		pole3.setPosition(p);
-		pole3.setAngle(a3);
 
 		//cart.applyForceToCenter(b2Vec2(sRandom::getFloat(-1000,1000), 0));
 
@@ -138,27 +127,28 @@ public:
 		fitnessModifier = 1;
 		deferDeath = false;
 		totalForce = 0;
+		rnd = sRandom::getFloat(0,1);	
 	}
 	virtual void destroy(sWorld &world)
 	{
 		cart.setType(STATIC_BODY);
 		pole1.setType(STATIC_BODY);
 		pole2.setType(STATIC_BODY);
-		pole3.setType(STATIC_BODY);
 	
 	}
 	virtual void step() 
 	{
 		if(deferDeath)return die();
-
+		
 		float a1 = pole1.getAngle();
 		float a2 = pole2.getAngle();
-		float a3 = pole3.getAngle();
 		
+		if(abs(a1) > b2_pi * 0.9)return die();
+		if(abs(a2) > b2_pi * 0.9)return die();
+
 		int index = 0;
 		neuralNet.setInput(index++,a1);
 		neuralNet.setInput(index++,a2);
-		//neuralNet.setInput(index++,a3);
 		float x = cart.getPosition().x - position.x;
 		if(abs(x) > 10){
 			if(x > 0){
@@ -172,16 +162,17 @@ public:
 		}
 		neuralNet.setInput(index++,x);
 		if(velocityInfo){
-			neuralNet.setInput(index++,cart.getLinearVelocity().x * 0.05);
+			//neuralNet.setInput(index++,cart.getLinearVelocity().x * 0.05);
 			neuralNet.setInput(index++,pole1.getAngularVelocity() * 0.1);
 			neuralNet.setInput(index++,pole2.getAngularVelocity() * 0.1);
+
 		}
 
 
 		neuralNet.run();
 		//cart.applyForceToCenter(b2Vec2(neuralNet.getOutput(0) * 1000,0));
 		float xv = cart.getLinearVelocity().x;
-		cart.setLinearVelocity(b2Vec2(neuralNet.getOutput(0) * 10 + xv, 0));
+		cart.setLinearVelocity(b2Vec2(neuralNet.getOutput(0) * 40 + xv, 0));
 
 		totalForce += abs(neuralNet.getOutput(0));
 
@@ -202,7 +193,7 @@ public:
 
 	virtual float getFitness()
 	{
-	    return lifeTime * fitnessModifier;		
+		return lifeTime * fitnessModifier + rnd;
 	}	
 
 
@@ -212,19 +203,18 @@ public:
 	}
 
 
-private:
 
+private:
+	float rnd;
 	float fitnessModifier;
 	float totalForce;
 	bool deferDeath;
 	sRectangle cart;
 	sRectangle pole1;
 	sRectangle pole2;
-	sRectangle pole3;
 
 	sRevoluteJoint joint1;
 	sRevoluteJoint joint2;
-	sRevoluteJoint joint3;
 
 };
 

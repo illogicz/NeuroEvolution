@@ -20,16 +20,19 @@ public:
 	}
 	sCircle(sCircle &circle) : sUniformBody(circle)
 	{
-
 		_copy(circle);
 	}
-
-	void copy(sCircle &circle)
-	{
-		
+	void copy(const sCircle &circle)
+	{		
 		sUniformBody::copy(circle);
 		_copy(circle);
 	}
+	sCircle& operator=(const sCircle& circle)
+	{
+		copy(circle);
+		return *this;
+	}
+
 
 	void addToWorld(sWorld &world)
 	{
@@ -42,7 +45,7 @@ public:
 		m_radius = radius;
 	}
 
-	float32 getRadius()
+	float32 getRadius() const
 	{
 		return m_radius;
 	}
@@ -60,9 +63,8 @@ protected:
 
 private:
 
-	void _copy(sCircle &circle)
+	void _copy(const sCircle &circle)
 	{
-		printf("circle copy");
 		setRadius(circle.getRadius());
 	}
 

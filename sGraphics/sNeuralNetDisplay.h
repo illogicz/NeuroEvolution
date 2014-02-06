@@ -76,44 +76,35 @@ public:
 
 	void drawSynapse(sSynapse *synapse)
 	{
-
+		
 		if(synapse->enabled){
 
+			float w = synapse->weight * synapse->input->activation;
+			int a = abs(w / neuralNet->getMaxWeight()) * 0xFF;
+			int c = w < 0 ? 0x00 : 0xFF;
+			sf::Color color(c, c, c, a);
 
 			if(synapse->input == synapse->output){  // feedback
-
-				float w = synapse->weight * synapse->input->activation;
-				int a = abs(w / neuralNet->getMaxWeight()) * 0xFF;
-				int c = w < 0 ? 0x00 : 0xFF;
 
 				Vector2f p = getNeuronPosition(synapse->input);
 
 				feedbackCircle.setRadius(feedbackRadius);
-				feedbackCircle.setOutlineColor(Color(c, c, c, a));
+				feedbackCircle.setOutlineColor(color);
 				feedbackCircle.setPosition(p.x, p.y - feedbackRadius);
 
 				target->draw(feedbackCircle, RenderStates(getTransform()));
 
 			} else if(synapse->input->biasNeuron){  // bias
-								
-				int c = synapse->weight / neuralNet->getMaxWeight() * 0xFF;
-				biasCircle.setFillColor(sf::Color(c,c,c));
+				
+				biasCircle.setFillColor(color);
 				float r = biasCircle.getRadius();
 				biasCircle.setPosition(getNeuronPosition(synapse->output) - Vector2f(r,r));
 				target->draw(biasCircle, RenderStates(getTransform()));
 
 			} else {                                // normal
-
-				Vector2f p1 = getNeuronPosition(synapse->input);
-				Vector2f p2 = getNeuronPosition(synapse->output);
-
-				float w = synapse->weight * synapse->input->activation;
-
-				int a = abs(w / neuralNet->getMaxWeight()) * 0xFF;
-				int c = w < 0 ? 0x00 : 0xFF;
-
-				vertices.append(Vertex(p1,Color(c, c, c, a)));
-				vertices.append(Vertex(p2,Color(c, c, c, a)));
+				
+				vertices.append(Vertex(getNeuronPosition(synapse->input),color));
+				vertices.append(Vertex(getNeuronPosition(synapse->output),color));
 			}
 		}
 

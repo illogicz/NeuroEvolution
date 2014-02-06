@@ -15,7 +15,7 @@ public:
 	{
 		jointTorque = 3.0;
 		jointSpeed = 0.1;
-		progressTimeout = 6000;
+		progressTimeout = 600;
 		footSensors = true;
 		immortal = false;
 		pulseFeedback = false;
@@ -178,9 +178,11 @@ protected:
 			outputCount++;
 		}
 		neuralNet.setLayerCount(3);
-		neuralNet.setNeuronLayer(0,inputCount);
-		neuralNet.setNeuronLayer(1,outputCount);
-		neuralNet.setNeuronLayer(2,outputCount);
+		neuralNet.setNeuronLayer(0,inputCount, false, true);
+		neuralNet.setNeuronLayer(1,outputCount, true, true);
+		neuralNet.setNeuronLayer(2,outputCount, true, true);
+		neuralNet.addSynapseLayer(0,2);
+		neuralNet.setWeightExponent(3);
 		//neuralNet.setHiddenLayerSize(1,outputCount);
 		//neuralNet.setHiddenLayerSize(1,4);
 		//neuralNet.setMaxBias(0);
@@ -228,7 +230,7 @@ protected:
 
 		// Initialise some values for simulation
 		fitnessModifier = 1;
-		progressPosition = getFitness();
+		progressPosition = -1000; //getFitness();
 		progressDelay = 0;
 		deferDeath = false;
 		leftFootContact = false;
@@ -402,11 +404,12 @@ protected:
 		
 		//if(alive)printf("%f %f\n", getFitness(), progressPosition);
 		// Kill it off if it doesn't make progress for some time
-		if(getFitness() > progressPosition + 0.01f){
+		if(getFitness() > progressPosition + 0.1f){
 			progressDelay = 0;
 			progressPosition = getFitness();
 		} else {
 			if(++progressDelay > progressTimeout){
+				printf("progress death, needed = %f, have = %f\n",progressPosition + 0.1f,  getFitness());
 				if(!immortal)die();
 				return;
 			}

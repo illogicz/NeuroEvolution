@@ -150,6 +150,13 @@ public:
 			m_generations++;
 
 		}
+		if(m_phenotypes[0]->genome.getUseMutationRateGene()){
+			float t = 0;
+			for(unsigned int i = 0; i < m_phenotypes.size(); i++){
+				t += m_phenotypes[i]->genome.getValue("mutationRate");
+			}
+			printf("average mutation rate = %f\n", t / m_phenotypes.size());
+		}
 	}
 
 

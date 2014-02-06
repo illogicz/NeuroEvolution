@@ -12,6 +12,10 @@ class sGenome
 
 public:
 
+	sGenome()
+	{
+		m_useMutationRateGene = false;
+	}
 	// Adds a gene with name and range, fills it with random data
 	// If it exist already, it simply returns the existing gene
 	sGene& addGene(string name, double min, double max, int bits = 16)
@@ -44,10 +48,18 @@ public:
 	}
 
 	// not used yet
-	void setMutationRateRange(float lower, float upper)
+	void setUseMutationRateGene(bool mutationGene, float lower = 0, float upper = 0)
 	{
-		addGene("mutationRate", lower, upper);
+		m_useMutationRateGene = mutationGene;
+		if(mutationGene){
+			addGene("mutationRate", lower, upper);
+		}
 	}
+	bool getUseMutationRateGene()
+	{
+		return m_useMutationRateGene;
+	}
+
 
 	// TODO: handle different structured genomes
 	void clone(sGenome &genome)
@@ -60,8 +72,15 @@ public:
 	// TODO: handle different structured genomes
 	void mate(sGenome &genome1, sGenome &genome2, float mutationRate = 0)
 	{
+		if(m_useMutationRateGene){
+			mutationRate = genome1.getValue("mutationRate");
+		}
 		for(map<string, sGene>::iterator i = m_genes.begin(); i != m_genes.end(); ++i){
 			i->second.mate(genome1.getGene(i->first), genome2.getGene(i->first), mutationRate);
+		}
+		// test: mutation rate decay
+		if(m_useMutationRateGene){
+			//setValue("mutationRate", getValue("mutationRate") * 0.99);
 		}
 	}
 
@@ -111,7 +130,7 @@ public:
 private:
 
 	map<string, sGene> m_genes;
-
+	bool m_useMutationRateGene;
 
 
 };

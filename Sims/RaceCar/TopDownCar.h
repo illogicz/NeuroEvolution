@@ -6,15 +6,6 @@
 #include "..\..\sEvolution\sPhenotype.h"
 #include "..\..\sGraphics\sDebugDraw.h"
 
-class sTopDownRaceFitness : public sFitnessFunction
-{
-public: 
-	 float operator()(sPhenotype *phenotype)
-	{
-		return 1;
-	}
-};
-
 class TopDownCar : public sPhenotype, public sContactListener
 {
 
@@ -28,13 +19,12 @@ public:
 		grip = 3;
 		slideDamping = 0.5;
 		maxStearingAngle = 1;
-		visionResolution = 9;
-		visionFOV = 2.5;
+		visionResolution = 15;
+		visionFOV = b2_pi;
 		minRayLength = 1;
 		maxRayLength = 30;
 		touchSense = true;
 		neuralFeedback = true;
-		fitnessFunction = &raceFitness;
 		id = id_counter++;
 
 	}
@@ -137,15 +127,16 @@ public:
 		if(true){
 
 			neuralNet.setLayerCount(3);
-			neuralNet.setNeuronLayer(0, input_count);
-			neuralNet.setNeuronLayer(1,8, true);
+			neuralNet.setNeuronLayer(0, input_count, true, false);
+			neuralNet.setNeuronLayer(1,8, true, true);
 			//neuralNet.setLayerSize(2,input_count - 6);
-			neuralNet.setNeuronLayer(2, 2);
+			neuralNet.setNeuronLayer(2, 2, true, false);
 			neuralNet.addSynapseLayer(0,2);
 
-			neuralNet.setMaxWeight(2);
-			neuralNet.setConnectionsPerNeuron(6);
-			neuralNet.setWeightExponent(3);
+			neuralNet.setMaxWeight(3);
+			neuralNet.setInitialMaxWeight(1);
+			neuralNet.setConnectionsPerNeuron(30);
+			neuralNet.setWeightExponent(1.5);
 			
 
 		} else {
@@ -334,8 +325,6 @@ public:
 
 	};	
 
-
-	sTopDownRaceFitness raceFitness;
 
 	sRectangle chassis;
 	sRectangle frontLeftWheel;

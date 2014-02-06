@@ -110,9 +110,12 @@ protected:
 			outputCount++;
 		}
 		neuralNet.setLayerCount(3);
-		neuralNet.setNeuronLayer(0, inputCount);
-		neuralNet.setNeuronLayer(1,outputCount);
-		neuralNet.setNeuronLayer(2, outputCount);
+		neuralNet.setNeuronLayer(0, inputCount, true, true);
+		neuralNet.setNeuronLayer(1,outputCount, true, true);
+		neuralNet.setNeuronLayer(2, outputCount, true, true);
+		//neuralNet.addSynapseLayer(0,2);
+		neuralNet.addSynapseLayer(0,2);
+
 		//neuralNet.setHiddenLayerSize(0,(outputCount + inputCount) / 2);
 		/*
 		neuralNet.setMaxBias(0.5);

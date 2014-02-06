@@ -36,7 +36,6 @@ public:
 	sPhenotype *leader;
 	sPhenotype *liveLeader;
 	sPhenotype *trailer;
-	sPhenotype *elite;
 
 	void setGravity(float x, float y)
 	{
@@ -48,7 +47,7 @@ protected:
 	
 	void init()
 	{
-		
+		buildEnvironment();
 		initPhenotypes();
 		resetSimulation();
 		population.setElites(elites);
@@ -57,6 +56,7 @@ protected:
 		population.setBreadingPoolFraction(breadingPoolFraction);
 		renderCenter.Set(0,0);
 		simFrame = 0;
+		printStats();
 	}
 
 	void resetSimulation()
@@ -76,7 +76,6 @@ protected:
 		simFrame++;
 		if(isFinished()){
 			population.newGeneration();
-			elite = population[0];
 			resetSimulation();
 			simFrame = 0;
 			newGen = true;
@@ -111,7 +110,19 @@ protected:
 		}
 	}
 
+	void addPhenotype(sPhenotype *phenotype)
+	{
+		phenotype->init(world);
+		population.addPhenotype(phenotype);
+		world.add(phenotype);
+	}
 
+	void printStats()
+	{
+		population.printStats();
+		population[0]->neuralNet.printStats();
+		population[0]->genome.printStats();
+	}
 
 	virtual void initPhenotypes() = 0;
 	virtual void buildEnvironment() = 0;
