@@ -11,7 +11,8 @@ struct sRandom
 {
 private:
 	static mt19937 engine;
-	static uniform_real_distribution<float> float_distribution;
+	static uniform_real_distribution<float> uniform_distribution;
+	static normal_distribution<float> normal_distrubution;
 
 public:
    
@@ -25,20 +26,24 @@ public:
 
 	static float getFloat(float min, float max)
 	{
-		return min + (max - min) * float_distribution(engine);
+		return min + (max - min) * uniform_distribution(engine);
 		//return float_distribution(engine);
 	}	
 	
 	static int getInt(int min, int max)
 	{
-		return min + int(floor(float(max - min + 1) * float_distribution(engine)));
+		return min + int(floor(float(max - min + 1) * uniform_distribution(engine)));
 	}
 
 	static bool getBool()
 	{
-		return float_distribution(engine) < 0.5f;
+		return uniform_distribution(engine) < 0.5f;
 	}
 
+	static float getNormal(float mean, float stddev)
+	{
+		return normal_distrubution(engine) * stddev + mean;
+	}
 
 
 	void test()
@@ -65,4 +70,5 @@ public:
 };
 
 std::mt19937 sRandom::engine;
-uniform_real_distribution<float> sRandom::float_distribution(0.f,0.9999999f);
+uniform_real_distribution<float> sRandom::uniform_distribution(0.f,0.9999999f);
+normal_distribution<float> sRandom::normal_distrubution(0.f,1.f);

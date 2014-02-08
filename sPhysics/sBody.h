@@ -8,6 +8,7 @@ using std::vector;
 
 
 class sWorld;
+class sBody;
 
 struct sBodyState
 {
@@ -51,6 +52,15 @@ struct sBodyState
 
 };
 
+struct sRayCastOutput
+{
+	bool found;
+	b2Vec2 point;
+	float fraction;
+	b2Vec2 normal;
+	sBody *body;
+	b2Fixture *fixture;
+};
 
 // Body types, matched to box2d types for convenience
 enum sBodyType
@@ -319,6 +329,43 @@ public:
 			fixture = fixture->GetNext();
 		}
 		return aabb;
+	}
+
+	//-------------------------------------------------------------------------------
+	// RayCast
+
+	sRayCastOutput rayCast(b2Vec2 v1, b2Vec2 v2, float maxFraction = 1)
+	{
+		b2RayCastOutput b2_output;
+		b2RayCastInput b2_input;
+		sRayCastOutput output;
+		output.found = false;
+
+		b2_input.maxFraction = maxFraction;
+		b2_input.p1 = v1;
+		b2_input.p2 = v2;
+
+		b2Fixture* fixture = m_body->GetFixtureList();
+		while (fixture != NULL)
+		{
+			//fixture->
+			int l = fixture->GetShape()->GetChildCount();
+			//for(int i = 0; i < l; i++){
+				if(fixture->RayCast(&b2_output, b2_input, 0)){
+					if(b2_input.maxFraction > b2_output.fraction){
+						b2_input.maxFraction = b2_output.fraction;
+						output.fraction = b2_output.fraction;
+						output.normal = b2_output.normal;
+						output.found = true;
+						output.fixture = fixture;
+						output.body = this;
+						output.point = v1 + output.fraction * (v2 - v1);
+					}
+				}
+			//}
+			fixture = fixture->GetNext();
+		}
+		return output;
 	}
 
 

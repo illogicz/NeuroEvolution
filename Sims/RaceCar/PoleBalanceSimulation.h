@@ -60,7 +60,7 @@ protected:
 				CircleBalance *cart = new CircleBalance;
 				cart->position.y = i * 12 - 24;
 				cart->position.x = float(j) / (cols - 1) * 100 - 50;
-				cart->groundBody = &groundBodies[i];
+				//cart->groundBody = &groundBodies[i];
 				addPhenotype(cart);
 			}
 		}
@@ -95,12 +95,12 @@ protected:
 			groundBodies[i].setFriction(2);
 			groundBodies[i].setPosition(0, i * 12 - 30);
 			groundBodies[i].setType(STATIC_BODY);
-			world.add(&groundBodies[i]);
+			//world.add(&groundBodies[i]);
 		}
 
 
-		world.setGroundBody(&groundBodies[0]);
-		world.add(&groundBodies[0]);
+		//world.setGroundBody(&groundBodies[0]);
+		//world.add(&groundBodies[0]);
 
 
 	}

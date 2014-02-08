@@ -59,7 +59,6 @@ public:
 		//neuralNet.addSynapseLayer(0,3);	
 		//neuralNet.addSynapseLayer(0,3);	
 		neuralNet.setWeightExponent(2);	
-		neuralNet.setConnectionsPerNeuron(10);	
 		neuralNet.setMaxWeight(3);
 		neuralNet.setInitialMaxWeight(2);
 

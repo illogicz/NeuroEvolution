@@ -77,35 +77,33 @@ public:
 	void drawSynapse(sSynapse *synapse)
 	{
 		
-		if(synapse->enabled){
 
-			float w = synapse->weight * synapse->input->activation;
-			int a = abs(w / neuralNet->getMaxWeight()) * 0xFF;
-			int c = w < 0 ? 0x00 : 0xFF;
-			sf::Color color(c, c, c, a);
+		float w = synapse->weight * synapse->input->activation;
+		int a = abs(w / neuralNet->getMaxWeight()) * 0xFF;
+		int c = w < 0 ? 0x00 : 0xFF;
+		sf::Color color(c, c, c, a);
 
-			if(synapse->input == synapse->output){  // feedback
+		if(synapse->input == synapse->output){  // feedback
 
-				Vector2f p = getNeuronPosition(synapse->input);
+			Vector2f p = getNeuronPosition(synapse->input);
 
-				feedbackCircle.setRadius(feedbackRadius);
-				feedbackCircle.setOutlineColor(color);
-				feedbackCircle.setPosition(p.x, p.y - feedbackRadius);
+			feedbackCircle.setRadius(feedbackRadius);
+			feedbackCircle.setOutlineColor(color);
+			feedbackCircle.setPosition(p.x, p.y - feedbackRadius);
 
-				target->draw(feedbackCircle, RenderStates(getTransform()));
+			target->draw(feedbackCircle, RenderStates(getTransform()));
 
-			} else if(synapse->input->biasNeuron){  // bias
+		} else if(synapse->input->biasNeuron){  // bias
 				
-				biasCircle.setFillColor(color);
-				float r = biasCircle.getRadius();
-				biasCircle.setPosition(getNeuronPosition(synapse->output) - Vector2f(r,r));
-				target->draw(biasCircle, RenderStates(getTransform()));
+			biasCircle.setFillColor(color);
+			float r = biasCircle.getRadius();
+			biasCircle.setPosition(getNeuronPosition(synapse->output) - Vector2f(r,r));
+			target->draw(biasCircle, RenderStates(getTransform()));
 
-			} else {                                // normal
+		} else {                                // normal
 				
-				vertices.append(Vertex(getNeuronPosition(synapse->input),color));
-				vertices.append(Vertex(getNeuronPosition(synapse->output),color));
-			}
+			vertices.append(Vertex(getNeuronPosition(synapse->input),color));
+			vertices.append(Vertex(getNeuronPosition(synapse->output),color));
 		}
 
 		

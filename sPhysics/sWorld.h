@@ -42,16 +42,6 @@ struct sContactPairCompare
 	}
 };
 
-struct sRayCastOutput
-{
-	bool found;
-	b2Vec2 point;
-	float fraction;
-	b2Vec2 normal;
-	sBody *body;
-	b2Fixture *fixture;
-};
-
 class sContactListener
 {
 public:
@@ -122,13 +112,14 @@ public:
 		b2world.QueryAABB(&cb, aabb);
 		return cb.bodies;
 	}
-	sRayCastOutput rayCastClosest(const b2Vec2 &point1, const b2Vec2 &point2, set<sBody*> *ignoreList = nullptr)
+	sRayCastOutput rayCastClosest(const b2Vec2 &point1, const b2Vec2 &point2, set<sBody*> *list = nullptr, bool blackList = true)
 	{
 		raycastCallback.onlyClosest = true;
 		raycastCallback.any = false;
 		raycastCallback.output.found = false;
 		raycastCallback.output.fraction = 1;
-		raycastCallback.ignoreList = ignoreList;
+		raycastCallback.list = list;
+		raycastCallback.blackList = blackList;
 		b2world.RayCast(&raycastCallback,point1, point2);
 		return raycastCallback.output;
 	}
@@ -285,15 +276,20 @@ private:
 		bool onlyClosest;
 		bool any;
 
-		set<sBody*> *ignoreList;
+		set<sBody*> *list;
+		bool blackList;
 		sRayCastOutput output;
 
 		float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction)
 		{
 
 			sBody* body = (sBody*)fixture->GetBody()->GetUserData();
-			if(ignoreList != nullptr){
-				if(ignoreList->find(body) != ignoreList->end()){
+			if(list != nullptr){
+				if(list->find(body) != list->end()){
+					if(blackList){
+						return 1;
+					}
+				} else if(!blackList){
 					return 1;
 				}
 			}

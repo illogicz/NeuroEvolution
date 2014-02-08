@@ -24,8 +24,13 @@ public:
 
 	void draw(sf::RenderTarget *target, sf::RenderStates states)
 	{
-
-		float scale = m_simulation->renderScale;
+		float scale;
+		if(m_simulation->staticView){
+			scale = m_simulation->renderScale;
+		} else {
+			scale = m_simulation->renderScale * m_simulation->zoomScale;
+		}
+		
 
 		updateFocus();
 
@@ -56,6 +61,8 @@ public:
 				}
 
 			//}
+		} else {
+			
 		}
 
 
@@ -153,6 +160,16 @@ public:
 		return m_lockFocus;
 	}
 
+	void toggleStaticView()
+	{
+		m_simulation->staticView = !m_simulation->staticView;
+		if(m_simulation->staticView){
+			setCenter(m_simulation->staticViewPosition.x, m_simulation->staticViewPosition.y);
+			for(int i = 0; i < m_simulation->population.size(); i++){
+				m_simulation->population[i]->setAlpha(1);
+			}
+		}
+	}
 
 	void setSimulation(sSimulation *simulation)
 	{

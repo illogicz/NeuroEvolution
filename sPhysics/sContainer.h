@@ -6,6 +6,7 @@ using std::set;
 
 class sWorld;
 class sBody;
+struct sRayCastOutput;
 
 class sContainer : public sObject
 {
@@ -49,6 +50,8 @@ public:
 	}
 
 	b2AABB getAABB();
+
+	sRayCastOutput rayCast(b2Vec2 p1, b2Vec2 p2);
 
 	virtual void setAlpha(float alpha)
 	{

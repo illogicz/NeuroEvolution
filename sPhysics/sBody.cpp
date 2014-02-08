@@ -33,6 +33,8 @@ void sBody::removeFromWorld(sWorld &world)
 	m_state = getState();
 	sObject::removeFromWorld(world);
 
+	//printf("destray body \n");
+
 	// Remove from world
 	world.b2world.DestroyBody(m_body);
 }

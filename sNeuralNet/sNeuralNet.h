@@ -31,16 +31,13 @@ struct sNeuron;
 struct sSynapse
 {
 	sGene *weightGene;
-	sGene *enabledGene;
 	sNeuron *output;
 	sNeuron *input;
 	float weight;
-	bool enabled;
 	float enableThreshold;
 	void update(float maxWeight, float exponent)
 	{
-		if(enableThreshold > 0.9)enableThreshold = 0.9; // hacky must figure out better way
-		enabled = enabledGene->getValue() < enableThreshold;
+
 		float v = weightGene->getValue();
 
 		if(input == output){ // disable inhibitory feedback, causes jitter
@@ -80,9 +77,7 @@ struct sNeuron
 		if(biasNeuron) return;
 		accumulator = inputNeuron ? inputValue : 0;
 		for(int i = 0; i < inputSynapses.size(); i++){
-			if(inputSynapses[i]->enabled){
-				accumulator += inputSynapses[i]->input->activation * inputSynapses[i]->weight;
-			}
+			accumulator += inputSynapses[i]->input->activation * inputSynapses[i]->weight;
 		}
 		activation = tanh_approx(accumulator);
 	}
@@ -208,15 +203,6 @@ public:
 		return m_weightExponent;
 	}
 
-	void setConnectionsPerNeuron(float connections)
-	{
-		m_connectionsPerNeuron = connections;
-	}
-	float getConnectionsPerNeuron()
-	{
-		return m_connectionsPerNeuron;
-	}
-
 
 	void printStats()
 	{
@@ -262,10 +248,13 @@ public:
 	// Initial random conditions. This needs more care and investigation
 	void randomize()
 	{  
-		float maxw = m_initialMaxWeight / m_maxWeight;
+		//float maxw = m_initialMaxWeight / m_maxWeight;
 		for(unsigned int i = 0; i < m_synapses.size(); i++){
-			m_synapses[i]->weightGene->setValue(sRandom::getFloat(-maxw, maxw));
-			m_synapses[i]->enabledGene->random();
+
+
+			float maxw = 1.f / sqrt(m_synapses[i]->output->inputSynapses.size());
+			if(maxw > 0.25)maxw = 0.25;
+			m_synapses[i]->weightGene->setValue(sRandom::getNormal(0, maxw));
 		}
 	}
 
@@ -345,7 +334,6 @@ private:
 		m_synapses.push_back(synapse);
 
 		synapse->weightGene = &m_genome->addGene(getSynapseName(input, output) + "_W", -1, 1);
-		synapse->enabledGene = &m_genome->addGene(getSynapseName(input, output) + "_E", 0, 1);
 		//synapse->enableThreshold = 3.f / _inputs.size();//m_synapseThresholds[layer];
 		synapse->input = input;
 		synapse->output = output;
@@ -375,40 +363,6 @@ public: void update()
 		}
 		for(unsigned int i = 0; i < m_synapses.size(); i++){
 			m_synapses[i]->update(m_maxWeight, m_weightExponent);
-		}
-
-		// Hacky
-		for(int j = 0; j < m_layers.size(); j++){
-			for(int i = 0; i < m_layers[j].size(); i++){
-				sNeuron *neuron = &m_layers[j][i];
-				int num_synapses = neuron->inputSynapses.size();
-				float thresh = m_connectionsPerNeuron / num_synapses;
-				if(j == 0)thresh = 0.3;
-				for(int k = 0; k < num_synapses; k++){
-					neuron->inputSynapses[k]->enableThreshold = thresh;
-				}
-			}
-		}
-
-		// Force random connection on neurons with no outputs - hacky
-		for(int j = 0; j < m_layers.size() - 1; j++){
-			for(int i = 0; i < m_layers[j].size(); i++){
-				sNeuron *neuron = &m_layers[j][i];
-				int num_synapses = neuron->outputSynapses.size();
-				bool connected = false;
-				for(int k = 0; k < num_synapses; k++){
-					sSynapse *synapse = neuron->outputSynapses[k];
-					if(synapse->enabled && synapse->output != neuron){
-						connected = true;
-						break;
-					}
-				}
-				if(!connected){
-					int r = sRandom::getInt(0,num_synapses - 1);
-					neuron->outputSynapses[r]->enabledGene->setValue(sRandom::getFloat(0.0,0.1));
-					neuron->outputSynapses[r]->update(m_maxWeight, m_weightExponent);
-				}
-			}
 		}
 
 		//for(int i = 0; i < m_hiddenLayers.size(); i++){

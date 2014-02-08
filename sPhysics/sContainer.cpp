@@ -16,3 +16,25 @@ b2AABB sContainer::getAABB()
 	}	
 	return aabb;
 }
+
+
+
+sRayCastOutput sContainer::rayCast(b2Vec2 p1, b2Vec2 p2)
+{
+	sRayCastOutput output;
+	output.found = false;
+
+	float fraction = 1;
+	for(set<sObject*>::iterator i = m_children.begin(); i != m_children.end(); ++i){
+		if((*i)->m_type == BODY_OBJECT){
+			sBody* body = (sBody*)(*i);
+			sRayCastOutput o = body->rayCast(p1, p2, fraction);
+			if(o.found){
+				output = o;
+				fraction = o.fraction;
+			}
+		}
+	}
+
+	return output;
+}

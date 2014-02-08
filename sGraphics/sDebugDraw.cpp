@@ -34,8 +34,10 @@ void sDebugDraw::DrawShape(b2Fixture* fixture, const b2Transform& xf, sf::Color&
 			const b2Vec2* vertices = chain->m_vertices;
 
 			b2Vec2 v1 = b2Mul(xf, vertices[0]);
+			//printf("drawChain %f, %f \n", v1.x, v1.y);
 			for (int32 i = 1; i < count; ++i)
 			{
+				//printf("drawChain %f, %f \n", v1.x, v1.y);
 				b2Vec2 v2 = b2Mul(xf, vertices[i]);
 				DrawSegment(v1, v2, color);
 				//DrawCircle(v1, 0.05f, color);
@@ -131,10 +133,16 @@ void sDebugDraw::DrawGrid(const b2AABB &aabb)
 	int endx = int(aabb.upperBound.x);
 	int starty = int(aabb.lowerBound.y);
 	int endy = int(aabb.upperBound.y);
-	for(int x = startx; x <= endx; x++){
+	int incr = 1;
+	if(endx - startx > 200){
+		incr = 10;
+		startx += 10 - startx % 10;
+		endx -= startx % 10;
+	}
+	for(int x = startx; x <= endx; x += incr){
 		addLine(b2Vec2(x, aabb.lowerBound.y), b2Vec2(x, aabb.upperBound.y), x % 10 ? subColor : mainColor);
 	}
-	for(int y = starty; y <= endy;  y++){
+	for(int y = starty; y <= endy;  y += incr){
 		addLine(b2Vec2(aabb.lowerBound.x, y), b2Vec2(aabb.upperBound.x, y), y % 10 ? subColor : mainColor);
 	}
 }

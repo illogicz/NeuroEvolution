@@ -51,6 +51,8 @@ public:
 	
 	void setValue(float value)
 	{
+		if(value > m_max)value = m_max;
+		if(value < m_min)value = m_min;
 		unsigned int bin = unsigned int((value - m_min) / (m_max - m_min) * ((1 << m_bits)));
 		m_data = binaryToGray(bin);
 	}

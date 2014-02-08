@@ -185,12 +185,12 @@ void runTopDownRace()
 
 void runPoleBalancing()
 {
-	sRandom::seed(128955);
+	sRandom::seed(128956);
 
 	PoleBalanceSimulation simulation;
 	sSimulationWindow window;
 	simulation.mutationRate = 0.005;
-	simulation.elites = 0;
+	simulation.elites = 1;
 
 	window.setSimulation(&simulation);
 	window.start();
@@ -199,8 +199,8 @@ void runPoleBalancing()
 
 int main()
 {
-	runPoleBalancing();
-	//runTopDownRace();
+	//runPoleBalancing();
+	runTopDownRace();
 	//runBipedSimulation();
 	//runSwarmSimulation();
 	runWormSimulation();

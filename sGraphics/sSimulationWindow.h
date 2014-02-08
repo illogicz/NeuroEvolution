@@ -238,7 +238,7 @@ private:
 	unsigned long long lastSecondTime;
 	unsigned long long lastPhysicsTime;
 	bool m_mouseDown;
-
+	//bool m_staticView;
 
 	unsigned long long now()
 	{
@@ -307,6 +307,9 @@ private:
 
 				} else if(e.key.code == sf::Keyboard::G){
 					render_graphs = !render_graphs;
+
+				} else if(e.key.code == sf::Keyboard::V){
+					simulationDisplay.toggleStaticView();
 
 				} else if(e.key.code == sf::Keyboard::F){
 					frameRate = 90 - frameRate;
@@ -421,6 +424,10 @@ private:
 
 			// Clear window
 			window.clear();
+
+			if(!render_ui){
+				simulationDisplay.clearDebugDraw();
+			}
 
 			// Draw simulation
 			simulationDisplay.draw(&window, sf::RenderStates::Default);

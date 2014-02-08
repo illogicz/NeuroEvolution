@@ -5,6 +5,7 @@
 #include "..\..\sPhysics\sRevoluteJoint.h"
 #include "..\..\sEvolution\sPhenotype.h"
 #include "..\..\sGraphics\sDebugDraw.h"
+#include "RaceTrack.h"
 
 class TopDownCar : public sPhenotype, public sContactListener
 {
@@ -14,17 +15,19 @@ public:
 	{
 		width = 1;
 		height = 2;
-		maxEngineForce = 200;
-		damping = 1.5;
-		grip = 3;
-		slideDamping = 0.5;
-		maxStearingAngle = 1;
-		visionResolution = 15;
+		maxEngineForce = 400;
+		damping = 0.5;
+		grip = 1;
+		slideDamping = 0.2;
+		maxStearingAngle = 0.75;
+		visionResolution = 7;
 		visionFOV = b2_pi;
 		minRayLength = 1;
-		maxRayLength = 30;
+		maxRayLength = 50;
+		maxLifeTime = 1800;
 		touchSense = true;
 		neuralFeedback = true;
+		reverseTrack = false;
 		id = id_counter++;
 
 	}
@@ -45,18 +48,19 @@ public:
 
 	virtual void init(sWorld &world)
 	{
-		chassisFilter.categoryBits = 0x01;
+		chassisFilter.categoryBits = 0x02;
 		chassisFilter.maskBits = 0x01;
 		//chassisFilter.groupIndex = -1 - id;
 
-		wheelFilter.categoryBits = 0x02;
-		wheelFilter.maskBits = 0x03;
+		wheelFilter.categoryBits = 0x03;
+		wheelFilter.maskBits = 0x04;
 
 
 		chassis.setSize(width,height);
 		chassis.setFilter(chassisFilter);
 		chassis.setLinearDamping(damping);
 		chassis.setAngularDamping(damping);
+		chassis.setFriction(5);
 
 		frontLeftWheel.copy(chassis);
 		frontLeftWheel.setSize(0.3, 0.7);
@@ -98,11 +102,14 @@ public:
 		add(&rearLeftWheel);
 		add(&rearRightWheel);
 	
-		ignoreList.insert(&chassis);
-		ignoreList.insert(&frontLeftWheel);
-		ignoreList.insert(&frontRightWheel);
-		ignoreList.insert(&rearLeftWheel);
-		ignoreList.insert(&rearRightWheel);
+		whiteList.insert(&track->innerWall);
+		whiteList.insert(&track->outerWall);
+
+		//ignoreList.insert(&chassis);
+		//ignoreList.insert(&frontLeftWheel);
+		//ignoreList.insert(&frontRightWheel);
+		//ignoreList.insert(&rearLeftWheel);
+		//ignoreList.insert(&rearRightWheel);
 
 		add(&frontLeftJoint);
 		add(&frontRightJoint);
@@ -116,27 +123,29 @@ public:
 		world.addContactListener(this, &rearRightWheel);
 
 
-		int input_count = visionResolution + 1;
+		int input_count = visionResolution;
 		if(touchSense){
 			input_count++;
 		}
 		if(neuralFeedback){
-			input_count += 1;
+			input_count += 4;
 		}
 
 		if(true){
 
-			neuralNet.setLayerCount(3);
-			neuralNet.setNeuronLayer(0, input_count, true, false);
-			neuralNet.setNeuronLayer(1,8, true, true);
-			//neuralNet.setLayerSize(2,input_count - 6);
-			neuralNet.setNeuronLayer(2, 2, true, false);
+			neuralNet.setLayerCount(4);
+			neuralNet.setNeuronLayer(0, input_count, false, false);
+			neuralNet.setNeuronLayer(1, 8, true, true);
+			neuralNet.setNeuronLayer(2, 4, true, true);
+			neuralNet.setNeuronLayer(3, 2, true, true);
+			//neuralNet.setNeuronLayer(3, 2, true, true);
 			neuralNet.addSynapseLayer(0,2);
+			neuralNet.addSynapseLayer(1,3);
+			//neuralNet.addSynapseLayer(0,3);
+			//neuralNet.addSynapseLayer(1,3);
 
-			neuralNet.setMaxWeight(3);
-			neuralNet.setInitialMaxWeight(1);
-			neuralNet.setConnectionsPerNeuron(30);
-			neuralNet.setWeightExponent(1.5);
+			neuralNet.setMaxWeight(2);
+			neuralNet.setWeightExponent(2);
 			
 
 		} else {
@@ -175,17 +184,23 @@ public:
 		frontLeftJoint.setLimits(0, 0);
 		frontRightJoint.setLimits(0, 0);
 
-
-		resetPositions();
+		
+		
 
 
 		deferDeath = false;
 		totalAccelerator = 0;
 		totalSpeed = 0;
+		totalStearing = 0;
 		fitnessModifier = 1;
 		num_contacts = 0;
-		fitnessScore = 0;
+		fitnessScore = 0.3;
+		last_angle = 0;
+		progressPotition = getFitness();
+		progressTime = 0;
+		reverseTrack = !reverseTrack;
 
+		resetPositions();
 		neuralNet.update();
 
 		if(isElite()){
@@ -217,7 +232,7 @@ public:
 			die();
 			return;
 		}
-		if(lifeTime > 6000){
+		if(lifeTime > maxLifeTime){
 			die();
 		}
 
@@ -228,15 +243,21 @@ public:
 		applyWheelPhysics(rearRightWheel);
 		applyWheelPhysics(rearLeftWheel);
 		float forwardSpeed = -b2Dot(chassis.getLinearVelocity(), b2Rot(chassis.getAngle()).GetYAxis());
+		float sidewaysSpeed = -b2Dot(chassis.getLinearVelocity(), b2Rot(chassis.getAngle()).GetXAxis());
+
+		// TODO : TOI inputs instead of distance
+
+		b2Vec2 chassisPos = chassis.getPosition();
 
 		int input_index = 0;
-		for(int i = 0; i <= visionResolution; i++){
+		for(int i = 0; i < visionResolution; i++){
 
-			  float a;
+			float f = float(i) / (visionResolution - 1) - 0.5f;
+			 float a;
 			 if(i < visionResolution){
-				 a = float(i) / (visionResolution - 1) - 0.5f;
+				 a = f;
 				 a *= visionFOV;
-				 a += chassis.getAngle();
+				 //a += chassis.getAngle();
 				 a += b2_pi;
 			 } else {
 				 a = chassis.getAngle();
@@ -245,10 +266,18 @@ public:
 			 b2Vec2 p2(p1);
 			 p1 *= minRayLength;
 			 p2 *= maxRayLength;
-			 p1 += chassis.getPosition();
-			 p2 += chassis.getPosition();
+
+			 p2.x *= 0.5;
+			 p2.y *= 1 - abs(f);
+
+			 p1 = b2Mul(b2Rot(chassis.getAngle()), p1);
+			 p2 = b2Mul(b2Rot(chassis.getAngle()), p2);
+
+			 p1 += chassisPos;
+			 p2 += chassisPos;
 			 b2Vec2 ip;
-			 sRayCastOutput result = m_world->rayCastClosest(p1,p2,&ignoreList);
+			// sRayCastOutput result = m_world->rayCastClosest(p1,p2,&ignoreList);
+			 sRayCastOutput result = m_world->rayCastClosest(p1,p2, &whiteList, false);
 			 if(result.found){
 				 ip = result.point;
 			 } else {
@@ -258,16 +287,61 @@ public:
 				 int c = 200 * (1.f - result.fraction) + 55;
 				 m_world->getDebugDraw()->addLine(p1,ip, sf::Color(255,255,255,c));
 			 }
-			 neuralNet.setInput(input_index++, result.fraction * 2 - 1.f);
+			 neuralNet.setInput(input_index++, 1.f - result.fraction);
 		}
 		if(touchSense){
 			neuralNet.setInput(input_index++, num_contacts ? 1 : 0);
 		}
 
-		if(neuralFeedback){
-			//neuralNet.interpolateInput(input_index++, neuralNet.getOutput(0), 0.5);
-			neuralNet.setInput(input_index++, forwardSpeed * 0.02);
+		float progressAngle = atan2f(chassisPos.y, chassisPos.x);
+
+		b2Vec2 target;
+		float lookAhead = 0.1;
+		while(true){
+			b2Vec2 p = track->getTrackPoint(chassisPos, reverseTrack ? -lookAhead : lookAhead);
+			sRayCastOutput result = m_world->rayCastClosest(p, chassisPos, &whiteList, false);
+			target = p;
+			if(result.found || lookAhead > 0.45) break;
+			lookAhead += 0.05;
 		}
+		if(neuralFeedback){
+
+			b2Vec2 td = target - chassisPos;
+			float ta = atan2f(td.y, td.x);
+
+			float a = ta - chassis.getAngle() + b2_pi / 2;
+			while(a > b2_pi) a -= b2_pi * 2;
+			while(a < -b2_pi) a += b2_pi * 2;
+
+
+
+			//if(isFocus()){
+			//	m_world->getDebugDraw()->addLine(trackPos, chassis.getPosition(), sf::Color(255,100,255));
+			//}
+
+
+			neuralNet.interpolateInput(input_index, a, 0.3f);
+
+			if(isFocus()){
+				b2Vec2 p2 = chassisPos;
+				p2.x += 30 * cos(neuralNet.getInput(input_index) + chassis.getAngle() - b2_pi / 2);
+				p2.y += 30 * sin(neuralNet.getInput(input_index) + chassis.getAngle() - b2_pi / 2);
+
+				m_world->getDebugDraw()->addLine(p2, chassisPos, sf::Color(255,100,255, 55));
+			}
+
+
+			input_index++;
+			neuralNet.interpolateInput(input_index++, chassis.getAngularVelocity() * 0.1f, 0.5f);
+			neuralNet.interpolateInput(input_index++, forwardSpeed * 0.02f, 0.5f);
+			neuralNet.interpolateInput(input_index++, sidewaysSpeed * 0.03f, 0.5f);
+
+
+
+		}
+
+
+
 
 		neuralNet.run();
 
@@ -278,7 +352,11 @@ public:
 
 
 		if(num_contacts){
-			fitnessModifier *= 0.995;
+			fitnessModifier *= 0.99;
+			if(fitnessModifier < 0.5f){
+				setCustomColor(b2Color(0,0,0));
+				return die();
+			}
 			setCustomColor(b2Color(1,0,0));
 		} else {
 			if(isElite()){
@@ -289,12 +367,32 @@ public:
 		}
 
 		//if(forwardSpeed > 0){
-			fitnessScore += forwardSpeed * (1 - abs(steering_output));
+
+
+		
+		progressSpeed = last_angle - progressAngle;
+		if(progressSpeed > b2_pi) progressSpeed -= b2_pi * 2;
+		if(progressSpeed < -b2_pi) progressSpeed += b2_pi * 2;
+
+		fitnessScore += reverseTrack ? -progressSpeed : progressSpeed;
+		totalStearing += abs(steering_output);	
+
+		last_angle = progressAngle;
+
 		//}// else {
 		//	//fitnessScore += forwardSpeed;
 		//}
 
 		//fitnessScore += chassis.getLinearVelocity().Length();
+
+		if(getFitness() > progressPotition + 0.1){
+			progressTime = 0;
+			progressPotition = getFitness();
+		} else {
+			if(progressTime++ > 300){
+				die();
+			}
+		}
 
 	}
 	virtual b2Vec2 getPosition()
@@ -317,14 +415,16 @@ public:
 	//		fitnessScore = 1;
 	//	}
 		//return fitnessScore * fitnessModifier;
-		float score = fitnessScore;
-		if(score < 1){
-			score = 1;
-		}
-		return score * fitnessModifier;
+		//float score = fitnessScore;
+		//if(score < 1){
+		//	score = 1;
+		//}
+		float sm = 1.2f - (totalStearing / (lifeTime + 1));
+		return fitnessScore * fitnessModifier * sm; //score * fitnessModifier;
 
 	};	
 
+	float progressSpeed;
 
 	sRectangle chassis;
 	sRectangle frontLeftWheel;
@@ -337,13 +437,20 @@ public:
 	sRevoluteJoint rearLeftJoint;
 	sRevoluteJoint rearRightJoint;
 
+	int maxLifeTime;
+	
+	bool reverseTrack;
+
 	float minRayLength;
 	float maxRayLength;
 
 	float fitnessScore;
-
+	float totalStearing;
+	RaceTrack *track;
+	float progressPotition;
+	int progressTime;
 private:
-
+	float last_angle;
 	void resetPositions()
 	{
 		chassis.zeroState();
@@ -352,13 +459,24 @@ private:
 		rearRightWheel.zeroState();
 		rearLeftWheel.zeroState();
 
-		b2Vec2 p = position + b2Vec2(sRandom::getFloat(-5, 5), sRandom::getFloat(-2, 2));
+		float a = reverseTrack ? b2_pi : 0;
 
-		chassis.setPosition(p);
-		frontLeftWheel.setPosition(p.x - width, p.y - height);
-		frontRightWheel.setPosition(p.x + width, p.y - height);
-		rearRightWheel.setPosition(p.x - width, p.y + height);
-		rearLeftWheel.setPosition(p.x + width, p.y + height);
+		b2Transform t(position, b2Rot(a));
+
+		//b2Vec2 p = position;// + b2Vec2(sRandom::getFloat(-1, 1), sRandom::getFloat(-1, 1));
+
+		chassis.setPosition(position);
+		chassis.setAngle(a);
+
+		//frontLeftWheel.setPosition(b2Mul(t, p.x - width, p.y - height);
+		frontLeftWheel.setPosition( b2Mul(t, b2Vec2(-width, -height)));
+		frontLeftWheel.setAngle(a);
+		frontRightWheel.setPosition(b2Mul(t, b2Vec2( width, -height)));
+		frontRightWheel.setAngle(a);
+		rearRightWheel.setPosition( b2Mul(t, b2Vec2(-width,  height)));
+		rearRightWheel.setAngle(a);
+		rearLeftWheel.setPosition(  b2Mul(t, b2Vec2( width,  height)));
+		rearLeftWheel.setAngle(a);
 
 		frontLeftJoint.setAnchor(frontLeftWheel.getPosition());
 		frontRightJoint.setAnchor(frontRightWheel.getPosition());
@@ -376,7 +494,8 @@ private:
 	float totalSpeed;
 	float fitnessModifier;
 	int num_contacts;
-	set<sBody*> ignoreList;
+	set<sBody*> whiteList;
+
 	void setAccelerator(float acc)
 	{
 		//totalAccelerator -= acc;// > 0 ? 0 : acc;
@@ -404,7 +523,7 @@ private:
 		b2Vec2 v = b2Mul(b2Rot(-body.getAngle()), body.getLinearVelocity());
 
 		float t = 1.0;
-		if(v.x > grip) t = slideDamping;
+		if(abs(v.x) > grip) t = slideDamping;
 		v.x *= 1.f - t;
 
 		body.setLinearVelocity(b2Mul(b2Rot(body.getAngle()), v));

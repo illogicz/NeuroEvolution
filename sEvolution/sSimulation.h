@@ -19,8 +19,10 @@ public:
 		selectionBias = 1.5f;
 		breadingPoolFraction = 1.0;
 		renderScale = 25;
+		zoomScale = 1;
 		speedUp = false;
 		staticView = false;
+		staticViewPosition.Set(0,0);
 	}
 
 	sPopulation population;
@@ -31,7 +33,9 @@ public:
 	float breadingPoolFraction;
 	bool speedUp;
 	float renderScale;
+	float zoomScale;
 	bool staticView;
+	b2Vec2 staticViewPosition;
 
 	sPhenotype *leader;
 	sPhenotype *liveLeader;
@@ -59,7 +63,7 @@ protected:
 		printStats();
 	}
 
-	void resetSimulation()
+	virtual void resetSimulation()
 	{
 		for(unsigned int i = 0; i < population.size(); i++){
 			world.remove(population[i]);
