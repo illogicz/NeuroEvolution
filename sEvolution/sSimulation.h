@@ -12,9 +12,8 @@ public:
 	
 	sSimulation()
 	{
-		world.setGravity(b2Vec2(0,10));
 		elites = 1;
-		
+		worlds.resize(1);
 		mutationRate = 0.01f;
 		selectionBias = 1.5f;
 		breadingPoolFraction = 1.0;
@@ -22,6 +21,8 @@ public:
 		zoomScale = 1;
 		speedUp = false;
 		staticView = false;
+		phenomesPerWorld = 0;
+		gravity.Set(0,9.8);
 		staticViewPosition.Set(0,0);
 	}
 
@@ -35,16 +36,14 @@ public:
 	float renderScale;
 	float zoomScale;
 	bool staticView;
+	int phenomesPerWorld;
+	b2Vec2 gravity;
 	b2Vec2 staticViewPosition;
 
 	sPhenotype *leader;
 	sPhenotype *liveLeader;
 	sPhenotype *trailer;
 
-	void setGravity(float x, float y)
-	{
-		world.setGravity(b2Vec2(x, y));
-	}
 
 protected:
 
@@ -54,6 +53,9 @@ protected:
 		buildEnvironment();
 		initPhenotypes();
 		resetSimulation();
+		for(int i = 0; i < worlds.size(); i++){
+			worlds[i].setGravity(gravity);
+		}
 		population.setElites(elites);
 		population.setSelectionBias(selectionBias);
 		population.setMutationRate(mutationRate);
@@ -65,11 +67,12 @@ protected:
 
 	virtual void resetSimulation()
 	{
-		for(unsigned int i = 0; i < population.size(); i++){
-			world.remove(population[i]);
-			world.add(population[i]);
-		}
 		buildEnvironment();
+		for(unsigned int i = 0; i < population.size(); i++){
+			int wi = phenomesPerWorld ? i / phenomesPerWorld : 0;
+			worlds[wi].remove(population[i]);
+			worlds[wi].add(population[i]);
+		}
 		leader = nullptr;
 	}
 
@@ -85,7 +88,10 @@ protected:
 			newGen = true;
 		}
 
-		world.step();
+		for(int i = 0; i < worlds.size(); i++){
+			worlds[i].step();
+		}
+
 		calcRankings();
 		return newGen;
 	}
@@ -116,9 +122,24 @@ protected:
 
 	void addPhenotype(sPhenotype *phenotype)
 	{
-		phenotype->init(world);
+		if(phenomesPerWorld){
+
+			int i = population.size();
+			if(i / phenomesPerWorld <= worlds.size()){
+				worlds.resize(worlds.size() + 1);
+			}
+			phenotype->init(worlds[i / phenomesPerWorld]);
+			worlds[i / phenomesPerWorld].add(phenotype);
+
+		} else {
+
+			phenotype->init(worlds[0]);
+			worlds[0].add(phenotype);
+
+		}
+
 		population.addPhenotype(phenotype);
-		world.add(phenotype);
+		
 	}
 
 	void printStats()
@@ -136,6 +157,7 @@ protected:
 
 	int simFrame;
 	b2Vec2 renderCenter;
-	sWorld world;
+	//sWorld world;
+	vector<sWorld> worlds;
 
 };

@@ -60,11 +60,13 @@ public:
 		// Store best performer genome
 		generation.bestGenome = m_phenotypes[0]->genome;
 		generation.bestFitness = generation.averageFitness = m_phenotypes[0]->getFitness();
-		generation.worstFitness = m_phenotypes[int(m_phenotypes.size() * 0.75f)]->getFitness();
+		generation.worstFitness = m_phenotypes[m_phenotypes.size() - 1]->getFitness();
 
-		m_phenotypes[0]->setIsElite(m_elites > 0);
+		if(prelimsComplete())m_phenotypes[0]->setIsElite(m_elites > 0);
 		for(unsigned int i = 1; i < m_phenotypes.size(); i++){
-			m_phenotypes[i]->setIsElite(m_elites > i);
+			if(prelimsComplete()){
+				m_phenotypes[i]->setIsElite(m_elites > i);
+			}
 			if(m_phenotypes[i]->getFitness() != 0){
 				valid_breaders++;
 			}

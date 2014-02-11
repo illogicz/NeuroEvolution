@@ -59,7 +59,7 @@ public:
 		ground.lengthWeight = 0.5f;
 		ground.dotWeight = 1.f;
 
-		world.setGroundBody(&ground);
+		worlds[0].setGroundBody(&ground);
 
 		fitnessFunction.useSpeed = true;
 
@@ -101,17 +101,8 @@ protected:
 		for(int i = 0; i < populationSize; i++){
 			sPhenotype *phenotype = static_cast<sPhenotype*>(new PhenotypeClass);
 			phenotype->fitnessFunction = &fitnessFunction;
-			phenotype->init(world);
-			population.addPhenotype(phenotype);
-			//world.addContactListener(car, &car->chassis);
-			world.add(phenotype);
-			if(!i){
-				phenotype->neuralNet.printStats();
-				phenotype->genome.printStats();
-			}
+			addPhenotype(phenotype);
 		}
-		population.printStats();
-
 	}
 
 
@@ -146,7 +137,7 @@ protected:
 			if(!randomizeEnvironment)return;
 
 			// Remove and reset
-			world.remove(&ground);
+			worlds[0].remove(&ground);
 			ground.resetShape();
 		}
 
@@ -199,7 +190,7 @@ protected:
 		ground.setType(STATIC_BODY);
 		ground.setFriction(1);
 		ground.setRestitution(0);
-		world.add(&ground);
+		worlds[0].add(&ground);
 
 		speedUp = false;
 	}

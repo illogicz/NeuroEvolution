@@ -297,6 +297,15 @@ public:
 	}
 
 
+	b2Vec2 GetLinearVelocityFromWorldPoint(const b2Vec2 &point)
+	{
+		if(m_inWorld){
+			return m_body->GetLinearVelocityFromWorldPoint(point);
+		} else {
+			return b2Vec2_zero;
+		}
+	}
+
 	//-------------------------------------------------------------------------------
 	// Awake
 

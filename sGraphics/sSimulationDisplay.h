@@ -54,11 +54,11 @@ public:
 			//if(m_focusChanged || !m_lockFocus){
 
 
-				for(int i = 0; i < m_simulation->population.size(); i++){
-					float a = 1.f - abs(getFocusRank() - i) / 5.f;
-					if(a < 0.05)a = 0.05;
-					m_simulation->population[i]->setAlpha(a);
-				}
+				//for(int i = 0; i < m_simulation->population.size(); i++){
+				//	float a = 1.f - abs(getFocusRank() - i) / 5.f;
+				//	if(a < 0.05)a = 0.05;
+				//	m_simulation->population[i]->setAlpha(a);
+				//}
 
 			//}
 		} else {
@@ -73,8 +73,10 @@ public:
 
 		m_debugDraw.setTransform(trans);
 		m_debugDraw.setView(m_view);
-		m_debugDraw.setTarget(target);
-		m_debugDraw.DrawDebugData(m_simulation->world);
+		for(int i = 0; i < m_simulation->worlds.size(); i++){
+			m_debugDraw.DrawDebugData(m_simulation->worlds[i]);
+		}
+		m_debugDraw.draw(*target);
 		// Reset view to default
 		// target->setView(target->getDefaultView());
 
@@ -174,9 +176,9 @@ public:
 	void setSimulation(sSimulation *simulation)
 	{
 		m_simulation = simulation;
-		m_mouseJoint.setBodyA(simulation->world.getGroundBody());
-		m_simulation->world.add(&m_mouseJoint);
-		m_simulation->world.setDebugDraw(&m_debugDraw);
+		m_mouseJoint.setBodyA(simulation->worlds[0].getGroundBody());
+		m_simulation->worlds[0].add(&m_mouseJoint);
+		m_simulation->worlds[0].setDebugDraw(&m_debugDraw);
 		setFocusRank(0);
 	}
 
@@ -204,8 +206,8 @@ public:
 		point.y -= m_view.getSize().y / 2;
 		point.x += m_view.getCenter().x;
 		point.y += m_view.getCenter().y;
-		point.x /= m_simulation->renderScale;
-		point.y /= m_simulation->renderScale;
+		point.x /= m_simulation->renderScale * m_simulation->zoomScale;
+		point.y /= m_simulation->renderScale * m_simulation->zoomScale;
 		return point;
 
 	}

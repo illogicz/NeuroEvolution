@@ -511,7 +511,7 @@ protected:
 		b2Vec2 dv = velocity - lastLinearVelocity;
 
 		// remove gravity force ?
-		dv -= m_world->timeStep * m_world->gravity;
+		dv -= m_world->timeStep * m_world->getGravity();
 
 		lastLinearVelocity = velocity;
 		return dv;

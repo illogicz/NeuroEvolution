@@ -23,6 +23,7 @@ public:
 		render_ui = true;
 		render_graphs = true;
 		m_mouseDown = false;
+		analyseANN = true;
 		m_message = "";
 		messageTimeout = 0;
 
@@ -64,16 +65,16 @@ public:
 		layoutUI();
 
 
+		if(analyseANN){
+			sNeuralNet &ann = simulation->population[0]->neuralNet;
+			nnAnalyser1.graphWidth = 210;
+			nnAnalyser1.height = 100;
+			nnAnalyser1.analyzeNetwork(ann);
 
-		sNeuralNet &ann = simulation->population[0]->neuralNet;
-		nnAnalyser1.graphWidth = 210;
-		nnAnalyser1.height = 100;
-		nnAnalyser1.analyzeNetwork(ann);
-
-		nnAnalyser2.graphWidth = nnAnalyser1.graphWidth / (ann.getLayerCount() - 1);
-		nnAnalyser2.height = 50;
-		nnAnalyser2.analyseLayers(ann);
-
+			nnAnalyser2.graphWidth = nnAnalyser1.graphWidth / (ann.getLayerCount() - 1);
+			nnAnalyser2.height = 50;
+			nnAnalyser2.analyseLayers(ann);
+		}
 	}
 
 	void start()
@@ -99,6 +100,8 @@ private:
 	bool render_ui;
 	bool render_graphs;
 	int frameRate;
+	bool analyseANN;
+
 
 	// Display
 	sSimulationDisplay simulationDisplay;
@@ -136,10 +139,14 @@ private:
 			sNeuralNet &neuralNet = m_simulation->population[simulationDisplay.getFocusRank()]->neuralNet;
 			neuralNetDisplay.renderNeuralNet(window, neuralNet);
 
-			nnAnalyser2.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser2.width, height - nnAnalyser2.height - nnAnalyser1.height);
-			nnAnalyser2.draw(window);
-			nnAnalyser1.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser1.width, height - nnAnalyser1.height);
-			nnAnalyser1.draw(window);
+			if(analyseANN){
+
+				nnAnalyser2.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser2.width, height - nnAnalyser2.height - nnAnalyser1.height);
+				nnAnalyser2.draw(window);
+				nnAnalyser1.setPosition(neuralNetDisplay.getPosition().x - nnAnalyser1.width, height - nnAnalyser1.height);
+				nnAnalyser1.draw(window);
+			
+			}
 		}
 
 		int popSize = m_simulation->population.size();
@@ -254,6 +261,9 @@ private:
 			fitnessGraph.renderGraph(m_simulation->population);
 			geneDisplay.plot();
 			//plotGeneGraphs(geneGraphs);
+		}
+		if(!render_ui){
+			simulationDisplay.clearDebugDraw();
 		}
 		physicsCounter++;
 		return newGen;
@@ -424,10 +434,6 @@ private:
 
 			// Clear window
 			window.clear();
-
-			if(!render_ui){
-				simulationDisplay.clearDebugDraw();
-			}
 
 			// Draw simulation
 			simulationDisplay.draw(&window, sf::RenderStates::Default);

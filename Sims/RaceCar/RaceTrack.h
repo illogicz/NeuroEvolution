@@ -4,24 +4,31 @@
 #include "..\..\sUtils\perlin.h"
 
 
-class RaceTrack : public sContainer
+class RaceTrack : public sObject
 {
 public:
 
 
-	RaceTrack()
+	RaceTrack() : sObject(CUSTOM_OBJECT)
 	{
 		radius = 50;
 		maxOffset = 20;
 		minWidth = 5;
 		maxWidth = 15;
 		numSegments = 100;
-		innerWall.makeLoop(true);
-		outerWall.makeLoop(true);
-		innerWall.setFriction(2);
-		outerWall.setFriction(2);
-		add(&innerWall);
-		add(&outerWall);
+		
+		innerWallFixture.shape = &innerWallShape;
+		innerWallFixture.friction = 1;
+		innerWallFixture.restitution = 0.1;
+
+		outerWallFixture.shape = &outerWallShape;
+		outerWallFixture.friction = 1;
+		outerWallFixture.restitution = 0.1;
+
+		bodyDef.type = b2BodyType::b2_staticBody;
+
+		//add(&innerWall);
+		//add(&outerWall);
 	}
 
 
@@ -34,9 +41,9 @@ public:
 		Perlin perlin1(1,1,1,sRandom::getInt(0,100000));
 		Perlin perlin2(1,1,1,sRandom::getInt(0,100000));
 
-		innerWall.clear();
-		outerWall.clear();
-		trackPoints.clear();
+		innerWall.resize(numSegments);
+		outerWall.resize(numSegments);
+		trackPoints.resize(numSegments);
 
 
 
@@ -48,12 +55,17 @@ public:
 			float w = (perlin2.Get(float(i) / numSegments * 10, 0) + 1) * (maxWidth - minWidth) + minWidth * 0.5f;
 
 			b2Vec2 p(cos(a) * r, sin(a) * r);
-			trackPoints.push_back(p);
-			innerWall.addVertex(cos(a) * (r + w), sin(a) * (r + w));
-			outerWall.addVertex(cos(a) * (r - w), sin(a) * (r - w));
+			trackPoints[i] = p;
+			innerWall[i] = b2Vec2(cos(a) * (r + w), sin(a) * (r + w));
+			outerWall[i] = b2Vec2(cos(a) * (r - w), sin(a) * (r - w));
 
 		}
-
+		innerWallShape.m_vertices = NULL;
+		innerWallShape.m_count = 0;
+		innerWallShape.CreateLoop(&innerWall[0], innerWall.size());
+		outerWallShape.m_vertices = NULL;
+		outerWallShape.m_count = 0;
+		outerWallShape.CreateLoop(&outerWall[0], outerWall.size());
 	}
 
 
@@ -72,14 +84,35 @@ public:
 	}
 	
 	vector<b2Vec2> trackPoints;
+	vector<b2Vec2> innerWall;
+	vector<b2Vec2> outerWall;
+	map<sWorld*,b2Body*> bodies;
 
-	sChain innerWall;
-	sChain outerWall;
+	b2ChainShape innerWallShape;
+	b2ChainShape outerWallShape;
+	b2FixtureDef innerWallFixture;
+	b2FixtureDef outerWallFixture;
+
+	b2BodyDef bodyDef;
+
 	int numSegments;
 	float radius;
 	float maxOffset;
 	float minWidth;
 	float maxWidth;
 
+protected:
+	virtual void addToWorld(sWorld &world)
+	{
+		b2Body* body = bodies[&world] = world.b2world.CreateBody(&bodyDef);
+		body->CreateFixture(&innerWallFixture);
+		body->CreateFixture(&outerWallFixture);
+		body->SetUserData(this);
+
+	} 
+	virtual void removeFromWorld(sWorld &world)
+	{
+		world.b2world.DestroyBody(bodies[&world]);
+	}
 
 };

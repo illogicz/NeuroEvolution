@@ -31,9 +31,9 @@ public:
 
 		ground.setSize(120,70);
 
-		setGravity(0,0);
-		world.setGroundBody(&ground);
-		world.add(&ground);
+		gravity.Set(0,0);
+		worlds[0].setGroundBody(&ground);
+		worlds[0].add(&ground);
 
 		simulationTime = 100000;
 
@@ -44,7 +44,7 @@ public:
 		target.setIsSensor(true);
 		target.setRadius(1);
 		target.setLinearDamping(3);
-		world.add(&target);
+		worlds[0].add(&target);
 
 		deathTarget.setIsSensor(true);
 		deathTarget.setRadius(1);
@@ -90,18 +90,8 @@ protected:
 			//worm->additionNeuralInputs.resize(1);
 			worm->killOnLackOffProgress = true;
 
-			//worm->pulseFeedback = true;
-			worm->init(world);
-			population.addPhenotype(worm);
-
-			world.add(worm);
-			if(!i){
-				worm->neuralNet.printStats();
-				worm->genome.printStats();
-			}
+			addPhenotype(worm);
 		}
-		population.printStats();
-
 	}
 
 
@@ -111,12 +101,12 @@ protected:
 	bool isFinished()
 	{
 
-		if(world.getBodiesAt(deathTarget.getPosition()).size() > 1){
+		if(worlds[0].getBodiesAt(deathTarget.getPosition()).size() > 1){
 			for(int i = 0; i < populationSize; i++){
 
 			}
 		}
-		if(world.getBodiesAt(target.getPosition()).size() > 1){
+		if(worlds[0].getBodiesAt(target.getPosition()).size() > 1){
 			return true;
 		}
 

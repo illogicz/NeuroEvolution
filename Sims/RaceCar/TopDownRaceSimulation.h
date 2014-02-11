@@ -22,22 +22,29 @@ public:
 		height = 80;
 
 		ground.radius = 90;
-		ground.maxOffset = 20;
-		ground.minWidth = 10;
-		ground.maxWidth = 25;
+		ground.maxOffset = 10;
+		ground.minWidth = 23;
+		ground.maxWidth = 35;
 		//ground.generateTrack();
 		//world.add(&ground);
-		population.setWinnersPerPrelim(1);
+		population.setWinnersPerPrelim(8);
 
-		setGravity(0,0);
-		world.setGroundBody(&ground.innerWall);
+		gravity.Set(0,0);
+		
+		c.setType(STATIC_BODY);
+		worlds[0].add(&c);
+		worlds[0].setGroundBody(&c);
 
 		//simulationTime = 100000;
+
+		breadingPoolFraction = 0.7;
+		selectionBias = 1.7;
 
 		staticView = true;
 		renderScale = 3.3;
 		zoomScale = 2.4;
 		populationSize = 40;
+
 	}
 
 	~TopDownRaceSimulation()
@@ -67,6 +74,8 @@ protected:
 			car->position.x = ground.radius;
 			car->position.y = 0;
 			car->track = &ground;
+			car->startPosition = float(i) / populationSize * b2_pi * 2;
+
 			addPhenotype(car);
 		}
 
@@ -87,15 +96,17 @@ protected:
 	// Builds the ground based on roughness inputs
 	void buildEnvironment()
 	{
-		world.remove(&ground);
-		if(ground.maxOffset < 75)ground.maxOffset += 0.7;
+		
+		if(ground.maxOffset < 60 && population.prelimsComplete())ground.maxOffset += 0.5;
 		ground.generateTrack();
-		world.add(&ground);
-		//ground.setPosition(0,0);
+		for(int i = 0; i < worlds.size(); i++){
+			worlds[0].remove(&ground);
+			worlds[0].add(&ground);
+		}
+			//ground.setPosition(0,0);
 
 
 	}
 	RaceTrack ground;
-	//sEdgeRectangle ground;
-
+	sCircle c;
 };

@@ -33,7 +33,8 @@ enum sObjectType
 {
 	BODY_OBJECT,
 	JOINT_OBJECT,
-	CONTAINER_OBJECT
+	CONTAINER_OBJECT,
+	CUSTOM_OBJECT
 };
 
 class sObject
@@ -95,6 +96,10 @@ public:
 		return m_debugDrawEnabled;
 	}
 
+	sObjectType getType()
+	{
+		return m_type;
+	}
 
 
 protected:

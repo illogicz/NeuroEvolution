@@ -10,12 +10,12 @@ public:
 
 	sNeuralNetworkAnalyser()
 	{
-		n_buckets = 200;
+		n_buckets = 50;
 		dist.resize(n_buckets);
 		va.setPrimitiveType(sf::PrimitiveType::Lines);
 		graphWidth = 200;
 		height = 180;
-		scale = 20.f;
+		//scale = 20.f;
 		num_samples = 30000;
 		currentLayer = 0;
 		inputRangeLower = -2;
@@ -33,31 +33,12 @@ public:
 	int num_samples;
 	int cycles;
 
-	float getRandomWeight(float distribution)
-	{
-		float v = sRandom::getFloat(0,1);
-		v = pow(v, distribution);
-		if(sRandom::getBool()){
-			v *= -1;
-		}
-		return v;
-	}
-
-	float getRandomBias(float distribution)
-	{
-		float v = sRandom::getFloat(0,1);
-		v = pow(v, distribution);
-		if(sRandom::getBool()){
-			v *= -1;
-		}
-		return v;
-	}
 
 	void analyzeNetwork(sNeuralNet &neuralNet)
 	{
 		max_y = 0;
 		float grandtotal = 0;
-		scale = 100;
+		scale = n_buckets / 2;
 		width = graphWidth;
 
 		for(int j = 0; j < num_samples; j++){
@@ -75,10 +56,13 @@ public:
 			grandtotal += total;
 
 			int bucket = (total * scale) + n_buckets / 2;
+			if(bucket < 0)bucket = 0;
+			if(bucket >= n_buckets)bucket = n_buckets - 1;
 
-			if(bucket >= 0 && bucket < n_buckets){
+
+			//if(bucket >= 0 && bucket < n_buckets){
 				dist[bucket] += 1.f;
-			}
+			//}
 
 		}
 		for(int j = 0; j < n_buckets; j++){
@@ -102,7 +86,7 @@ public:
 		max_y = 0;
 		int layers = neuralNet.getLayerCount();
 		width = graphWidth * (layers - 1);
-
+		scale = n_buckets / 5;
 
 		for(int i = 1; i < layers; i++){
 
@@ -130,10 +114,13 @@ public:
 
 
 				int bucket = (total * scale) + n_buckets / 2;
+				if(bucket < 0)bucket = 0;
+				if(bucket >= n_buckets)bucket = n_buckets - 1;
 
-				if(bucket >= 0 && bucket < n_buckets){
+
+				//if(bucket >= 0 && bucket < n_buckets){
 					dist[bucket] += 1.f;
-				}
+				//}
 			}
 
 			for(int j = 0; j < n_buckets; j++){
@@ -170,7 +157,8 @@ public:
 
 		
 		sf::Transform tf;
-		tf.scale(float(graphWidth) / n_buckets, -height / max_y, 0,height - 1);//, height);
+		tf.scale(float(graphWidth) / n_buckets, -height / max_y, 0,0);//height);//, height);
+		tf.translate(0,-max_y);
 		//tf.scale(float(width) / n_buckets, height / max_y);
 		target.draw(va, getTransform() * tf);
 	}

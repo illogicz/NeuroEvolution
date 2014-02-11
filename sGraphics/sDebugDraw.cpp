@@ -136,8 +136,10 @@ void sDebugDraw::DrawGrid(const b2AABB &aabb)
 	int incr = 1;
 	if(endx - startx > 200){
 		incr = 10;
-		startx += 10 - startx % 10;
+		startx -= startx % 10;
 		endx -= startx % 10;
+		starty -= starty % 10;
+		endy -= starty % 10;
 	}
 	for(int x = startx; x <= endx; x += incr){
 		addLine(b2Vec2(x, aabb.lowerBound.y), b2Vec2(x, aabb.upperBound.y), x % 10 ? subColor : mainColor);
@@ -154,22 +156,12 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 	b2Body *m_bodyList = world.b2world.GetBodyList();
 	b2Joint *m_jointList = world.b2world.GetJointList();
 
-
-	// Use broadphase clipping to view for rendering debug data
-	b2AABB aabb;
-	aabb.lowerBound.x = view_center.x - view_size.x;
-	aabb.upperBound.x = view_center.x + view_size.x;
-	aabb.lowerBound.y = view_center.y - view_size.y;
-	aabb.upperBound.y = view_center.y + view_size.y;
-
-	DrawGrid(aabb);
-
 	if (flags & b2Draw::e_shapeBit)
 	{
 
 
 		AABBQueryCallback aabb_callback;
-		world.b2world.QueryAABB(&aabb_callback, aabb);
+		world.b2world.QueryAABB(&aabb_callback, view_aabb);
 
 
 		//for (b2Body* b = m_bodyList; b; b = b->GetNext())
@@ -179,7 +171,7 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 			b2Body *b = f->GetBody();
 			const b2Transform& xf = b->GetTransform();
 
-			sBody *sb = (sBody*)b->GetUserData();
+			sObject *sb = (sObject*)b->GetUserData();
 
 			if(!sb->getDebugDrawEnabled())continue;
 			
@@ -286,17 +278,22 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 		}
 	}
 
-	// draw triangles
+
+}
+
+void sDebugDraw::draw(sf::RenderTarget &target)
+{
 	triangles.resize(triangles_index);
-	m_target->draw(triangles, states);
+	target.draw(triangles, states);
 
 	// draw lines
 	lines.resize(lines_index);
-	m_target->draw(lines, states);
+	target.draw(lines, states);
 
 	triangles_index = lines_index = 0;
-
 }
+
+
 
 
 void sDebugDraw::allocate(sf::VertexArray &va, int i, int n)
@@ -367,12 +364,12 @@ void sDebugDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, sf:
 
 void sDebugDraw::DrawCircle(const b2Vec2& center, float32 radius, sf::Color& color)
 {
-	sf::CircleShape circle(radius, 20);
-	circle.setPosition(center.x, center.y);
-	circle.setOutlineColor(color);
+	//sf::CircleShape circle(radius, 20);
+	//circle.setPosition(center.x, center.y);
+	//circle.setOutlineColor(color);
 	//color.a = 0;
-	circle.setFillColor(color);
-	m_target->draw(circle, states);
+	//circle.setFillColor(color);
+	//m_target->draw(circle, states);
 }
 
 void sDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, sf::Color& color)

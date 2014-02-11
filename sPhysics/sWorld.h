@@ -64,7 +64,7 @@ class sWorld : public sContainer, public b2DestructionListener, public b2Contact
 public:
 
 
-	sWorld():gravity(0.0f, 9.8f), b2world(gravity)
+	sWorld():b2world(b2Vec2(0.0f, 9.8f))
 	{
 		m_world = this; //&b2world;
 		b2world.SetDestructionListener(this);
@@ -76,6 +76,16 @@ public:
 		b2world.SetGravity(b2Vec2(0.0f, 9.8f));
 		// Set to true, because this is the world itself
 		m_inWorld = true;
+	}
+	sWorld& operator=(const sWorld& world)
+	{
+		timeStep = world.timeStep;
+		velocityIterations = world.velocityIterations;
+		positionIterations = world.positionIterations;
+		setGravity(world.getGravity());
+		setDebugDraw(getDebugDraw());
+
+		return *this;
 	}
 
 
@@ -91,8 +101,6 @@ public:
 	float32 timeStep;
 	int32 velocityIterations;
 	int32 positionIterations;
-	b2Vec2 gravity;
-
 	
 	
 	// Gets bodies under a specified point
@@ -106,13 +114,13 @@ public:
 		b2world.QueryAABB(&cb, aabb);
 		return cb.bodies;
 	}
-	vector<sBody*> getBodiesAABB(b2AABB aabb)
+	vector<sBody*> getBodiesAABB(const b2AABB &aabb)
 	{
 		AABBQueryCallback cb;
 		b2world.QueryAABB(&cb, aabb);
 		return cb.bodies;
 	}
-	sRayCastOutput rayCastClosest(const b2Vec2 &point1, const b2Vec2 &point2, set<sBody*> *list = nullptr, bool blackList = true)
+	sRayCastOutput rayCastClosest(const b2Vec2 &point1, const b2Vec2 &point2, set<sObject*> *list = nullptr, bool blackList = true)
 	{
 		raycastCallback.onlyClosest = true;
 		raycastCallback.any = false;
@@ -132,9 +140,13 @@ public:
 		return raycastCallback.output.found;
 	}
 
-	void setGravity(b2Vec2 grav)
+	void setGravity(const b2Vec2 &gravity)
 	{
-		b2world.SetGravity(grav);
+		b2world.SetGravity(gravity);
+	}
+	b2Vec2 getGravity() const
+	{
+		return b2world.GetGravity();
 	}
 
 	//---------------------------------------------------------------------------------------
@@ -215,7 +227,6 @@ public:
 	}
 
 
-	 //temp public
 protected:
 
 
@@ -276,14 +287,14 @@ private:
 		bool onlyClosest;
 		bool any;
 
-		set<sBody*> *list;
+		set<sObject*> *list;
 		bool blackList;
 		sRayCastOutput output;
 
 		float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction)
 		{
 
-			sBody* body = (sBody*)fixture->GetBody()->GetUserData();
+			sObject* body = (sObject*)fixture->GetBody()->GetUserData();
 			if(list != nullptr){
 				if(list->find(body) != list->end()){
 					if(blackList){
@@ -299,6 +310,11 @@ private:
 			output.normal = normal;
 			output.fraction = fraction;
 			output.fixture = fixture;
+			if(body->getType() == BODY_OBJECT){
+				output.body = (sBody*)body;
+			} else {
+				output.body = NULL;
+			}
 			return any ? 0 : fraction;
 
 		}

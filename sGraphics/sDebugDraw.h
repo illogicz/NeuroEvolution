@@ -25,10 +25,7 @@ public:
 		triangles_index = lines_index = 0;
 	}
 
-	void setTarget(sf::RenderTarget *target)
-	{
-		m_target = target;
-	}
+	
 
 	enum
 	{
@@ -58,8 +55,18 @@ public:
 	{
 		view_size = 0.5f * states.transform.getInverse().transformPoint(v.getSize());
 		view_center = states.transform.getInverse().transformPoint(v.getCenter());
+
+		
+		view_aabb.lowerBound.x = view_center.x - view_size.x;
+		view_aabb.upperBound.x = view_center.x + view_size.x;
+		view_aabb.lowerBound.y = view_center.y - view_size.y;
+		view_aabb.upperBound.y = view_center.y + view_size.y;
+
+		DrawGrid(view_aabb);
+
 	}
 
+	void draw(sf::RenderTarget &target);
 	void addTriangle(const b2Vec2 &v1, const b2Vec2 &v2, const b2Vec2 &v3, sf::Color &c);
 	void addLine(const b2Vec2 &v1, const b2Vec2 &v2, sf::Color &c);
 	void DrawDebugData(sWorld &world);
@@ -81,13 +88,12 @@ private:
 
 	void allocate(sf::VertexArray &va, int i, int n);
 
-	sf::RenderTarget *m_target;
 	sf::Vector2f view_center;
 	sf::Vector2f view_size;
 	sf::RenderStates states;
 	sf::VertexArray triangles;
 	sf::VertexArray lines;
-
+	b2AABB view_aabb;
 	int triangles_index;
 	int lines_index;
 	uint32 m_drawFlags;

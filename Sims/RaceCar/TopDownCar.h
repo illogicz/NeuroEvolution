@@ -15,18 +15,16 @@ public:
 	{
 		width = 1;
 		height = 2;
-		maxEngineForce = 400;
-		damping = 0.5;
-		grip = 1;
-		slideDamping = 0.2;
-		maxStearingAngle = 0.75;
-		visionResolution = 7;
+		maxEngineForce = 350;
+		damping = 1;
+		grip = 0.5;
+		slideDamping = 0.3;
+		maxStearingAngle = 0.7;
+		visionResolution = 11;
 		visionFOV = b2_pi;
 		minRayLength = 1;
-		maxRayLength = 50;
+		maxRayLength = 40;
 		maxLifeTime = 1800;
-		touchSense = true;
-		neuralFeedback = true;
 		reverseTrack = false;
 		id = id_counter++;
 
@@ -42,18 +40,17 @@ public:
 	float grip;
 	float slideDamping;
 	float topSpeed;
-	bool touchSense;
-	bool neuralFeedback;
 	b2Vec2 position;
 
 	virtual void init(sWorld &world)
 	{
-		chassisFilter.categoryBits = 0x02;
-		chassisFilter.maskBits = 0x01;
+		//chassisFilter.categoryBits = 0x02;
+		//chassisFilter.maskBits = 0x01;
 		//chassisFilter.groupIndex = -1 - id;
-
-		wheelFilter.categoryBits = 0x03;
-		wheelFilter.maskBits = 0x04;
+		chassisFilter.groupIndex =  -1 - id;
+		wheelFilter.groupIndex =  -1 - id;
+		//wheelFilter.categoryBits = 0x03;
+		//wheelFilter.maskBits = 0x04;
 
 
 		chassis.setSize(width,height);
@@ -96,25 +93,26 @@ public:
 		rearRightJoint.setLimits(0, 0);
 
 
-		add(&chassis);
-		add(&frontLeftWheel);
-		add(&frontRightWheel);
-		add(&rearLeftWheel);
-		add(&rearRightWheel);
 	
-		whiteList.insert(&track->innerWall);
-		whiteList.insert(&track->outerWall);
+		whiteList.insert(track);
+		//whiteList.insert(&track->outerWall);
 
-		//ignoreList.insert(&chassis);
-		//ignoreList.insert(&frontLeftWheel);
-		//ignoreList.insert(&frontRightWheel);
-		//ignoreList.insert(&rearLeftWheel);
-		//ignoreList.insert(&rearRightWheel);
+		blackList.insert(&chassis);
+		blackList.insert(&frontLeftWheel);
+		blackList.insert(&frontRightWheel);
+		blackList.insert(&rearLeftWheel);
+		blackList.insert(&rearRightWheel);
 
 		add(&frontLeftJoint);
 		add(&frontRightJoint);
 		add(&rearLeftJoint);
 		add(&rearRightJoint);
+
+		add(&chassis);
+		add(&frontLeftWheel);
+		add(&frontRightWheel);
+		add(&rearLeftWheel);
+		add(&rearRightWheel);
 
 		world.addContactListener(this, &chassis);
 		world.addContactListener(this, &frontLeftWheel);
@@ -123,20 +121,18 @@ public:
 		world.addContactListener(this, &rearRightWheel);
 
 
-		int input_count = visionResolution;
-		if(touchSense){
-			input_count++;
-		}
-		if(neuralFeedback){
-			input_count += 4;
-		}
+		int input_count = visionResolution + 7;
+		// 1 reverse ray
+		// 2, 3, 4 velocities
+		// 5, 6 touch
+		// 7 direction
 
 		if(true){
 
 			neuralNet.setLayerCount(4);
 			neuralNet.setNeuronLayer(0, input_count, false, false);
-			neuralNet.setNeuronLayer(1, 8, true, true);
-			neuralNet.setNeuronLayer(2, 4, true, true);
+			neuralNet.setNeuronLayer(1, input_count - 3, true, true);
+			neuralNet.setNeuronLayer(2, 5, true, true);
 			neuralNet.setNeuronLayer(3, 2, true, true);
 			//neuralNet.setNeuronLayer(3, 2, true, true);
 			neuralNet.addSynapseLayer(0,2);
@@ -145,7 +141,7 @@ public:
 			//neuralNet.addSynapseLayer(1,3);
 
 			neuralNet.setMaxWeight(2);
-			neuralNet.setWeightExponent(2);
+			neuralNet.setWeightExponent(1.5f);
 			
 
 		} else {
@@ -175,6 +171,8 @@ public:
 	virtual void build(sWorld &world)
 	{
 
+
+
 		chassis.setType(DYNAMIC_BODY);
 		frontLeftWheel.setType(DYNAMIC_BODY);
 		frontRightWheel.setType(DYNAMIC_BODY);
@@ -195,10 +193,13 @@ public:
 		fitnessModifier = 1;
 		num_contacts = 0;
 		fitnessScore = 0.3;
-		last_angle = 0;
 		progressPotition = getFitness();
 		progressTime = 0;
 		reverseTrack = !reverseTrack;
+		frontLeftContact = false;
+		frontRightContact = false;
+		rearLeftContact = false;
+		rearRightContact = false;
 
 		resetPositions();
 		neuralNet.update();
@@ -218,11 +219,11 @@ public:
 		rearRightWheel.setType(STATIC_BODY);
 		rearLeftWheel.setType(STATIC_BODY);
 
-		//chassis.setFilter(deathFilter);
-		//frontLeftWheel.setFilter(deathFilter);
-		//frontRightWheel.setFilter(deathFilter);
-		//rearRightWheel.setFilter(deathFilter);
-		//rearLeftWheel.setFilter(deathFilter);
+		//remove(&chassis);
+		//remove(&frontLeftWheel);
+		//remove(&frontRightWheel);
+		//remove(&rearLeftWheel);
+		//remove(&rearRightWheel);
 
 	}
 	virtual void step()
@@ -242,25 +243,25 @@ public:
 		applyWheelPhysics(frontRightWheel);
 		applyWheelPhysics(rearRightWheel);
 		applyWheelPhysics(rearLeftWheel);
-		float forwardSpeed = -b2Dot(chassis.getLinearVelocity(), b2Rot(chassis.getAngle()).GetYAxis());
-		float sidewaysSpeed = -b2Dot(chassis.getLinearVelocity(), b2Rot(chassis.getAngle()).GetXAxis());
 
-		// TODO : TOI inputs instead of distance
+		//----------------------------------------------------------------------------------------
+		// Set ANN inputs
+		//-----------------------------------------------------------------------------------------
 
 		b2Vec2 chassisPos = chassis.getPosition();
-
 		int input_index = 0;
-		for(int i = 0; i < visionResolution; i++){
+
+		// RAY CASTS
+		for(int i = 0; i <= visionResolution; i++){
 
 			float f = float(i) / (visionResolution - 1) - 0.5f;
 			 float a;
 			 if(i < visionResolution){
 				 a = f;
 				 a *= visionFOV;
-				 //a += chassis.getAngle();
 				 a += b2_pi;
 			 } else {
-				 a = chassis.getAngle();
+				 a = 0;
 			 }
 			 b2Vec2 p1 = b2Rot(a).GetYAxis();
 			 b2Vec2 p2(p1);
@@ -276,74 +277,132 @@ public:
 			 p1 += chassisPos;
 			 p2 += chassisPos;
 			 b2Vec2 ip;
-			// sRayCastOutput result = m_world->rayCastClosest(p1,p2,&ignoreList);
-			 sRayCastOutput result = m_world->rayCastClosest(p1,p2, &whiteList, false);
+			 sRayCastOutput result = m_world->rayCastClosest(p1,p2,&blackList);
+			 //sRayCastOutput result = m_world->rayCastClosest(p1,p2);//, &whiteList, false);
 			 if(result.found){
 				 ip = result.point;
+				 if(result.body != NULL){
+					 b2Vec2 v = result.body->GetLinearVelocityFromWorldPoint(ip);
+
+					 b2Vec2 dp = p2 - p1;
+					 float dv = b2Dot(dp, v);
+					 float l = dp.Normalize();
+
+					 float m = (dv / l) * 0.05;
+					 //result.fraction = result.fraction + (dv / l) * 0.5f;
+					 result.fraction -= 0.1;
+					 result.fraction *= 1 + m;
+					 result.fraction += 0.1;
+
+					 if(result.fraction < 0)result.fraction = 0;
+					 if(result.fraction > 1)result.fraction = 1;
+
+					 dp = (result.fraction * l) * dp;
+
+					 //if(isFocus())printf("m = %f\n", m);
+
+					 if(isFocus()){
+						 //m_world->getDebugDraw()->addLine(ip,p1 + dp, sf::Color(100,255,200,255));
+						 m_world->getDebugDraw()->addLine(ip,ip + v, sf::Color(100,0,200,255));
+					 }
+					 ip = p1 + dp;
+					 
+				 }
+				 
+
+
 			 } else {
 				 ip = p2;
 			 }
+			 
 			 if(isFocus()){
 				 int c = 200 * (1.f - result.fraction) + 55;
 				 m_world->getDebugDraw()->addLine(p1,ip, sf::Color(255,255,255,c));
 			 }
+			 //neuralNet.setInput(input_index++, 1.f - result.fraction);
 			 neuralNet.setInput(input_index++, 1.f - result.fraction);
 		}
-		if(touchSense){
-			neuralNet.setInput(input_index++, num_contacts ? 1 : 0);
+
+		// TOUCH
+
+		// left / right
+		bool left = rearLeftContact || frontLeftContact;
+		bool right = rearRightContact || frontRightContact;
+		float v = 0;
+		if(left && !right) v = 1;
+		if(!left && right) v = -1;
+		if(v == 0){
+			neuralNet.interpolateInput(input_index++, 0, 0.1);
+		} else {
+			neuralNet.setInput(input_index++, v);
+		}
+		// front / back
+		bool rear = rearLeftContact || rearRightContact;
+		bool front = frontLeftContact || frontRightContact;
+		v = 0;
+		if(rear && !front) v = 1;
+		if(!rear && front) v = -1;
+		if(v == 0){
+			neuralNet.interpolateInput(input_index++, 0, 0.1);
+		} else {
+			neuralNet.setInput(input_index++, v);
 		}
 
 		float progressAngle = atan2f(chassisPos.y, chassisPos.x);
 
+		// DIRECTION
 		b2Vec2 target;
 		float lookAhead = 0.1;
+		int n = 0;
 		while(true){
 			b2Vec2 p = track->getTrackPoint(chassisPos, reverseTrack ? -lookAhead : lookAhead);
 			sRayCastOutput result = m_world->rayCastClosest(p, chassisPos, &whiteList, false);
-			target = p;
-			if(result.found || lookAhead > 0.45) break;
-			lookAhead += 0.05;
-		}
-		if(neuralFeedback){
-
-			b2Vec2 td = target - chassisPos;
-			float ta = atan2f(td.y, td.x);
-
-			float a = ta - chassis.getAngle() + b2_pi / 2;
-			while(a > b2_pi) a -= b2_pi * 2;
-			while(a < -b2_pi) a += b2_pi * 2;
-
-
-
-			//if(isFocus()){
-			//	m_world->getDebugDraw()->addLine(trackPos, chassis.getPosition(), sf::Color(255,100,255));
-			//}
-
-
-			neuralNet.interpolateInput(input_index, a, 0.3f);
-
-			if(isFocus()){
-				b2Vec2 p2 = chassisPos;
-				p2.x += 30 * cos(neuralNet.getInput(input_index) + chassis.getAngle() - b2_pi / 2);
-				p2.y += 30 * sin(neuralNet.getInput(input_index) + chassis.getAngle() - b2_pi / 2);
-
-				m_world->getDebugDraw()->addLine(p2, chassisPos, sf::Color(255,100,255, 55));
+			if(result.found || lookAhead > 0.85){
+				if(!n)target = p;
+				break;
 			}
-
-
-			input_index++;
-			neuralNet.interpolateInput(input_index++, chassis.getAngularVelocity() * 0.1f, 0.5f);
-			neuralNet.interpolateInput(input_index++, forwardSpeed * 0.02f, 0.5f);
-			neuralNet.interpolateInput(input_index++, sidewaysSpeed * 0.03f, 0.5f);
-
-
-
+			target = p;
+			lookAhead += 0.05;
+			n++;
 		}
+		b2Vec2 td = target - chassisPos;
+		float ta = atan2f(td.y, td.x);
+
+		float a = ta - chassis.getAngle() + b2_pi / 2;
+		while(a > b2_pi) a -= b2_pi * 2;
+		while(a < -b2_pi) a += b2_pi * 2;
+		neuralNet.interpolateInput(input_index, a * 0.6f, 0.3f);
+
+		if(isFocus()){
+			b2Vec2 p2 = chassisPos;
+			p2.x += 30 * cos(neuralNet.getInput(input_index) / 0.6f + chassis.getAngle() - b2_pi / 2);
+			p2.y += 30 * sin(neuralNet.getInput(input_index) / 0.6f + chassis.getAngle() - b2_pi / 2);
+
+			m_world->getDebugDraw()->addLine(p2, chassisPos, sf::Color(255,100,255, 55));
+		}	
+		input_index++;
+
+		// VELOCITIES
+		b2Rot ba(chassis.getAngle());
+		float forwardSpeed = -b2Dot(chassis.getLinearVelocity(), ba.GetYAxis());
+		float sidewaysSpeed = -b2Dot(chassis.getLinearVelocity(), ba.GetXAxis());
+
+		neuralNet.interpolateInput(input_index++, chassis.getAngularVelocity() * 0.1f, 0.5f);
+		neuralNet.interpolateInput(input_index++, forwardSpeed * 0.02f, 0.5f);
+		neuralNet.interpolateInput(input_index++, sidewaysSpeed * 0.03f, 0.5f);
 
 
 
-
+		//----------------------------------------------------------------------------------------
+		// Run Neural Net
+		//-----------------------------------------------------------------------------------------
 		neuralNet.run();
+
+
+		//----------------------------------------------------------------------------------------
+		// Use Outputs
+		//-----------------------------------------------------------------------------------------
+
 
 		float steering_output = neuralNet.getOutput(0);
 
@@ -352,11 +411,11 @@ public:
 
 
 		if(num_contacts){
-			fitnessModifier *= 0.99;
-			if(fitnessModifier < 0.5f){
-				setCustomColor(b2Color(0,0,0));
-				return die();
-			}
+			fitnessModifier *= 0.993;
+			//if(fitnessModifier < 0.5f){
+			//	setCustomColor(b2Color(0,0,0));
+			//	return die();
+			//}
 			setCustomColor(b2Color(1,0,0));
 		} else {
 			if(isElite()){
@@ -365,9 +424,6 @@ public:
 				setCustomColor(b2Color(0,0,0));
 			}
 		}
-
-		//if(forwardSpeed > 0){
-
 
 		
 		progressSpeed = last_angle - progressAngle;
@@ -379,21 +435,19 @@ public:
 
 		last_angle = progressAngle;
 
-		//}// else {
-		//	//fitnessScore += forwardSpeed;
-		//}
+		
 
 		//fitnessScore += chassis.getLinearVelocity().Length();
-
+		/*
 		if(getFitness() > progressPotition + 0.1){
 			progressTime = 0;
 			progressPotition = getFitness();
 		} else {
-			if(progressTime++ > 300){
+			if(progressTime++ > 1000){
 				die();
 			}
 		}
-
+		*/
 	}
 	virtual b2Vec2 getPosition()
 	{
@@ -419,9 +473,13 @@ public:
 		//if(score < 1){
 		//	score = 1;
 		//}
-		float sm = 1.2f - (totalStearing / (lifeTime + 1));
-		return fitnessScore * fitnessModifier * sm; //score * fitnessModifier;
-
+		float sm = 2.f - (totalStearing / (lifeTime + 1));
+		sm *= fitnessModifier;
+		if(fitnessScore > 0){
+			return fitnessScore * sm; //score * fitnessModifier;
+		} else {
+			return fitnessScore;
+		}
 	};	
 
 	float progressSpeed;
@@ -440,6 +498,7 @@ public:
 	int maxLifeTime;
 	
 	bool reverseTrack;
+	float startPosition;
 
 	float minRayLength;
 	float maxRayLength;
@@ -459,8 +518,17 @@ private:
 		rearRightWheel.zeroState();
 		rearLeftWheel.zeroState();
 
-		float a = reverseTrack ? b2_pi : 0;
+		float r = track->radius + sRandom::getFloat(-4, 4);
+		float px = sin(startPosition) * r;
+		float py = cos(startPosition) * r;
 
+		position = track->getTrackPoint(b2Vec2(px, py), 0);
+
+		b2Vec2 p2 = track->getTrackPoint(position, reverseTrack ? - 0.4 : 0.4);
+		p2 -= position;
+		float a = atan2f(p2.y, p2.x) + b2_pi/2;
+
+		//if(reverseTrack) a += b2_pi;
 		b2Transform t(position, b2Rot(a));
 
 		//b2Vec2 p = position;// + b2Vec2(sRandom::getFloat(-1, 1), sRandom::getFloat(-1, 1));
@@ -483,6 +551,8 @@ private:
 		rearLeftJoint.setAnchor(rearLeftWheel.getPosition());
 		rearRightJoint.setAnchor(rearRightWheel.getPosition());
 
+		last_angle = atan2f(chassis.getPosition().y, chassis.getPosition().x);
+
 	}
 
 	static int id_counter;
@@ -490,11 +560,19 @@ private:
 	bool deferDeath;
 	b2Filter chassisFilter;
 	b2Filter wheelFilter;
+	//b2Filter deathFilter;
 	float totalAccelerator;
 	float totalSpeed;
 	float fitnessModifier;
 	int num_contacts;
-	set<sBody*> whiteList;
+
+	bool frontLeftContact;
+	bool frontRightContact;
+	bool rearLeftContact;
+	bool rearRightContact;
+
+	set<sObject*> whiteList;
+	set<sObject*> blackList;
 
 	void setAccelerator(float acc)
 	{
@@ -532,10 +610,29 @@ private:
 
 	void onBeginContact(sContactPair contactPair)
 	{
+
+		if(contactPair.contains(&frontLeftWheel)){
+			frontLeftContact = true;
+		} else if(contactPair.contains(&frontRightWheel)){
+			frontRightContact = true;
+		} else if(contactPair.contains(&rearLeftWheel)){
+			rearLeftContact = true;
+		} else if(contactPair.contains(&rearRightWheel)){
+			rearRightContact = true;
+		}
 		num_contacts++;
 	}
 	void onEndContact(sContactPair contactPair)
 	{
+		if(contactPair.contains(&frontLeftWheel)){
+			frontLeftContact = false;
+		} else if(contactPair.contains(&frontRightWheel)){
+			frontRightContact = false;
+		} else if(contactPair.contains(&rearLeftWheel)){
+			rearLeftContact = false;
+		} else if(contactPair.contains(&rearRightWheel)){
+			rearRightContact = false;
+		}
 		num_contacts--;
 	}
 };

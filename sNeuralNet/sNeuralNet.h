@@ -35,16 +35,24 @@ struct sSynapse
 	sNeuron *input;
 	float weight;
 	float enableThreshold;
-	void update(float maxWeight, float exponent)
+	void update(float maxWeight, float exponent, float thres)
 	{
 
 		float v = weightGene->getValue();
 
-		if(input == output){ // disable inhibitory feedback, causes jitter
-			v = abs(v); 
-		}
+		if(abs(v) < thres){
+			weight = 0;
+		} else {
 
-		weight = pow(abs(v), exponent) * (v < 0 ? -1: 1) * maxWeight;
+			v = (v - (v < 0 ? -thres : thres)) / (1.f - thres);
+
+			if(input == output){ // disable inhibitory feedback, causes jitter
+				v = abs(v); 
+			}
+
+			weight = pow(abs(v), exponent) * (v < 0 ? -1: 1) * maxWeight;
+
+		}
 	}
 
 };
@@ -252,9 +260,10 @@ public:
 		for(unsigned int i = 0; i < m_synapses.size(); i++){
 
 
-			float maxw = 1.f / sqrt(m_synapses[i]->output->inputSynapses.size());
-			if(maxw > 0.25)maxw = 0.25;
-			m_synapses[i]->weightGene->setValue(sRandom::getNormal(0, maxw));
+			//float maxw = 1.f / sqrt(m_synapses[i]->output->inputSynapses.size());
+			//if(maxw > 0.25)maxw = 0.25;
+			m_synapses[i]->weightGene->setValue(sRandom::getNormal(0, 0.35));
+			//m_synapses[i]->weightGene->setValue(sRandom::getFloat(-1, 1));
 		}
 	}
 
@@ -362,7 +371,12 @@ public: void update()
 			m_neurons[i]->reset();
 		}
 		for(unsigned int i = 0; i < m_synapses.size(); i++){
-			m_synapses[i]->update(m_maxWeight, m_weightExponent);
+			float thres_out = 6.f / m_synapses[i]->output->inputSynapses.size();
+			float thres_in = 6.f / m_synapses[i]->input->outputSynapses.size();
+			float thres = max(thres_out, thres_in);
+			if(thres > 1)thres = 1;
+			m_synapses[i]->update( m_maxWeight, m_weightExponent, 1.f - thres );
+			
 		}
 
 		//for(int i = 0; i < m_hiddenLayers.size(); i++){

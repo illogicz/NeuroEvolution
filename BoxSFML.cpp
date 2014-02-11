@@ -97,7 +97,7 @@ void runWormSimulation()
 	simulation.population.setWinnersPerPrelim(10);
 	simulation.fitnessFunction.useSpeed = true;
 	simulation.fitnessFunction.absolueDistance = false;
-	simulation.setGravity(0,7.f);
+	simulation.gravity = b2Vec2(0,7.f);
 	//simulation.fit
 
 	// Ground
@@ -171,7 +171,7 @@ void runCarSimulation()
 
 void runTopDownRace()
 {
-	sRandom::seed(128955);
+	sRandom::seed(128245);
 
 	TopDownRaceSimulation simulation;
 	sSimulationWindow window;

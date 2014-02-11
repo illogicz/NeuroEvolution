@@ -28,7 +28,7 @@ public:
 		built = false;
 		staticView = true;
 		renderScale = 10;
-		world.setGravity(b2Vec2(0,10));
+
 		populationSize = rows * cols;
 	}
 
