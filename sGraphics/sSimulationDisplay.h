@@ -24,14 +24,8 @@ public:
 
 	void draw(sf::RenderTarget *target, sf::RenderStates states)
 	{
-		float scale;
-		if(m_simulation->staticView){
-			scale = m_simulation->renderScale;
-		} else {
-			scale = m_simulation->renderScale * m_simulation->zoomScale;
-		}
+		float scale = m_simulation->getScale();
 		
-
 		updateFocus();
 
 		if(!m_simulation->staticView){
@@ -206,8 +200,8 @@ public:
 		point.y -= m_view.getSize().y / 2;
 		point.x += m_view.getCenter().x;
 		point.y += m_view.getCenter().y;
-		point.x /= m_simulation->renderScale * m_simulation->zoomScale;
-		point.y /= m_simulation->renderScale * m_simulation->zoomScale;
+		point.x /= m_simulation->getScale();
+		point.y /= m_simulation->getScale();
 		return point;
 
 	}

@@ -15,8 +15,8 @@ public:
 	{
 		width = 1;
 		height = 2;
-		maxEngineForce = 350;
-		damping = 1;
+		maxEngineForce = 330;
+		damping = 2;
 		grip = 0.5;
 		slideDamping = 0.3;
 		maxStearingAngle = 0.7;
@@ -60,6 +60,7 @@ public:
 		chassis.setFriction(5);
 
 		frontLeftWheel.copy(chassis);
+
 		frontLeftWheel.setSize(0.3, 0.7);
 		frontLeftWheel.setFilter(wheelFilter);
 		//frontRightWheel.setSize(0.3, 0.7);
@@ -131,17 +132,17 @@ public:
 
 			neuralNet.setLayerCount(4);
 			neuralNet.setNeuronLayer(0, input_count, false, false);
-			neuralNet.setNeuronLayer(1, input_count - 3, true, true);
-			neuralNet.setNeuronLayer(2, 5, true, true);
+			neuralNet.setNeuronLayer(1, 6, true, true);
+			neuralNet.setNeuronLayer(2, 4, true, true);
 			neuralNet.setNeuronLayer(3, 2, true, true);
 			//neuralNet.setNeuronLayer(3, 2, true, true);
 			neuralNet.addSynapseLayer(0,2);
-			neuralNet.addSynapseLayer(1,3);
+			neuralNet.addSynapseLayer(2,1);
 			//neuralNet.addSynapseLayer(0,3);
-			//neuralNet.addSynapseLayer(1,3);
+			neuralNet.addSynapseLayer(1,3);
 
 			neuralNet.setMaxWeight(2);
-			neuralNet.setWeightExponent(1.5f);
+			neuralNet.setWeightExponent(1.f);
 			
 
 		} else {
@@ -192,7 +193,7 @@ public:
 		totalStearing = 0;
 		fitnessModifier = 1;
 		num_contacts = 0;
-		fitnessScore = 0.3;
+		fitnessScore = 0.0;
 		progressPotition = getFitness();
 		progressTime = 0;
 		reverseTrack = !reverseTrack;
@@ -230,11 +231,10 @@ public:
 	{
 
 		if(deferDeath){
-			die();
-			return;
+			return die();
 		}
 		if(lifeTime > maxLifeTime){
-			die();
+			return die();
 		}
 
 
@@ -357,7 +357,7 @@ public:
 		while(true){
 			b2Vec2 p = track->getTrackPoint(chassisPos, reverseTrack ? -lookAhead : lookAhead);
 			sRayCastOutput result = m_world->rayCastClosest(p, chassisPos, &whiteList, false);
-			if(result.found || lookAhead > 0.85){
+			if(result.found || lookAhead > 1.2){
 				if(!n)target = p;
 				break;
 			}
@@ -371,12 +371,12 @@ public:
 		float a = ta - chassis.getAngle() + b2_pi / 2;
 		while(a > b2_pi) a -= b2_pi * 2;
 		while(a < -b2_pi) a += b2_pi * 2;
-		neuralNet.interpolateInput(input_index, a * 0.6f, 0.3f);
+		neuralNet.interpolateInput(input_index, a / b2_pi, 0.3f);
 
 		if(isFocus()){
 			b2Vec2 p2 = chassisPos;
-			p2.x += 30 * cos(neuralNet.getInput(input_index) / 0.6f + chassis.getAngle() - b2_pi / 2);
-			p2.y += 30 * sin(neuralNet.getInput(input_index) / 0.6f + chassis.getAngle() - b2_pi / 2);
+			p2.x += 30 * cos(neuralNet.getInput(input_index) * b2_pi + chassis.getAngle() - b2_pi / 2);
+			p2.y += 30 * sin(neuralNet.getInput(input_index) * b2_pi + chassis.getAngle() - b2_pi / 2);
 
 			m_world->getDebugDraw()->addLine(p2, chassisPos, sf::Color(255,100,255, 55));
 		}	
@@ -411,7 +411,10 @@ public:
 
 
 		if(num_contacts){
-			fitnessModifier *= 0.993;
+			//if(fitnessModifier > 0.05){
+			//	fitnessModifier *= 0.999;
+			//}
+			fitnessScore -= 0.01;
 			//if(fitnessModifier < 0.5f){
 			//	setCustomColor(b2Color(0,0,0));
 			//	return die();
@@ -473,7 +476,7 @@ public:
 		//if(score < 1){
 		//	score = 1;
 		//}
-		float sm = 2.f - (totalStearing / (lifeTime + 1));
+		float sm = 1.f - (totalStearing / (lifeTime + 1));
 		sm *= fitnessModifier;
 		if(fitnessScore > 0){
 			return fitnessScore * sm; //score * fitnessModifier;
@@ -509,7 +512,9 @@ public:
 	float progressPotition;
 	int progressTime;
 private:
-	float last_angle;
+	
+
+
 	void resetPositions()
 	{
 		chassis.zeroState();
@@ -518,11 +523,13 @@ private:
 		rearRightWheel.zeroState();
 		rearLeftWheel.zeroState();
 
-		float r = track->radius + sRandom::getFloat(-4, 4);
-		float px = sin(startPosition) * r;
-		float py = cos(startPosition) * r;
+		//float r = track->radius + sRandom::getFloat(-10, 10);
+		float px = sin(startPosition) * track->radius;
+		float py = cos(startPosition) * track->radius;
 
 		position = track->getTrackPoint(b2Vec2(px, py), 0);
+		float r = position.Normalize();
+		position *= r + sRandom::getFloat(-7, 7);
 
 		b2Vec2 p2 = track->getTrackPoint(position, reverseTrack ? - 0.4 : 0.4);
 		p2 -= position;
@@ -565,6 +572,7 @@ private:
 	float totalSpeed;
 	float fitnessModifier;
 	int num_contacts;
+	float last_angle;
 
 	bool frontLeftContact;
 	bool frontRightContact;

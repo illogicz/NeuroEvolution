@@ -83,13 +83,18 @@ struct sNeuron
 	void activate()
 	{
 		if(biasNeuron) return;
+		if(inputNeuron){
+			activation = inputValue;
+			return;
+		}
 		accumulator = inputNeuron ? inputValue : 0;
 		for(int i = 0; i < inputSynapses.size(); i++){
 			accumulator += inputSynapses[i]->input->activation * inputSynapses[i]->weight;
 		}
-		activation = tanh_approx(accumulator);
+		//activation = tanh_approx(accumulator);
+		activation = (*activationFunction)(accumulator);
 	}
-
+	float (*activationFunction)(float);
 	int layer;
 	int order; // for rendering purposes only
 };
@@ -262,7 +267,7 @@ public:
 
 			//float maxw = 1.f / sqrt(m_synapses[i]->output->inputSynapses.size());
 			//if(maxw > 0.25)maxw = 0.25;
-			m_synapses[i]->weightGene->setValue(sRandom::getNormal(0, 0.35));
+			m_synapses[i]->weightGene->setValue(sRandom::getNormal(0, 0.3));
 			//m_synapses[i]->weightGene->setValue(sRandom::getFloat(-1, 1));
 		}
 	}
@@ -287,6 +292,11 @@ public:
 			neuron.id = ++m_neuronID;
 			neuron.biasNeuron = false;
 			neuron.inputNeuron = layer == 0;
+			if(layer == getLayerCount() - 1){
+				neuron.activationFunction = &tanhf;
+			} else {
+				neuron.activationFunction = &Sigmoid;
+			}
 			m_neurons.push_back(&neuron);
 
 		}

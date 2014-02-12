@@ -78,7 +78,7 @@ public:
 	{
 		
 
-		float w = synapse->weight * synapse->input->activation;
+		float w = synapse->weight* synapse->input->activation;
 		int a = abs(w / neuralNet->getMaxWeight()) * 0xFF;
 		int c = w < 0 ? 0x00 : 0xFF;
 		sf::Color color(c, c, c, a);

@@ -142,6 +142,11 @@ protected:
 		
 	}
 
+	float getScale()
+	{
+		return renderScale * (staticView ? 1 : zoomScale);
+	}
+
 	void printStats()
 	{
 		population.printStats();

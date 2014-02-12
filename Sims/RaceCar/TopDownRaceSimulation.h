@@ -27,7 +27,7 @@ public:
 		ground.maxWidth = 35;
 		//ground.generateTrack();
 		//world.add(&ground);
-		population.setWinnersPerPrelim(8);
+		population.setWinnersPerPrelim(2);
 
 		gravity.Set(0,0);
 		
@@ -97,7 +97,7 @@ protected:
 	void buildEnvironment()
 	{
 		
-		if(ground.maxOffset < 60 && population.prelimsComplete())ground.maxOffset += 0.5;
+		if(ground.maxOffset < 70 && population.prelimsComplete())ground.maxOffset += 0.5;
 		ground.generateTrack();
 		for(int i = 0; i < worlds.size(); i++){
 			worlds[0].remove(&ground);
