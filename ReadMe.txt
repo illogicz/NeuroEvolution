@@ -1,5 +1,5 @@
-========================================================================
-    CONSOLE APPLICATION : BoxSFML Project Overview
-========================================================================
+Neuro Evolution Experiments
+
+Requires SFML and Box2D
 
 
