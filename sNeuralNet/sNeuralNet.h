@@ -91,8 +91,8 @@ struct sNeuron
 		for(int i = 0; i < inputSynapses.size(); i++){
 			accumulator += inputSynapses[i]->input->activation * inputSynapses[i]->weight;
 		}
-		//activation = tanh_approx(accumulator);
-		activation = (*activationFunction)(accumulator);
+		activation = tanh_approx(accumulator);
+		//activation = (*activationFunction)(accumulator);
 	}
 	float (*activationFunction)(float);
 	int layer;

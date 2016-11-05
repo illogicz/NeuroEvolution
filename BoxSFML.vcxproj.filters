@@ -108,9 +108,6 @@
     <ClInclude Include="sEvolution\sPhenotype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\Car.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sGraphics\sSimulationDisplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -123,28 +120,10 @@
     <ClInclude Include="sUtils\sRandom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\RaceSimulation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Sims\RaceCar\Worm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Sims\RaceCar\WormSegment.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sPhysics\sRevoluteJoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\SwarmSimulation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Sims\RaceCar\Biped.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sGraphics\sPopulationGeneticsDisplay.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Sims\RaceCar\TetraPod.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sUtils\sMath.h">
@@ -159,25 +138,46 @@
     <ClInclude Include="sNeuralNet\sNeuralNetAnalyser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\Shooter.h">
+    <ClInclude Include="Sims\Phenotypes\Biped.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\TopDownCar.h">
+    <ClInclude Include="Sims\Phenotypes\Car.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\TopDownRaceSimulation.h">
+    <ClInclude Include="Sims\Phenotypes\TetraPod.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\RaceTrack.h">
+    <ClInclude Include="Sims\Phenotypes\TopDownCar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\PoleCart.h">
+    <ClInclude Include="Sims\Phenotypes\Worm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\PoleBalanceSimulation.h">
+    <ClInclude Include="Sims\Phenotypes\WormSegment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sims\RaceCar\CircleBalance.h">
+    <ClInclude Include="Sims\Phenotypes\CircleBalance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\Phenotypes\PoleCart.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\Environments\RaceTrack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\TopDownRaceSimulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\PoleBalanceSimulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\RaceSimulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\Shooter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sims\SwarmSimulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

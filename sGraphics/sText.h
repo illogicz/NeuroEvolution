@@ -29,7 +29,7 @@ public:
 		if(m_fontLoaded){
 
 			m_textField.setCharacterSize(size);
-			m_textField.setColor(color);
+			//m_textField.setColor(color);
 			m_textField.setString(text);
 			if(center){
 				m_textField.setPosition(x - m_textField.getLocalBounds().width / 2, y);

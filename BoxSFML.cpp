@@ -1,12 +1,12 @@
 
-#include "Sims\RaceCar\Car.h"
-#include "Sims\RaceCar\Worm.h"
-#include "Sims\RaceCar\Biped.h"
-#include "Sims\RaceCar\TetraPod.h"
-#include "Sims\RaceCar\RaceSimulation.h"
-#include "Sims\RaceCar\SwarmSimulation.h"
-#include "Sims\RaceCar\TopDownRaceSimulation.h"
-#include "Sims\RaceCar\PoleBalanceSimulation.h"
+#include "Sims\Phenotypes\Car.h"
+#include "Sims\Phenotypes\Worm.h"
+#include "Sims\Phenotypes\Biped.h"
+#include "Sims\Phenotypes\TetraPod.h"
+#include "Sims\RaceSimulation.h"
+#include "Sims\SwarmSimulation.h"
+#include "Sims\TopDownRaceSimulation.h"
+#include "Sims\PoleBalanceSimulation.h"
 #include "sGraphics\sSimulationWindow.h"
 
 
@@ -135,7 +135,7 @@ void runWormSimulation()
 
 void runCarSimulation()
 {
-	sRandom::seed(128955);
+	sRandom::seed(128755);
 
 
 	RaceSimulation<Car> simulation;
@@ -152,8 +152,8 @@ void runCarSimulation()
 	simulation.breadingPoolFraction = 1.f;
 	simulation.population.setWinnersPerPrelim(5);
 
-	simulation.maxRoughness = 5;
-	simulation.minRoughness = 5;
+	simulation.maxRoughness = 500;
+	simulation.minRoughness = 0;
 	simulation.randomizeEnvironment = true;
 	
 	simulation.perlinFrequency = 4;
@@ -175,8 +175,9 @@ void runTopDownRace()
 
 	TopDownRaceSimulation simulation;
 	sSimulationWindow window;
+	simulation.populationSize = 30;
 	simulation.mutationRate = 0.005;
-	simulation.elites = 0;
+	simulation.elites = 1;
 
 	window.setSimulation(&simulation);
 	window.start();
@@ -200,10 +201,10 @@ void runPoleBalancing()
 int main()
 {
 	//runPoleBalancing();
-	runTopDownRace();
+	//runTopDownRace();
 	//runBipedSimulation();
 	//runSwarmSimulation();
-	runWormSimulation();
+	//runWormSimulation();
 	runCarSimulation();
 	
 	return 0;

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,13 +19,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -50,16 +50,19 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>SFML_STATIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Box2D_v2.3.0\Box2D;C:\SFML-2.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\sources\Box2D\Box2D;C:\sources\SFML-2.4.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\SFML-2.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>C:\Box2D_v2.3.0\Box2D\Build\vs2012\bin\Debug\Box2D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\sources\SFML-2.4.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>C:\sources\Box2D\Box2D\Build\vs2015\bin\x32\Debug\Box2D.lib;sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-network-d.lib;sfml-audio-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ProjectReference>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -68,18 +71,22 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>SFML_STATIC;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Box2D_v2.3.0\Box2D;C:\SFML-2.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\sources\Box2D\Box2D;C:\sources\SFML-2.4.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>C:\Box2D_v2.3.0\Box2D\Build\vs2012\bin\Release\Box2D.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\SFML-2.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>C:\sources\Box2D\Box2D\Build\vs2015\bin\x32\Release\Box2D.lib;sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-network.lib;sfml-audio.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\sources\SFML-2.4.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <ProjectReference>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -96,22 +103,22 @@
     <ClInclude Include="sGraphics\sSimulationDisplay.h" />
     <ClInclude Include="sGraphics\sSimulationWindow.h" />
     <ClInclude Include="sGraphics\sText.h" />
-    <ClInclude Include="Sims\RaceCar\Biped.h" />
-    <ClInclude Include="Sims\RaceCar\Car.h" />
+    <ClInclude Include="Sims\Phenotypes\Biped.h" />
+    <ClInclude Include="Sims\Phenotypes\Car.h" />
     <ClInclude Include="sGraphics\sFitnessGraph.h" />
     <ClInclude Include="sGraphics\sGeneGraph.h" />
-    <ClInclude Include="Sims\RaceCar\CircleBalance.h" />
-    <ClInclude Include="Sims\RaceCar\PoleBalanceSimulation.h" />
-    <ClInclude Include="Sims\RaceCar\PoleCart.h" />
-    <ClInclude Include="Sims\RaceCar\RaceSimulation.h" />
-    <ClInclude Include="Sims\RaceCar\RaceTrack.h" />
-    <ClInclude Include="Sims\RaceCar\Shooter.h" />
-    <ClInclude Include="Sims\RaceCar\SwarmSimulation.h" />
-    <ClInclude Include="Sims\RaceCar\TetraPod.h" />
-    <ClInclude Include="Sims\RaceCar\TopDownCar.h" />
-    <ClInclude Include="Sims\RaceCar\TopDownRaceSimulation.h" />
-    <ClInclude Include="Sims\RaceCar\Worm.h" />
-    <ClInclude Include="Sims\RaceCar\WormSegment.h" />
+    <ClInclude Include="Sims\Phenotypes\CircleBalance.h" />
+    <ClInclude Include="Sims\PoleBalanceSimulation.h" />
+    <ClInclude Include="Sims\Phenotypes\PoleCart.h" />
+    <ClInclude Include="Sims\RaceSimulation.h" />
+    <ClInclude Include="Sims\Environments\RaceTrack.h" />
+    <ClInclude Include="Sims\Shooter.h" />
+    <ClInclude Include="Sims\SwarmSimulation.h" />
+    <ClInclude Include="Sims\Phenotypes\TetraPod.h" />
+    <ClInclude Include="Sims\Phenotypes\TopDownCar.h" />
+    <ClInclude Include="Sims\TopDownRaceSimulation.h" />
+    <ClInclude Include="Sims\Phenotypes\Worm.h" />
+    <ClInclude Include="Sims\Phenotypes\WormSegment.h" />
     <ClInclude Include="sNeuralNet\sNeuralNetAnalyser.h" />
     <ClInclude Include="sNeuralNet\sNeuralNet.h" />
     <ClInclude Include="sPhysics\sChain.h" />
