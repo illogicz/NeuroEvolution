@@ -1,6 +1,8 @@
 #pragma once
 #include <sfml.h>
 #include <string>
+#include "../resource.h"
+
 using std::string;
 
 class sText
@@ -10,11 +12,21 @@ public:
 
 	static void loadFont(string fileName)
 	{
+		HRSRC fontResource = ::FindResource(NULL, MAKEINTRESOURCE(IDR_FONT1), RT_FONT);
+		unsigned int fontSize = ::SizeofResource(NULL, fontResource);
+		HGLOBAL fontData = ::LoadResource(NULL, fontResource);
+		void* fontBinaryData = ::LockResource(fontData);
 
-		if (!m_font.loadFromFile("consola.ttf")){
+		if (!m_font.loadFromMemory(fontBinaryData, fontSize)){
 			printf("error loading font \n");
 			return;
 		}
+
+		//if (!m_font.loadFromFile("consola.ttf")){
+		//	printf("error loading font \n");
+		//	return;
+		//}
+
 		m_textField.setFont(m_font);
 		m_fontLoaded = true;
 	}

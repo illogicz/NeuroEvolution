@@ -180,6 +180,9 @@
     <ClInclude Include="sGraphics\sNeuralNetDisplay.h">
       <Filter>Header Files\sGraphics</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sPhysics\sJoint.cpp">
@@ -213,5 +216,10 @@
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include=".gitattributes" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="NeuroEvolution.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

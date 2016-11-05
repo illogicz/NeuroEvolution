@@ -9,7 +9,6 @@
 #include "Sims\PoleBalanceSimulation.h"
 #include "sGraphics\sSimulationWindow.h"
 
-
 void runBipedSimulation()
 {
 
@@ -200,6 +199,13 @@ void runPoleBalancing()
 
 int main()
 {
+
+	HRSRC myResource = ::FindResource(NULL, MAKEINTRESOURCE(IDR_FONT1), RT_FONT);
+	unsigned int myResourceSize = ::SizeofResource(NULL, myResource);
+	HGLOBAL myResourceData = ::LoadResource(NULL, myResource);
+	void* pMyBinaryData = ::LockResource(myResourceData);
+
+
 	//runPoleBalancing();
 	//runTopDownRace();
 	//runBipedSimulation();
