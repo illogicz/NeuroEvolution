@@ -86,7 +86,7 @@ public:
 
 private:
 
-	void allocate(sf::VertexArray &va, int i, int n);
+	void allocate(sf::VertexArray &va, size_t i, size_t n);
 
 	sf::Vector2f view_center;
 	sf::Vector2f view_size;
@@ -94,8 +94,8 @@ private:
 	sf::VertexArray triangles;
 	sf::VertexArray lines;
 	b2AABB view_aabb;
-	int triangles_index;
-	int lines_index;
+	size_t triangles_index;
+	size_t lines_index;
 	uint32 m_drawFlags;
 
 	class AABBQueryCallback : public b2QueryCallback

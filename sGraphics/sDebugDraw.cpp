@@ -84,7 +84,7 @@ void sDebugDraw::DrawJoint(b2Joint* joint)
 
 
 
-	sf::Color color(127, 204, 204, sj->getAlpha() * 255);
+	sf::Color color(127, 204, 204, sf::Uint8(sj->getAlpha() * 255.f));
 	b2WheelJoint *wj;
 	b2Vec2 la;
 
@@ -142,10 +142,10 @@ void sDebugDraw::DrawGrid(const b2AABB &aabb)
 		endy -= starty % 10;
 	}
 	for(int x = startx; x <= endx; x += incr){
-		addLine(b2Vec2(x, aabb.lowerBound.y), b2Vec2(x, aabb.upperBound.y), x % 10 ? subColor : mainColor);
+		addLine(b2Vec2((float)x, aabb.lowerBound.y), b2Vec2((float)x, aabb.upperBound.y), x % 10 ? subColor : mainColor);
 	}
 	for(int y = starty; y <= endy;  y += incr){
-		addLine(b2Vec2(aabb.lowerBound.x, y), b2Vec2(aabb.upperBound.x, y), y % 10 ? subColor : mainColor);
+		addLine(b2Vec2(aabb.lowerBound.x, (float)y), b2Vec2(aabb.upperBound.x, (float)y), y % 10 ? subColor : mainColor);
 	}
 }
 
@@ -166,7 +166,7 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 
 		//for (b2Body* b = m_bodyList; b; b = b->GetNext())
 		//{
-		for(int i = 0; i < aabb_callback.fixtures.size(); i++){
+		for(size_t i = 0; i < aabb_callback.fixtures.size(); i++){
 			b2Fixture* f = aabb_callback.fixtures[i];
 			b2Body *b = f->GetBody();
 			const b2Transform& xf = b->GetTransform();
@@ -175,13 +175,13 @@ void sDebugDraw::DrawDebugData(sWorld &world)
 
 			if(!sb->getDebugDrawEnabled())continue;
 			
-			float a = sb->getAlpha() * 255;
+			sf::Uint8 a = sf::Uint8(sb->getAlpha() * 255);
 			if(a == 0) continue;
 
 			b2Color cc = sb->getCustomColor();
 			if(cc.b || cc.r || cc.g){
 
-				DrawShape(f, xf, sf::Color(cc.r * 255, cc.g * 255, cc.b * 255, a));
+				DrawShape(f, xf, sf::Color(sf::Uint8(cc.r * 255), sf::Uint8(cc.g * 255), sf::Uint8(cc.b * 255), a));
 
 			} else {
 
@@ -296,7 +296,7 @@ void sDebugDraw::draw(sf::RenderTarget &target)
 
 
 
-void sDebugDraw::allocate(sf::VertexArray &va, int i, int n)
+void sDebugDraw::allocate(sf::VertexArray &va, size_t i, size_t n)
 {
 	if(i + n > va.getVertexCount()){
 		va.resize(i + n);
@@ -346,8 +346,8 @@ void sDebugDraw::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, sf::Colo
 
 void sDebugDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, sf::Color& color)
 {
-	float a = color.a;
-	color.a *= 0.4;
+	sf::Uint8 a = color.a;
+	color.a *= sf::Uint8(color.a * 0.4);
 
 	allocate(triangles, triangles_index, (vertexCount-2)*3);
 	for(int i=1; i < vertexCount-1; i++){
@@ -387,7 +387,7 @@ void sDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2V
 
 
 	sf::Color fillColor = color;
-	fillColor.a *= 0.4;
+	fillColor.a *= sf::Uint8(fillColor.a * 0.4);
 	b2Vec2 p1 = center + b2Vec2(0,radius);
 	for(int i = 0; i < 20; i++){
 		b2Vec2 p2 = center + b2Mul(b2Rot(b2_pi * 2 * float(i+1) / 20), b2Vec2(0,radius));

@@ -129,9 +129,6 @@
     <ClInclude Include="sUtils\sMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sGraphics\sNeuralNetDisplay.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sGraphics\sText.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -180,11 +177,11 @@
     <ClInclude Include="Sims\SwarmSimulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="sGraphics\sNeuralNetDisplay.h">
+      <Filter>Header Files\sGraphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BoxSFML.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="sPhysics\sJoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -203,12 +200,15 @@
     <ClCompile Include="sPhysics\sContainer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NeuroEvolution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Font Include="consolaz.ttf" />
-    <Font Include="consolai.ttf" />
-    <Font Include="consola.ttf" />
-    <Font Include="consolab.ttf" />
+    <Font Include="Fonts\consolaz.ttf" />
+    <Font Include="Fonts\consola.ttf" />
+    <Font Include="Fonts\consolab.ttf" />
+    <Font Include="Fonts\consolai.ttf" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
