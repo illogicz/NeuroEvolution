@@ -7,15 +7,15 @@
 class sSwarmFitness : public sFitnessFunction
 {
 public: 
-	 b2Vec2 target;
+	 sBody* target;
 	 b2Vec2 deathTarget;
 	 float32 distance;
 	 float operator()(sPhenotype *phenotype)
 	{
 		float distance_traveled = phenotype->getPosition().Length();
-		float distance_target = (phenotype->getPosition() - target).Length();
-		float distance_death = (phenotype->getPosition() - deathTarget).Length();
-		return distance - distance_target + distance_traveled * 0.5;
+		float distance_target = (phenotype->getPosition() - target->getPosition()).Length();
+		//float distance_death = (phenotype->getPosition() - deathTarget).Length();
+		return distance - distance_target + distance_traveled * 0.5f;
 		//return distance_death - distance_target;
 	}
 };
@@ -41,9 +41,13 @@ public:
 
 		targetDistance = 30;
 
+		b2Filter targetFilter;
+		targetFilter.categoryBits = 0x0;
+
 		target.setIsSensor(true);
 		target.setRadius(1);
 		target.setLinearDamping(3);
+		target.setFilter(targetFilter);
 		worlds[0].add(&target);
 
 		deathTarget.setIsSensor(true);
@@ -72,23 +76,23 @@ protected:
 	void initPhenotypes()
 	{
 
-
 		for(int i = 0; i < populationSize; i++){
 			Worm *worm = new Worm;
 
 			worm->bodySense = true;
 			worm->directionSense = true;
+			worm->distanceSense = true;
+			worm->touchSense = true;
+			worm->dieOnTouch = true;
 			worm->fitnessFunction = &fitnessFunction;
 			worm->progressTimeout = 3000;
 			worm->progressAmount = 0.03f;
-			//worm->maxNeuronBias = 0;
-			//worm->maxSynapseWeight = 3;
-			worm->muscleSpeed = 0.1;
-			worm->muscleTorque = 1;
-			worm->lateralDamping = 0.8;
+			worm->muscleSpeed = 0.1f;
+			worm->muscleTorque = 10.0f;
+			worm->lateralDamping = 0.1f;
 			worm->directionTargets.resize(1);
-			//worm->additionNeuralInputs.resize(1);
 			worm->killOnLackOffProgress = true;
+			worm->directionTargets[0] = &target;
 
 			addPhenotype(worm);
 		}
@@ -100,6 +104,7 @@ protected:
 	// In this case it's when all phenotypes are no longer active/alive
 	bool isFinished()
 	{
+		if (simFrame > 20000) return true;
 
 		if(worlds[0].getBodiesAt(deathTarget.getPosition()).size() > 1){
 			for(int i = 0; i < populationSize; i++){
@@ -110,17 +115,9 @@ protected:
 			return true;
 		}
 
+		fitnessFunction.target = &target;
 
-
-		fitnessFunction.target = target.getPosition();
-		for(int i = 0; i < population.size(); i++){
-			((Worm*)population[i])->directionTargets[0] = target.getPosition();
-			//((Worm*)population[i])->directionTargets[1] = deathTarget.getPosition();
-		}
-
-
-
-		for(int i = 0; i < population.size(); i++){
+		for(size_t i = 0; i < population.size(); i++){
 			if(population[i]->alive) return false;
 		}
 
@@ -139,7 +136,7 @@ protected:
 		p = b2Mul(a, p);
 		p.y *= 0.75;
 		target.setPosition(p);
-		fitnessFunction.target = p;
+		fitnessFunction.target = &target;
 
 		/*
 		da = population.getGenerationCount() / 10.f + 0.7f;
@@ -153,10 +150,10 @@ protected:
 		fitnessFunction.distance = targetDistance;
 
 
-		for(int i = 0; i < populationSize; i++){
-			((Worm*)population[i])->directionTargets[0] = target.getPosition();
-			//((Worm*)population[i])->directionTargets[1] = deathTarget.getPosition();
-		}
+		//for(int i = 0; i < populationSize; i++){
+		//	((Worm*)population[i])->directionTargets[0] = target.getPosition();
+		//	//((Worm*)population[i])->directionTargets[1] = deathTarget.getPosition();
+		//}
 
 	}
 

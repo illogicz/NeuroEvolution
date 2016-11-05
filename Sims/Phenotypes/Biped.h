@@ -13,8 +13,8 @@ public:
 
 	Biped()
 	{
-		jointTorque = 3.0;
-		jointSpeed = 0.1;
+		jointTorque = 3.0f;
+		jointSpeed = 0.1f;
 		progressTimeout = 600;
 		footSensors = true;
 		immortal = false;
@@ -73,72 +73,72 @@ protected:
 		b2Filter filter;
 		filter.categoryBits = 0x02;
 		filter.maskBits = 0x01;
-		for(int i=0; i < m_bodies.size(); i++){
+		for(size_t i = 0; i < m_bodies.size(); i++){
 			m_bodies[i]->setFilter(filter);
 			m_bodies[i]->setRestitution(0);
 			m_bodies[i]->setFriction(1);
 
 		}
-		for(int i=0; i < m_joints.size(); i++){
+		for(size_t i = 0; i < m_joints.size(); i++){
 			m_joints[i]->setEnableMotor(true);
 			m_joints[i]->setMaxMotorTorque(jointTorque);
 		}
 		// Filters out all collisions with parts and other cars
 
 
-		leftFoot.addVertex(-0.3, -0.2);
-		leftFoot.addVertex(-0.3, -0.05);
-		leftFoot.addVertex(0.3, -0.05);
-		leftFoot.addVertex(0.3, -0.1);
-		leftFoot.addVertex(0.2, -0.2);
+		leftFoot.addVertex(-0.3f, -0.2f);
+		leftFoot.addVertex(-0.3f, -0.05f);
+		leftFoot.addVertex(0.3f, -0.05f);
+		leftFoot.addVertex(0.3f, -0.1f);
+		leftFoot.addVertex(0.2f, -0.2f);
 		rightFoot.copy(leftFoot);
 
-		leftLowerLeg.setPosition(0,-0.5);
-		leftLowerLeg.addVertex(-0.07, 0.35);
-		leftLowerLeg.addVertex(0.07, 0.35);
-		leftLowerLeg.addVertex(0.12, -0.3);
-		leftLowerLeg.addVertex(-0.12, -0.3);
+		leftLowerLeg.setPosition(0.f, -0.5f);
+		leftLowerLeg.addVertex(-0.07f, 0.35f);
+		leftLowerLeg.addVertex(0.07f, 0.35f);
+		leftLowerLeg.addVertex(0.12f, -0.3f);
+		leftLowerLeg.addVertex(-0.12f, -0.3f);
 		rightLowerLeg.copy(leftLowerLeg);
 
 		leftAnkle.setBodies(&leftFoot, &leftLowerLeg);
-		leftAnkle.setAnchor(0,-0.15);
+		leftAnkle.setAnchor(0.f, -0.15f);
 		leftAnkle.setEnableLimit(true);
-		leftAnkle.setLimits(-1,1);
-		leftAnkle.setMaxMotorTorque(jointTorque * 0.5);
+		leftAnkle.setLimits(-1.f, 1.f);
+		leftAnkle.setMaxMotorTorque(jointTorque * 0.5f);
 
 		rightAnkle.copy(leftAnkle);
 		rightAnkle.setBodies(&rightFoot, &rightLowerLeg);
 
-		leftUpperLeg.setPosition(0,-1.1);
-		leftUpperLeg.addVertex(-0.12, 0.4);
-		leftUpperLeg.addVertex(0.12, 0.4);
-		leftUpperLeg.addVertex(0.14, -0.4);
-		leftUpperLeg.addVertex(-0.14, -0.4);
+		leftUpperLeg.setPosition(0.f, -1.1f);
+		leftUpperLeg.addVertex(-0.12f, 0.4f);
+		leftUpperLeg.addVertex(0.12f, 0.4f);
+		leftUpperLeg.addVertex(0.14f, -0.4f);
+		leftUpperLeg.addVertex(-0.14f, -0.4f);
 		rightUpperLeg.copy(leftUpperLeg);
 
 		leftKnee.setBodies(&leftUpperLeg, &leftLowerLeg);
-		leftKnee.setAnchor(0,-0.75);
+		leftKnee.setAnchor(0.f, -0.75f);
 		leftKnee.setEnableLimit(true);
-		leftKnee.setLimits(-0.0,2);
+		leftKnee.setLimits(-0.f, 2.f);
 
 		rightKnee.copy(leftKnee);
 		rightKnee.setBodies(&rightUpperLeg, &rightLowerLeg);
 
-		float torsoHeight = 0.3;
-		torso.setPosition(0,-2);
-		torso.addVertex(-0.14, 0.6);
-		torso.addVertex(0.14, 0.6);
-		torso.addVertex(0.175, -torsoHeight);
+		float torsoHeight = 0.3f;
+		torso.setPosition(0.f, -2.f);
+		torso.addVertex(-0.14f, 0.6f);
+		torso.addVertex(0.14f, 0.6f);
+		torso.addVertex(0.175f, -torsoHeight);
 
-		torso.addVertex(0.1, -torsoHeight - 0.2);
-		torso.addVertex(-0.1, -torsoHeight - 0.2);
+		torso.addVertex(0.1f, -torsoHeight - 0.2f);
+		torso.addVertex(-0.1f, -torsoHeight - 0.2f);
 
-		torso.addVertex(-0.175, -torsoHeight);
+		torso.addVertex(-0.175f, -torsoHeight);
 
 		leftHip.setBodies(&torso, &leftUpperLeg);
-		leftHip.setAnchor(0,-1.4);
+		leftHip.setAnchor(0.f, -1.4f);
 		leftHip.setEnableLimit(true);
-		leftHip.setLimits(-1.6,0.5);
+		leftHip.setLimits(-1.6f, 0.5f);
 
 		rightHip.copy(leftHip);
 		rightHip.setBodies(&torso, &rightUpperLeg);
@@ -219,7 +219,7 @@ protected:
 		applySavedState();
 
 
-		for(int i=0; i < m_joints.size(); i++){
+		for(size_t i = 0; i < m_joints.size(); i++){
 			m_joints[i]->setMotorSpeed(0);
 		}
 
@@ -265,13 +265,13 @@ protected:
 	void saveState()
 	{
 		m_initialStates.clear();
-		for(int i=0; i < m_bodies.size(); i++){
+		for(size_t i = 0; i < m_bodies.size(); i++){
 			m_initialStates.push_back(m_bodies[i]->getState());
 		}
 	}
 	void applySavedState()
 	{
-		for(int i=0; i < m_bodies.size(); i++){
+		for(size_t i = 0; i < m_bodies.size(); i++){
 			m_bodies[i]->setState(m_initialStates[i]);
 		}
 	}
@@ -306,7 +306,7 @@ protected:
 		neuralNet.setInput(index++, angle);
 
 		if(kinestetic){
-			for(int i = 0; i < m_joints.size(); i++){
+			for(size_t i = 0; i < m_joints.size(); i++){
 				//float a = m_joints[i]->getAngle();
 				//float mina = m_joints[i]->getLowerLimit();
 				//float maxa = m_joints[i]->getUpperLimit();
@@ -363,7 +363,7 @@ protected:
 
 		// OUTPUT
 
-		for(int i = 0; i < m_joints.size(); i++){
+		for(size_t i = 0; i < m_joints.size(); i++){
 			//float o = (neuralNet.getOutput(index++) + 1.f) * 0.5f;
 			float mina = m_joints[i]->getLowerLimit();
 			float maxa = m_joints[i]->getUpperLimit();

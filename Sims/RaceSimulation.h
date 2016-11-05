@@ -50,7 +50,7 @@ public:
 		perlinOctaves = 5;
 		perlinFrequency = 8;
 		groundFrequency = 2.f;
-		firstStepHeight = 0.1;
+		firstStepHeight = 0.1f;
 		stepIncrease = 0.05f;
 		groundRampup = 50;
 		ground.vertexSplitBaseWeight = 1.f;
@@ -81,12 +81,12 @@ public:
 	int populationSize;
 	bool randomizeEnvironment;
 
-	static enum GroundType	{ PerlinNoise, SinWaves, Steps };
+	enum GroundType	{ PerlinNoise, SinWaves, Steps };
 	GroundType groundType;
 	float minRoughness;
 	float maxRoughness;
 	float perlinFrequency;
-	float perlinOctaves;
+	int perlinOctaves;
 	float groundFrequency;
 	float groundSegmentSize;
 	float groundRampup;
@@ -110,7 +110,7 @@ protected:
 	// In this case it's when all phenotypes are no longer active/alive
 	bool isFinished()
 	{
-		for(int i = 0; i < population.size(); i++){
+		for(size_t i = 0; i < population.size(); i++){
 			if(population[i]->getPosition().x > worldWidth - worldOffset){
 				population[i]->die();
 				return true;
@@ -122,7 +122,7 @@ protected:
 
 
 
-		for(int i = 0; i < population.size(); i++){
+		for(size_t i = 0; i < population.size(); i++){
 			if(population[i]->alive) return false;
 		}
 		return true;
@@ -141,12 +141,12 @@ protected:
 			ground.resetShape();
 		}
 
-		Perlin perlin(perlinOctaves, perlinFrequency, 0.5, sRandom::getInt(0,100000));
+		Perlin perlin(perlinOctaves, perlinFrequency, 0.5f, sRandom::getInt(0, 100000));
 
 
-		randOffset1 = sRandom::getFloat(0,worldWidth);
-		randOffset2 = sRandom::getFloat(0,worldWidth);
-		randOffset3 = sRandom::getFloat(0,worldWidth);
+		randOffset1 = sRandom::getFloat(0, worldWidth);
+		randOffset2 = sRandom::getFloat(0, worldWidth);
+		randOffset3 = sRandom::getFloat(0, worldWidth);
 
 
 

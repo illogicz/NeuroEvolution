@@ -35,13 +35,13 @@ public:
 
 		//simulationTime = 100000;
 
-		breadingPoolFraction = 0.7;
-		selectionBias = 1.7;
+		breadingPoolFraction = 0.7f;
+		selectionBias = 1.7f;
 
 		collideWithOthers = true;
 		staticView = true;
-		renderScale = 3.3;
-		zoomScale = 2.4;
+		renderScale = 3.3f;
+		zoomScale = 2.4f;
 		populationSize = 40;
 
 	}
@@ -64,8 +64,8 @@ protected:
 	void initPhenotypes()
 	{
 
-		int w = ceil(sqrt(populationSize)) + 1;
-		int h = floor(float(populationSize) / w);
+		int w = (int)ceil(sqrt(populationSize)) + 1;
+		int h = (int)floor(float(populationSize) / w);
 
 		for(int i = 0; i < populationSize; i++){
 			TopDownCar *car = new TopDownCar;
@@ -86,7 +86,7 @@ protected:
 	bool isFinished()
 	{
 
-		for(int i = 0; i < population.size(); i++){
+		for(size_t i = 0; i < population.size(); i++){
 			if(population[i]->alive) return false;
 		}
 
@@ -100,7 +100,7 @@ protected:
 		
 		if(ground.maxOffset < 70 && population.prelimsComplete())ground.maxOffset += 0.5;
 		ground.generateTrack();
-		for(int i = 0; i < worlds.size(); i++){
+		for(size_t i = 0; i < worlds.size(); i++){
 			worlds[0].remove(&ground);
 			worlds[0].add(&ground);
 		}

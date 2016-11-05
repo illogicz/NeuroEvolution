@@ -13,17 +13,17 @@ class TopDownCar : public sPhenotype, public sContactListener
 public:
 	TopDownCar()
 	{
-		width = 1;
-		height = 2;
-		maxEngineForce = 330;
-		damping = 2;
-		grip = 0.5;
-		slideDamping = 0.3;
-		maxStearingAngle = 0.7;
+		width = 1.f;
+		height = 2.f;
+		maxEngineForce = 330.f;
+		damping = 2.f;
+		grip = 0.5f;
+		slideDamping = 0.3f;
+		maxStearingAngle = 0.7f;
 		visionResolution = 11;
 		visionFOV = b2_pi;
-		minRayLength = 1;
-		maxRayLength = 40;
+		minRayLength = 1.f;
+		maxRayLength = 40.f;
 		maxLifeTime = 1800;
 		reverseTrack = false;
 		collideWithOthers = true;
@@ -65,7 +65,7 @@ public:
 
 		frontLeftWheel.copy(chassis);
 
-		frontLeftWheel.setSize(0.3, 0.7);
+		frontLeftWheel.setSize(0.3f, 0.7f);
 		frontLeftWheel.setFilter(wheelFilter);
 		//frontRightWheel.setSize(0.3, 0.7);
 		//frontRightWheel.setFilter(wheelFilter);
@@ -80,22 +80,22 @@ public:
 		frontLeftJoint.setAnchor(frontLeftWheel.getPosition());
 		frontLeftJoint.setBodies(&chassis, &frontLeftWheel);
 		frontLeftJoint.setEnableLimit(true);
-		frontLeftJoint.setLimits(-0.6, 0.6);
+		frontLeftJoint.setLimits(-0.6f, 0.6f);
 
 		frontRightJoint.setAnchor(frontRightWheel.getPosition());
 		frontRightJoint.setBodies(&chassis, &frontRightWheel);
 		frontRightJoint.setEnableLimit(true);
-		frontRightJoint.setLimits(-0.6, 0.6);
+		frontRightJoint.setLimits(-0.6f, 0.6f);
 
 		rearLeftJoint.setAnchor(rearLeftWheel.getPosition());
 		rearLeftJoint.setBodies(&chassis, &rearLeftWheel);
 		rearLeftJoint.setEnableLimit(true);
-		rearLeftJoint.setLimits(0, 0);
+		rearLeftJoint.setLimits(0.f, 0.f);
 
 		rearRightJoint.setAnchor(rearRightWheel.getPosition());
 		rearRightJoint.setBodies(&chassis, &rearRightWheel);
 		rearRightJoint.setEnableLimit(true);
-		rearRightJoint.setLimits(0, 0);
+		rearRightJoint.setLimits(0.f, 0.f);
 
 
 	
@@ -176,9 +176,6 @@ public:
 
 	virtual void build(sWorld &world)
 	{
-
-
-
 		chassis.setType(DYNAMIC_BODY);
 		frontLeftWheel.setType(DYNAMIC_BODY);
 		frontRightWheel.setType(DYNAMIC_BODY);
@@ -187,10 +184,6 @@ public:
 
 		frontLeftJoint.setLimits(0, 0);
 		frontRightJoint.setLimits(0, 0);
-
-		
-		
-
 
 		deferDeath = false;
 		totalAccelerator = 0;
@@ -300,11 +293,11 @@ public:
 					float dv = b2Dot(dp, v);
 					float l = dp.Normalize();
 
-					float m = (dv / l) * 0.05;
+					float m = (dv / l) * 0.05f;
 					//result.fraction = result.fraction + (dv / l) * 0.5f;
-					result.fraction -= 0.1;
+					result.fraction -= 0.1f;
 					result.fraction *= 1 + m;
-					result.fraction += 0.1;
+					result.fraction += 0.1f;
 
 					if(result.fraction < 0)result.fraction = 0;
 					if(result.fraction > 1)result.fraction = 1;
@@ -326,8 +319,8 @@ public:
 			 }
 			 
 			 if(isFocus()){
-				 int c = 200 * (1.f - result.fraction) + 55;
-				 m_world->getDebugDraw()->addLine(p1,ip, sf::Color(255,255,255,c));
+				 float c = 200.f * (1.f - result.fraction) + 55.f;
+				 m_world->getDebugDraw()->addLine(p1,ip, sf::Color(255, 255, 255, (sf::Uint8)c));
 			 }
 			 neuralNet.setInput(input_index++, 1.f - result.fraction);
 		}
@@ -341,7 +334,7 @@ public:
 		if(left && !right) v = 1;
 		if(!left && right) v = -1;
 		if(v == 0){
-			neuralNet.interpolateInput(input_index++, 0, 0.1);
+			neuralNet.interpolateInput(input_index++, 0, 0.1f);
 		} else {
 			neuralNet.setInput(input_index++, v);
 		}
@@ -352,7 +345,7 @@ public:
 		if(rear && !front) v = 1;
 		if(!rear && front) v = -1;
 		if(v == 0){
-			neuralNet.interpolateInput(input_index++, 0, 0.1);
+			neuralNet.interpolateInput(input_index++, 0, 0.1f);
 		} else {
 			neuralNet.setInput(input_index++, v);
 		}
@@ -361,7 +354,7 @@ public:
 
 		// DIRECTION
 		b2Vec2 target;
-		float lookAhead = 0.1;
+		float lookAhead = 0.1f;
 		int n = 0;
 		while(true){
 			b2Vec2 p = track->getTrackPoint(chassisPos, reverseTrack ? -lookAhead : lookAhead);
@@ -371,7 +364,7 @@ public:
 				break;
 			}
 			target = p;
-			lookAhead += 0.05;
+			lookAhead += 0.05f;
 			n++;
 		}
 		b2Vec2 td = target - chassisPos;
@@ -423,7 +416,7 @@ public:
 			//if(fitnessModifier > 0.05){
 			//	fitnessModifier *= 0.999;
 			//}
-			fitnessScore -= 0.001;
+			fitnessScore -= 0.001f;
 			//if(fitnessModifier < 0.5f){
 			//	setCustomColor(b2Color(0,0,0));
 			//	return die();
@@ -540,7 +533,7 @@ private:
 		float r = position.Normalize();
 		position *= r + sRandom::getFloat(-7, 7);
 
-		b2Vec2 p2 = track->getTrackPoint(position, reverseTrack ? - 0.4 : 0.4);
+		b2Vec2 p2 = track->getTrackPoint(position, reverseTrack ? - 0.4f : 0.4f);
 		p2 -= position;
 		float a = atan2f(p2.y, p2.x) + b2_pi/2;
 
@@ -604,7 +597,7 @@ private:
 	{
 		float a = stearing * maxStearingAngle;
 		float c = frontLeftJoint.getUpperLimit();
-		float v = c + (a - c) * 0.05;
+		float v = c + (a - c) * 0.05f;
 		frontLeftJoint.setLimits(v,v);
 		frontRightJoint.setLimits(v,v);
 	}

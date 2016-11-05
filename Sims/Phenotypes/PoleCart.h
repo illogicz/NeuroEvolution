@@ -48,7 +48,7 @@ public:
 		world.addContactListener(this, &pole2);
 
 
-		genome.setUseMutationRateGene(true, 0,0.007);
+		genome.setUseMutationRateGene(true, 0, 0.007f);
 
 		neuralNet.setLayerCount(3);
 		neuralNet.setNeuronLayer(0,velocityInfo ? 7 : 3, true, true);
@@ -99,7 +99,7 @@ public:
 		//pole3.setPosition(position.x + 0.5, position.y - 1 - pole3Height - pole1Height * 2);
 		//joint3.setAnchor(position.x + 0.5, position.y - 1  - pole1Height * 2);
 
-		float unbalance = 0.1;
+		float unbalance = 0.1f;
 
 		float a1 = sRandom::getFloat(-unbalance, unbalance);
 		float a2 = sRandom::getFloat(-unbalance, unbalance);
@@ -162,8 +162,8 @@ public:
 		neuralNet.setInput(index++,x);
 		if(velocityInfo){
 			//neuralNet.setInput(index++,cart.getLinearVelocity().x * 0.05);
-			neuralNet.setInput(index++,pole1.getAngularVelocity() * 0.1);
-			neuralNet.setInput(index++,pole2.getAngularVelocity() * 0.1);
+			neuralNet.setInput(index++, pole1.getAngularVelocity() * 0.1f);
+			neuralNet.setInput(index++, pole2.getAngularVelocity() * 0.1f);
 
 		}
 

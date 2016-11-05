@@ -204,4 +204,14 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="consolaz.ttf" />
+    <Font Include="consolai.ttf" />
+    <Font Include="consola.ttf" />
+    <Font Include="consolab.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitignore" />
+    <None Include=".gitattributes" />
+  </ItemGroup>
 </Project>

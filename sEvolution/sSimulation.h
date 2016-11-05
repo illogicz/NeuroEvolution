@@ -16,14 +16,14 @@ public:
 		worlds.resize(1);
 		mutationRate = 0.01f;
 		selectionBias = 1.5f;
-		breadingPoolFraction = 1.0;
-		renderScale = 25;
-		zoomScale = 1;
+		breadingPoolFraction = 1.0f;
+		renderScale = 25.f;
+		zoomScale = 1.f;
 		speedUp = false;
 		staticView = false;
 		phenomesPerWorld = 0;
-		gravity.Set(0,9.8);
-		staticViewPosition.Set(0,0);
+		gravity.Set(0.f, 9.8f);
+		staticViewPosition.Set(0.f, 0.f);
 	}
 
 	sPopulation population;
@@ -53,7 +53,7 @@ protected:
 		buildEnvironment();
 		initPhenotypes();
 		resetSimulation();
-		for(int i = 0; i < worlds.size(); i++){
+		for(size_t i = 0; i < worlds.size(); i++){
 			worlds[i].setGravity(gravity);
 		}
 		population.setElites(elites);
@@ -68,7 +68,7 @@ protected:
 	virtual void resetSimulation()
 	{
 		buildEnvironment();
-		for(unsigned int i = 0; i < population.size(); i++){
+		for(size_t i = 0; i < population.size(); i++){
 			int wi = phenomesPerWorld ? i / phenomesPerWorld : 0;
 			worlds[wi].remove(population[i]);
 			worlds[wi].add(population[i]);
@@ -88,7 +88,7 @@ protected:
 			newGen = true;
 		}
 
-		for(int i = 0; i < worlds.size(); i++){
+		for(size_t i = 0; i < worlds.size(); i++){
 			worlds[i].step();
 		}
 
@@ -103,7 +103,7 @@ protected:
 		sPhenotype *lastLeader = leader;
 		leader = population[0];
 		//leader->setIsLeader(false);
-		for(int i = 0; i < population.size(); i++){
+		for(size_t i = 0; i < population.size(); i++){
 			population[i]->setRank(i);
 		}
 		int i = population.size();
@@ -124,7 +124,7 @@ protected:
 	{
 		if(phenomesPerWorld){
 
-			int i = population.size();
+			size_t i = population.size();
 			if(i / phenomesPerWorld <= worlds.size()){
 				worlds.resize(worlds.size() + 1);
 			}

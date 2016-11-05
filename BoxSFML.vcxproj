@@ -153,6 +153,16 @@
     <ClCompile Include="sPhysics\sWorld.cpp" />
     <ClCompile Include="sUtils\perlin.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="consola.ttf" />
+    <Font Include="consolab.ttf" />
+    <Font Include="consolai.ttf" />
+    <Font Include="consolaz.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitattributes" />
+    <None Include=".gitignore" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

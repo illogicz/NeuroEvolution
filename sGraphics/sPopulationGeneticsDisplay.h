@@ -37,7 +37,7 @@ public:
 	void plot()
 	{
 
-		for(int i = 0; i < m_population->size(); i++){
+		for(size_t i = 0; i < m_population->size(); i++){
 			map<string, sGene>& genes = (*m_population)[i]->genome.getGenes();
 			int x = 0;
 			for(map<string, sGene>::iterator j = genes.begin(); j != genes.end(); ++j){

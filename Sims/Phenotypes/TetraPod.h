@@ -14,8 +14,8 @@ public:
 
 	TetraPod()
 	{
-		jointTorque = 80.0;
-		jointSpeed = 0.07;
+		jointTorque = 80.0f;
+		jointSpeed = 0.07f;
 		progressTimeout = 1000;
 		footSensors = false;
 		immortal = false;
@@ -53,13 +53,13 @@ protected:
 
 		world.addContactListener(this, &torso);
 
-		float s = 2;
-		float torsoHeight = 0.3;
-		torso.setPosition(1 * s,-1.45 * s);
-		torso.addVertex(-1 * s, -0.2 * s);
-		torso.addVertex(-1 * s,  0.2 * s);
-		torso.addVertex( 1 * s,  0.2 * s);
-		torso.addVertex( 1 * s, -0.2 * s);
+		float s = 2.f;
+		float torsoHeight = 0.3f;
+		torso.setPosition(1 * s,-1.45f * s);
+		torso.addVertex(-1 * s, -0.2f * s);
+		torso.addVertex(-1 * s,  0.2f * s);
+		torso.addVertex( 1 * s,  0.2f * s);
+		torso.addVertex( 1 * s, -0.2f * s);
 
 		createLeg(world, 0, s);
 		createLeg(world, 0, s);
@@ -72,12 +72,12 @@ protected:
 		b2Filter filter;
 		filter.categoryBits = 0x02;
 		filter.maskBits = 0x01;
-		for(int i=0; i < m_bodies.size(); i++){
+		for(size_t i = 0; i < m_bodies.size(); i++){
 			m_bodies[i]->setFilter(filter);
 			m_bodies[i]->setRestitution(0);
 			m_bodies[i]->setFriction(1);
 		}
-		for(int i=0; i < m_joints.size(); i++){
+		for(size_t i = 0; i < m_joints.size(); i++){
 			m_joints[i]->setEnableMotor(true);
 			m_joints[i]->setMaxMotorTorque(jointTorque);
 		}
@@ -145,39 +145,39 @@ protected:
 		sRevoluteJoint *leftHip = add(new sRevoluteJoint);
 		sRevoluteJoint *leftKnee = add(new sRevoluteJoint);
 
-		leftLowerLeg->setPosition(x * s,-0.5 * s);
-		leftLowerLeg->addVertex(-0.07 * s, 0.3 * s);
-		leftLowerLeg->addVertex(-0.03 * s, 0.35 * s);
-		leftLowerLeg->addVertex(0.03 * s, 0.35 * s);
-		leftLowerLeg->addVertex(0.07 * s, 0.3 * s);
-		leftLowerLeg->addVertex(0.12 * s, -0.3 * s);
-		leftLowerLeg->addVertex(-0.12 * s, -0.3 * s);
+		leftLowerLeg->setPosition(x * s,-0.5f * s);
+		leftLowerLeg->addVertex(-0.07f * s, 0.3f * s);
+		leftLowerLeg->addVertex(-0.03f * s, 0.35f * s);
+		leftLowerLeg->addVertex(0.03f * s, 0.35f * s);
+		leftLowerLeg->addVertex(0.07f * s, 0.3f * s);
+		leftLowerLeg->addVertex(0.12f * s, -0.3f * s);
+		leftLowerLeg->addVertex(-0.12f * s, -0.3f * s);
 		world.addContactListener(this, leftLowerLeg);
 		m_contactSensors.push_back(leftLowerLeg);
 		m_contactStates.push_back(false);
 
-		leftUpperLeg->setPosition(x * s,-1.1 * s);
-		leftUpperLeg->addVertex(-0.12 * s, 0.4 * s);
-		leftUpperLeg->addVertex(0.12 * s, 0.4 * s);
-		leftUpperLeg->addVertex(0.14 * s, -0.4 * s);
-		leftUpperLeg->addVertex(-0.14 * s, -0.4 * s);
+		leftUpperLeg->setPosition(x * s,-1.1f * s);
+		leftUpperLeg->addVertex(-0.12f * s, 0.4f * s);
+		leftUpperLeg->addVertex(0.12f * s, 0.4f * s);
+		leftUpperLeg->addVertex(0.14f * s, -0.4f * s);
+		leftUpperLeg->addVertex(-0.14f * s, -0.4f * s);
 
 		leftKnee->setBodies(leftUpperLeg, leftLowerLeg);
-		leftKnee->setAnchor(x * s,-0.75 * s);
+		leftKnee->setAnchor(x * s,-0.75f * s);
 		leftKnee->setEnableLimit(true);
 		if(!rev){
-			leftKnee->setLimits(-1,1);
+			leftKnee->setLimits(-1.f, 1.f);
 		} else {
-			leftKnee->setLimits(-1.5,0);
+			leftKnee->setLimits(-1.5f, 0.f);
 		}
 
 		leftHip->setBodies(&torso, leftUpperLeg);
-		leftHip->setAnchor(x * s,-1.4 * s);
+		leftHip->setAnchor(x * s,-1.4f * s);
 		leftHip->setEnableLimit(true);
 		if(!rev){
-			leftHip->setLimits(-1,1);
+			leftHip->setLimits(-1.f, 1.f);
 		} else {
-			leftHip->setLimits(0,1.5);
+			leftHip->setLimits(0.f, 1.5f);
 		}
 
 		// Rotate from hip
@@ -243,7 +243,7 @@ protected:
 		//---------------------------------------------------------------------------------
 
 		// Make bodies dynamic again
-		for(int i=0; i < m_bodies.size(); i++){
+		for(size_t i = 0; i < m_bodies.size(); i++){
 			m_bodies[i]->setType(DYNAMIC_BODY);
 		}
 
@@ -307,13 +307,13 @@ protected:
 	void saveState()
 	{
 		m_initialStates.clear();
-		for(int i=0; i < m_bodies.size(); i++){
+		for(size_t i = 0; i < m_bodies.size(); i++){
 			m_initialStates.push_back(m_bodies[i]->getState());
 		}
 	}
 	void applySavedState()
 	{
-		for(int i=0; i < m_bodies.size(); i++){
+		for(size_t i = 0; i < m_bodies.size(); i++){
 			m_bodies[i]->setState(m_initialStates[i]);
 		}
 	}
@@ -331,7 +331,7 @@ protected:
 			}
 		}
 
-		for(int i = 0; i < m_joints.size(); i++){
+		for(size_t i = 0; i < m_joints.size(); i++){
 			energyLeft -= min(0.1f,abs(m_joints[i]->getMotorTorque()));
 		}
 		//if(isLeader())printf("%f \n", energyLeft);
@@ -357,7 +357,7 @@ protected:
 		neuralNet.setInput(index++, angle * 3.f);
 
 		if(kinestetic){
-			for(int i = 0; i < m_joints.size(); i++){
+			for(size_t i = 0; i < m_joints.size(); i++){
 				//float a = m_joints[i]->getAngle();
 				//float mina = m_joints[i]->getLowerLimit();
 				//float maxa = m_joints[i]->getUpperLimit();
@@ -370,7 +370,7 @@ protected:
 			}
 		}
 		if(footSensors){
-			for(int i = 0; i < m_contactStates.size(); i++){
+			for(size_t i = 0; i < m_contactStates.size(); i++){
 				float v = neuralNet.getInput(index);
 				float g = m_contactStates[i] ? 1.f : -1.f;
 				neuralNet.setInput(index++, v + (g - v) * 0.1f);
@@ -411,7 +411,7 @@ protected:
 
 		// OUTPUT
 
-		for(int i = 0; i < m_joints.size(); i++){
+		for(size_t i = 0; i < m_joints.size(); i++){
 			//float o = (neuralNet.getOutput(index++) + 1.f) * 0.5f;
 			float mina = m_joints[i]->getLowerLimit();
 			float maxa = m_joints[i]->getUpperLimit();
@@ -482,7 +482,7 @@ protected:
 	{
 		setCustomColor(b2Color(0,0,0));
 
-		for(int i=0; i < m_bodies.size(); i++){
+		for(size_t i = 0; i < m_bodies.size(); i++){
 			m_bodies[i]->setType(STATIC_BODY);
 		}
 
@@ -548,7 +548,7 @@ protected:
 			//deferDeath = true;
 			return;
 		}
-		for(int i = 0; i < m_contactSensors.size(); i++){
+		for(size_t i = 0; i < m_contactSensors.size(); i++){
 			if(contactPair.contains(m_contactSensors[i])){
 				m_contactStates[i] = true;
 				break;
@@ -558,7 +558,7 @@ protected:
 
 	void onEndContact(sContactPair contactPair)
 	{
-		for(int i = 0; i < m_contactSensors.size(); i++){
+		for(size_t i = 0; i < m_contactSensors.size(); i++){
 			if(contactPair.contains(m_contactSensors[i])){
 				m_contactStates[i] = false;
 				break;

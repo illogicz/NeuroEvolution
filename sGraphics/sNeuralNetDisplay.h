@@ -53,13 +53,13 @@ public:
 		target->draw(backGroundRect, RenderStates(getTransform()));
 	
 		vector<sSynapse*> *synapses = &neuralNet->getSynapses();
-		for(int i = 0; i < synapses->size(); i++){
+		for(size_t i = 0; i < synapses->size(); i++){
 			drawSynapse((*synapses)[i]);
 		}
 		target->draw(vertices, RenderStates(getTransform()));
 
 		vector<sNeuron*> *neurons = &neuralNet->getNeurons();
-		for(int i = 0; i < neurons->size(); i++){
+		for(size_t i = 0; i < neurons->size(); i++){
 			drawNeuron((*neurons)[i]);
 		}
 
@@ -79,7 +79,7 @@ public:
 		
 
 		float w = synapse->weight* synapse->input->activation;
-		int a = abs(w / neuralNet->getMaxWeight()) * 0xFF;
+		int a = (int)(abs(w / neuralNet->getMaxWeight()) * 255.f);
 		int c = w < 0 ? 0x00 : 0xFF;
 		sf::Color color(c, c, c, a);
 
@@ -129,7 +129,7 @@ public:
 
 		neuronCircle.setPosition(p.x - neuronRadius, p.y - neuronRadius);
 
-		int oc = ((neuron->activation + 1.f) * 0.5f) * 0xFF;
+		int oc = (int)((neuron->activation + 1.f) * 0.5f * 255.f);
 		neuronCircle.setFillColor(Color(oc, oc, oc));
 
 		target->draw(neuronCircle, RenderStates(getTransform()));

@@ -22,7 +22,7 @@ public:
 	static void drawText(sf::RenderTarget &target, 
 		          const string &text, 
 		          float x, float y, 
-				  float size = 16, 
+				  unsigned int size = 16, 
 				  const sf::Color &color = sf::Color::White,
 				  bool center = false)
 	{

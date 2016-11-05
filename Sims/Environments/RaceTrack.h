@@ -18,12 +18,12 @@ public:
 		numSegments = 100;
 		
 		innerWallFixture.shape = &innerWallShape;
-		innerWallFixture.friction = 1;
-		innerWallFixture.restitution = 0.1;
+		innerWallFixture.friction = 1.f;
+		innerWallFixture.restitution = 0.1f;
 
 		outerWallFixture.shape = &outerWallShape;
-		outerWallFixture.friction = 1;
-		outerWallFixture.restitution = 0.1;
+		outerWallFixture.friction = 1.f;
+		outerWallFixture.restitution = 0.1f;
 
 		bodyDef.type = b2BodyType::b2_staticBody;
 

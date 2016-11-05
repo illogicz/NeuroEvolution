@@ -38,7 +38,7 @@ public:
 	{
 		max_y = 0;
 		float grandtotal = 0;
-		scale = n_buckets / 2;
+		scale = (float)(n_buckets / 2);
 		width = graphWidth;
 
 		for(int j = 0; j < num_samples; j++){
@@ -55,7 +55,7 @@ public:
 			total += neuralNet.getOutput(0);
 			grandtotal += total;
 
-			int bucket = (total * scale) + n_buckets / 2;
+			int bucket = (int)(total * scale) + n_buckets / 2;
 			if(bucket < 0)bucket = 0;
 			if(bucket >= n_buckets)bucket = n_buckets - 1;
 
@@ -86,7 +86,7 @@ public:
 		max_y = 0;
 		int layers = neuralNet.getLayerCount();
 		width = graphWidth * (layers - 1);
-		scale = n_buckets / 5;
+		scale = (float)(n_buckets / 5);
 
 		for(int i = 1; i < layers; i++){
 
@@ -113,7 +113,7 @@ public:
 				grandtotal += total;
 
 
-				int bucket = (total * scale) + n_buckets / 2;
+				int bucket = (int)(total * scale) + n_buckets / 2;
 				if(bucket < 0)bucket = 0;
 				if(bucket >= n_buckets)bucket = n_buckets - 1;
 
@@ -170,7 +170,7 @@ public:
 		addLine(x, 0, x, max_y, color);
 		x = n_buckets / 2 - w * scale;
 		addLine(x, 0, x, max_y, color);
-		addLine(n_buckets / 2, 0, n_buckets / 2, max_y, color);
+		addLine(n_buckets / 2.f, 0, n_buckets / 2.f, max_y, color);
 	}
 
 	void plotResult(sf::Color &color)

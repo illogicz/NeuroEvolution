@@ -176,7 +176,7 @@ void runTopDownRace()
 	TopDownRaceSimulation simulation;
 	sSimulationWindow window;
 	simulation.populationSize = 30;
-	simulation.mutationRate = 0.005;
+	simulation.mutationRate = 0.005f;
 	simulation.elites = 1;
 
 	window.setSimulation(&simulation);
@@ -190,7 +190,7 @@ void runPoleBalancing()
 
 	PoleBalanceSimulation simulation;
 	sSimulationWindow window;
-	simulation.mutationRate = 0.005;
+	simulation.mutationRate = 0.005f;
 	simulation.elites = 1;
 
 	window.setSimulation(&simulation);
@@ -203,7 +203,7 @@ int main()
 	//runPoleBalancing();
 	//runTopDownRace();
 	//runBipedSimulation();
-	//runSwarmSimulation();
+	runSwarmSimulation();
 	//runWormSimulation();
 	runCarSimulation();
 	

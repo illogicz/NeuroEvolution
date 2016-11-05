@@ -13,7 +13,7 @@ public:
 	Car()
 	{
 	}
-	static enum BodyType
+	enum BodyType
 	{
 		Fixed,
 		LowVariation,
@@ -74,7 +74,7 @@ protected:
 		// Add listeners for contact events
 		world.addContactListener(this, &chassis);
 		world.addContactListener(this, &frontWheel);
-		world.addContactListener(this, &rearWheel);		
+		world.addContactListener(this, &rearWheel);
 		
 		//---------------------------------------------------------------------------------
 		// Genome Definitions

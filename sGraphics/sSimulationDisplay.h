@@ -39,7 +39,7 @@ public:
 				float32 dx = p.x - wp.x;// + simulation.leader->getVelocity().x / scale;
 				//if(abs(dx) > 5) dx *= abs(dx) / 5;
 				float32 f = (abs(dx)+5.f) / 50;
-				f = f > 0.8 ? 0.8 : f;
+				f = f > .8f ? .8f : f;
 				p.x = wp.x + f * dx;
 
 				setCenter(p.x * scale, p.y * scale);	
@@ -67,7 +67,7 @@ public:
 
 		m_debugDraw.setTransform(trans);
 		m_debugDraw.setView(m_view);
-		for(int i = 0; i < m_simulation->worlds.size(); i++){
+		for(size_t i = 0; i < m_simulation->worlds.size(); i++){
 			m_debugDraw.DrawDebugData(m_simulation->worlds[i]);
 		}
 		m_debugDraw.draw(*target);
@@ -91,7 +91,7 @@ public:
 		m_view.setCenter(x, y);
 	}
 
-	void setFocusRank(int rank)
+	void setFocusRank(size_t rank)
 	{
 		if(rank < 0)rank = 0;
 		if(rank >= m_simulation->population.size()) 
@@ -161,7 +161,7 @@ public:
 		m_simulation->staticView = !m_simulation->staticView;
 		if(m_simulation->staticView){
 			setCenter(m_simulation->staticViewPosition.x, m_simulation->staticViewPosition.y);
-			for(int i = 0; i < m_simulation->population.size(); i++){
+			for(size_t i = 0; i < m_simulation->population.size(); i++){
 				m_simulation->population[i]->setAlpha(1);
 			}
 		}

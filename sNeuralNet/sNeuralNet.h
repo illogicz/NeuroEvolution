@@ -76,7 +76,7 @@ struct sNeuron
 	void reset()
 	{
 		accumulator = 0;
-		activation = biasNeuron ? 1 : 0;
+		activation = biasNeuron ? 1.f : 0.f;
 		inputValue = 0;
 	}
 
@@ -88,7 +88,7 @@ struct sNeuron
 			return;
 		}
 		accumulator = inputNeuron ? inputValue : 0;
-		for(int i = 0; i < inputSynapses.size(); i++){
+		for(size_t i = 0; i < inputSynapses.size(); i++){
 			accumulator += inputSynapses[i]->input->activation * inputSynapses[i]->weight;
 		}
 		activation = tanh_approx(accumulator);
@@ -267,7 +267,7 @@ public:
 
 			//float maxw = 1.f / sqrt(m_synapses[i]->output->inputSynapses.size());
 			//if(maxw > 0.25)maxw = 0.25;
-			m_synapses[i]->weightGene->setValue(sRandom::getNormal(0, 0.3));
+			m_synapses[i]->weightGene->setValue(sRandom::getNormal(0.f, 0.3f));
 			//m_synapses[i]->weightGene->setValue(sRandom::getFloat(-1, 1));
 		}
 	}
@@ -326,22 +326,22 @@ private:
 
 	void createFeedbackSynapses(vector<sNeuron> &neurons)
 	{
-		for(int i = 0; i < neurons.size(); i++){
+		for(size_t i = 0; i < neurons.size(); i++){
 			addSynapse(&neurons[i], &neurons[i]);
 		}
 	}
 
 	void createBiasSynapses(vector<sNeuron> &neurons)
 	{
-		for(int i = 0; i < neurons.size(); i++){
+		for(size_t i = 0; i < neurons.size(); i++){
 			addSynapse(&m_biasNeuron, &neurons[i]);
 		}
 	}
 
 	void createSynapseLayer(vector<sNeuron> &_inputs, vector<sNeuron> &_outputs)
 	{
-		for(unsigned int j = 0; j < _outputs.size(); j++){
-			for(unsigned int i = 0; i < _inputs.size(); i++){
+		for(size_t j = 0; j < _outputs.size(); j++){
+			for(size_t i = 0; i < _inputs.size(); i++){
 				addSynapse(&_inputs[i], &_outputs[j]);
 			}
 		}
@@ -370,17 +370,17 @@ public: void update()
 	{
 
 		if(!m_created){
-			for(int i = 0; i < m_layers.size() - 1; i++){
+			for(size_t i = 0; i < m_layers.size() - 1; i++){
 				createSynapseLayer(m_layers[i], m_layers[i+1]);
 			}
 			randomize();
 			m_created = true;
 		}
 
-		for(unsigned int i = 0; i < m_neurons.size(); i++){
+		for(size_t i = 0; i < m_neurons.size(); i++){
 			m_neurons[i]->reset();
 		}
-		for(unsigned int i = 0; i < m_synapses.size(); i++){
+		for(size_t i = 0; i < m_synapses.size(); i++){
 			float thres_out = 6.f / m_synapses[i]->output->inputSynapses.size();
 			float thres_in = 6.f / m_synapses[i]->input->outputSynapses.size();
 			float thres = max(thres_out, thres_in);
@@ -404,8 +404,8 @@ public: void update()
 	{
 		if(!m_created) return;
 
-		for(unsigned int i = 0; i < m_layers.size(); i++){
-			for(int j = 0; j < m_layers[i].size(); j++){
+		for(size_t i = 0; i < m_layers.size(); i++){
+			for(size_t j = 0; j < m_layers[i].size(); j++){
 				m_layers[i][j].activate();
 			}
 		}

@@ -23,7 +23,7 @@ public:
 		render_ui = true;
 		render_graphs = true;
 		m_mouseDown = false;
-		analyseANN = true;
+		analyseANN = false;
 		m_message = "";
 		messageTimeout = 0;
 
@@ -44,11 +44,11 @@ public:
 		
 	}
 
-	void setSize(int w, int h)
+	void setSize(uint32 w, uint32 h)
 	{
-		width = w;
-		height = h;
-		window.setSize(sf::Vector2u(width, height));
+		width = (float)w;
+		height = (float)h;
+		window.setSize(sf::Vector2u(w, h));
 		layoutUI();
 	}
 
@@ -164,9 +164,9 @@ private:
 			sf::CircleShape triangle(17, 3);
 			triangle.setFillColor(sf::Color(200,200,200));
 			triangle.setRotation(90);
-			triangle.setPosition(width / 2 - 13, 50);
+			triangle.setPosition(width / 2.f - 13.f, 50.f);
 			window.draw(triangle);			
-			triangle.setPosition(width / 2 + 13, 50);
+			triangle.setPosition(width / 2.f + 13.f, 50.f);
 			window.draw(triangle);
 		}
 	}
@@ -178,8 +178,8 @@ private:
 		view.setSize(width, height);
 		view.setCenter(width/2, height/2);
 
-		fitnessGraph.setPosition(2,2);
-		fitnessGraph.setSize(width - 4, 40);
+		fitnessGraph.setPosition(2.f, 2.f);
+		fitnessGraph.setSize(width - 4.f, 40.f);
 
 
 		neuralNetDisplay.setPosition(width - neuralNetDisplay.width, height - neuralNetDisplay.height);
@@ -211,9 +211,9 @@ private:
 		SetFocus(handle);
 	}
 
-	void drawText(string text, float x, float y, float a = 255, bool center = false)
+	void drawText(string text, float x, float y, sf::Uint8 a = 255, bool center = false)
 	{
-		sText::drawText(window, text, x, y, 18, sf::Color(255,255,255,a), center);
+		sText::drawText(window, text, x, y, 18, sf::Color(255i8, 255i8, 255i8, a), center);
 	}
 
 	void showMessage(string message)
@@ -227,7 +227,7 @@ private:
 			messageTimeout--;
 			int a = 255;
 			if(messageTimeout < 30){
-				a *= messageTimeout / 30.f;
+				a = (int)(a * messageTimeout / 30.f);
 			}
 			drawText(m_message, width / 2, 120, a, true);
 		}
@@ -285,8 +285,8 @@ private:
 		if(!window.isOpen()) return;
 
 		
-		mousePosition.x = sf::Mouse::getPosition(window).x;
-		mousePosition.y = sf::Mouse::getPosition(window).y;
+		mousePosition.x = (float)sf::Mouse::getPosition(window).x;
+		mousePosition.y = (float)sf::Mouse::getPosition(window).y;
 
 
 		while(window.pollEvent(e)){

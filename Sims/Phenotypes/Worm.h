@@ -61,14 +61,16 @@ public:
 	static bool directFeedback;
 	static bool bodySense;
 	static bool directionSense;
+	static bool distanceSense;
 	static bool touchSense;
+	static bool dieOnTouch;
 	static bool orientationSense;
 
 	// Muscles
 	static bool muscleModel;
 
 
-	vector<b2Vec2> directionTargets;
+	vector<sBody*> directionTargets;
 	
 
 
@@ -146,6 +148,9 @@ public:
 		if(orientationSense){
 			inputCount++;
 		}
+		if (distanceSense) {
+			inputCount += 2;
+		}
 		if(touchSense){
 			inputCount += numSegments;
 		}
@@ -155,11 +160,13 @@ public:
 		if(muscleModel){
 			outputCount += numSegments - 1;
 		}
+
+		neuralNet.setMaxWeight(5.0f);
 		neuralNet.setLayerCount(4);
-		neuralNet.setNeuronLayer(0,inputCount);
-		neuralNet.setNeuronLayer(1,(inputCount + outputCount)/2);//inputCount);
-		neuralNet.setNeuronLayer(2,(inputCount + outputCount)/2);//inputCount);
-		neuralNet.setNeuronLayer(3,outputCount);
+		neuralNet.setNeuronLayer(0, inputCount, false);
+		neuralNet.setNeuronLayer(1, (inputCount + outputCount)/2, false, true);//inputCount);
+		neuralNet.setNeuronLayer(2, (inputCount + outputCount)/2, false, true);//inputCount);
+		neuralNet.setNeuronLayer(3, outputCount, false);
 		
 		/*
 
@@ -183,7 +190,7 @@ public:
 
 	float getEneryUsed()
 	{
-		return eneryUsed;
+		return energyUsed;
 	}
 
 
@@ -224,12 +231,7 @@ protected:
 		for(int i = 0; i < numSegments; i++){
 
 			m_segmentContact[i] = false;
-			if(i == numSegments - 1){
-				m_segments[i]->setType(STATIC_BODY);
-			} else {
-				m_segments[i]->setType(DYNAMIC_BODY);
-			}
-			//m_segmentContact[i] = false;
+			m_segments[i]->setType(DYNAMIC_BODY);
 
 			WormSegment* segment = m_segments[i];
 			
@@ -242,7 +244,7 @@ protected:
 			//float x = float(i) / numSegments * length - length * 0.5;
 
 			if(i == 0){
-				float l = sqrt(0.5) / (sqrt(0.5) + 0.5) * h2;
+				float l = sqrt(0.5f) / (sqrt(0.5f) + 0.5f) * h2;
 				x -= w + l;
 			} else {
 				float w2 = getSegmentLength(i - 1) / 2.f;
@@ -252,9 +254,9 @@ protected:
 				float jx = x + w;
 				joint->setAnchor(jx,0);
 				joint->setMotorSpeed(0);
-				if(muscleModel){
-					joint->setMaxMotorTorque(0);
-				}
+				//if(muscleModel){
+				//	joint->setMaxMotorTorque(0);
+				//}
 			}
 
 
@@ -269,7 +271,7 @@ protected:
 			segment->addVertex(-w, h1);
 			segment->addVertex( w, h2);
 			if(i == 0){
-				float l = sqrt(0.5) / (sqrt(0.5) + 0.5) * h2;
+				float l = sqrt(0.5f) / (sqrt(0.5f) + 0.5f) * h2;
 				segment->addVertex( w + l, h2 - l);
 				segment->addVertex( w + l, -h2 + l);
 			} else {
@@ -279,14 +281,13 @@ protected:
 			segment->addVertex( w,-h2);
 			segment->addVertex(-w,-h1);
 			if(i == numSegments - 1){
-				float l = sqrt(0.5) / (sqrt(0.5) + 0.5) * h1;
+				float l = sqrt(0.5f) / (sqrt(0.5f) + 0.5f) * h1;
 				segment->addVertex(-w - l, -h1 + l);
 				segment->addVertex(-w - l, h1 - l);
 			} else {
 				segment->addVertex(-w - h1 * s, -h1 * c);
 				segment->addVertex(-w - h1 * s, h1 * c);
 			}
-
 
 		}
 	
@@ -302,7 +303,7 @@ protected:
 		deferDeath = false;
 		pulsePosition = 0.f;
 		feedBackValue = 0.f;
-		eneryUsed = 0.f;
+		energyUsed = 0.f;
 		total_x = 0;
 		// Set a custom color for elites
 		if(isElite()){
@@ -331,13 +332,14 @@ protected:
 	float total_x;
 	float getFitness() // override
 	{
-		float distance = getAABB().upperBound.x + length;
-		//distance = distance < 0 ? 0 : distance;
-		float speed = 100.f * distance / (lifeTime + 1);
-		float ave_height = totalHeight / (lifeTime + 1);
-		float fitness = distance; //(1.f + distance * distance) * (1.f + speed); // * (1.f + ave_height * 10.f);
+		return (*fitnessFunction)(this);
+		//float distance = getAABB().upperBound.x + length;
+		////distance = distance < 0 ? 0 : distance;
+		//float speed = 100.f * distance / (lifeTime + 1);
+		//float ave_height = totalHeight / (lifeTime + 1);
+		//float fitness = distance; //(1.f + distance * distance) * (1.f + speed); // * (1.f + ave_height * 10.f);
 
-		return total_x;
+		//return total_x;
 	}
 
 	float getProgress()
@@ -364,12 +366,12 @@ protected:
 		total_x += getAABB().upperBound.x + length;
 
 		for(int i = 0; i < numSegments-1; i++){
-			eneryUsed += abs(m_joints[i]->getMotorTorque());
+			energyUsed += abs(m_joints[i]->getMotorTorque()) + abs(m_joints[i]->getMotorSpeed());
 		}
 		for(int i = 0; i < numSegments; i++){
-			//m_segments[i]->applyLateralDamping(lateralDamping);
+			m_segments[i]->applyLateralDamping(lateralDamping);
 		}
-		if(killOnStarvation && eneryUsed > startEnery){
+		if(killOnStarvation && energyUsed > startEnery){
 			printf("died from starvation, metabolic rate = %f\n", startEnery / lifeTime);
 			die();
 			return;
@@ -411,8 +413,8 @@ protected:
 			WormSegment &segment = *m_segments[0];
 			float32 a = segment.getAngle();
 
-			for(int i = 0; i < directionTargets.size(); i++){
-				b2Vec2 td = directionTargets[i] - segment.getPosition();
+			for(size_t i = 0; i < directionTargets.size(); i++){
+				b2Vec2 td = directionTargets[i]->getPosition() - segment.getPosition();
 				float32 ta = atan2(td.y, td.x);
 				float32 da = ta - a;
 				while(da > b2_pi)da -= b2_pi * 2;
@@ -421,6 +423,15 @@ protected:
 			}
 		}
 	
+		if (distanceSense) {
+			WormSegment &head = *m_segments[0];
+			WormSegment &tail = *m_segments[numSegments - 1];
+			float dhead = b2Distance(head.getPosition(), directionTargets[0]->getPosition()) / 10.f;
+			float dtail = b2Distance(tail.getPosition(), directionTargets[0]->getPosition()) / 10.f;
+			neuralNet.setInput(input_index++, 1.f / (dhead + 1.f));
+			neuralNet.setInput(input_index++, 1.f / (dtail + 1.f));
+		}
+
 		// Run neural net ////////////////////////////////////////////////////
 		neuralNet.run(); /////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////
@@ -429,30 +440,30 @@ protected:
 		// OUTPUT
 
 		int output_index = 0;
-		if(muscleModel){
+		//if(muscleModel){
 
-			for(int i = 0; i < numSegments - 1; i++){
-				float o1 = neuralNet.getOutput(output_index++);
-				float o2 = neuralNet.getOutput(output_index++);
-				o1 = o1 < 0 ? 0 : o1;
-				o2 = o2 < 0 ? 0 : o2;
-				float c = m_joints[i]->getMaxMotorTorque();
-				float t = max(o1,o2) * muscleTorque * 5.f + 5.f;
-				m_joints[i]->setMaxMotorTorque(c + (t - c) * 1.0f);
+		//	for(int i = 0; i < numSegments - 1; i++){
+		//		float o1 = neuralNet.getOutput(output_index++);
+		//		float o2 = neuralNet.getOutput(output_index++);
+		//		o1 = o1 < 0 ? 0 : o1;
+		//		o2 = o2 < 0 ? 0 : o2;
+		//		float c = m_joints[i]->getMaxMotorTorque();
+		//		float t = max(o1,o2) * muscleTorque * 5.f + 5.f;
+		//		m_joints[i]->setMaxMotorTorque(c + (t - c) * 1.0f);
 
-				//float a = m_joints[i]->getAngle();
-				c = m_joints[i]->getMotorSpeed();
-				t = (o1 - o2) / m_world->timeStep * muscleSpeed * 0.1f;// * 0.1f;
-				m_joints[i]->setMotorSpeed(c + (t - c));
-			}
+		//		//float a = m_joints[i]->getAngle();
+		//		c = m_joints[i]->getMotorSpeed();
+		//		t = (o1 - o2) / m_world->timeStep * muscleSpeed * 0.1f;// * 0.1f;
+		//		m_joints[i]->setMotorSpeed(c + (t - c));
+		//	}
 
-		} else {
-			for(int i = 0; i < numSegments - 1; i++){
-				float o = neuralNet.getOutput(output_index++) * maxJointAngle * 0.9f;
-				float a = m_joints[i]->getAngle();
-				m_joints[i]->setMotorSpeed((o - a) / m_world->timeStep * muscleSpeed * 0.1f);
-			}
+		//} else {
+		for(int i = 0; i < numSegments - 1; i++){
+			float o = neuralNet.getOutput(output_index++) * maxJointAngle;
+			float a = m_joints[i]->getAngle();
+			m_joints[i]->setMotorSpeed((o - a) / m_world->timeStep * muscleSpeed);
 		}
+		//}
 		if(pulseFeedback){
 			pulsePosition += neuralNet.getOutput(output_index++) * maxPulse;
 		}	
@@ -489,7 +500,6 @@ protected:
 		for(int i = 0; i < numSegments; i++){
 			m_segments[i]->setType(STATIC_BODY);
 		}
-		//chassis.setType(STATIC_BODY);
 	}
 
 
@@ -508,10 +518,13 @@ protected:
 	bool deferDeath;
 	float pulsePosition;
 	float feedBackValue;
-	float eneryUsed;
+	float energyUsed;
 
 	void onBeginContact(sContactPair contactPair)
 	{
+		if (dieOnTouch) {
+			deferDeath = true;
+		}
 		for(int i = 0; i < numSegments; i++){
 			if(contactPair.contains(m_segments[i])){
 				//contactPair.contactInto->
@@ -545,22 +558,24 @@ float Worm::maxJointAngle = 1.4f;
 float Worm::muscleTorque = 20;
 float Worm::muscleSpeed = 0.05f;
 float Worm::maxPulse = 0.2f;
-float Worm::lateralDamping = 0;
-bool Worm::muscleModel = true;
+float Worm::lateralDamping = 0.8f;
+bool Worm::muscleModel = false;
 
 // Senses
 bool Worm::pulseFeedback = false;
 bool Worm::directFeedback = false;
 bool Worm::directionSense = false;
+bool Worm::distanceSense = false;
 bool Worm::bodySense = true;
 bool Worm::touchSense = true;
+bool Worm::dieOnTouch = false;
 bool Worm::orientationSense = true;
 float Worm::contactGain = 0.1f;
 
 // Death Conditions
 bool Worm::killOnStarvation = false;
 float Worm::startEnery = 3000;
-float Worm::baseMetabolism = 0.2;
+float Worm::baseMetabolism = 0.2f;
 bool Worm::killOnLackOffProgress = true;
 int Worm::progressTimeout = 3600;
 int Worm::maxLifeTime = 0;

@@ -52,13 +52,13 @@ protected:
 	void initPhenotypes()
 	{
 
-		int w = ceil(sqrt(populationSize)) + 1;
-		int h = floor(float(populationSize) / w);
+		int w = (int)ceil(sqrt(populationSize)) + 1;
+		int h = (int)floor(float(populationSize) / w);
 
 		for(int i = 0; i < rows; i++){
 			for(int j = 0; j < cols; j++){
 				CircleBalance *cart = new CircleBalance;
-				cart->position.y = i * 12 - 24;
+				cart->position.y = i * 12.f - 24.f;
 				cart->position.x = float(j) / (cols - 1) * 100 - 50;
 				//cart->groundBody = &groundBodies[i];
 				addPhenotype(cart);
@@ -73,7 +73,7 @@ protected:
 	bool isFinished()
 	{
 
-		for(int i = 0; i < population.size(); i++){
+		for(size_t i = 0; i < population.size(); i++){
 			if(population[i]->alive) return false;
 		}
 
@@ -93,7 +93,7 @@ protected:
 		for(int i = 0; i < rows; i++){
 			groundBodies[i].setSize(width,height);
 			groundBodies[i].setFriction(2);
-			groundBodies[i].setPosition(0, i * 12 - 30);
+			groundBodies[i].setPosition(0, i * 12.f - 30.f);
 			groundBodies[i].setType(STATIC_BODY);
 			//world.add(&groundBodies[i]);
 		}

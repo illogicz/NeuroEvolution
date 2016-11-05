@@ -30,7 +30,7 @@ public:
 		clear();
 		vector<int> buckets(m_width,0);
 
-		for(int i = 0; i < population.size(); i++){
+		for(size_t i = 0; i < population.size(); i++){
 			float v = population[i]->genome.getGene(geneType).getNormalizedValue();
 			int b = int(v * m_width);
 			buckets[b]++;
@@ -53,7 +53,7 @@ public:
 	{
 		float v1, v2;
 		clear();
-		for(int i = 0; i < population.size(); i++){
+		for(size_t i = 0; i < population.size(); i++){
 			v1 = population[i]->genome.getGene(geneType1).getNormalizedValue();
 			int x = int(v1 * m_width);
 			if(x == m_width)x--;

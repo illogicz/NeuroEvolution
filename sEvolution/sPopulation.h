@@ -163,7 +163,7 @@ public:
 
 
 
-	void setElites(int elites)
+	void setElites(size_t elites)
 	{
 		if(elites < 0)elites = 0;
 		if(elites > m_phenotypes.size())elites = m_phenotypes.size();
@@ -181,8 +181,8 @@ public:
 
 	void setMutationRate(float mutationRate)
 	{
-		if(mutationRate < 0)mutationRate = 0;
-		if(mutationRate > 1)mutationRate = 1;
+		if(mutationRate < 0.f)mutationRate = 0.f;
+		if(mutationRate > 1.f)mutationRate = 1.f;
 		m_mutationRate = mutationRate;
 	}
 	float getMutationRate()
@@ -191,17 +191,17 @@ public:
 	}	
 	void increaseMutationRate()
 	{
-		if(m_mutationRate < 0.000001){
-			m_mutationRate = 0.000001;
+		if(m_mutationRate < 0.000001f){
+			m_mutationRate = 0.000001f;
 		}
-		setMutationRate(m_mutationRate * 1.1);
+		setMutationRate(m_mutationRate * 1.1f);
 	}
 	void decreaseMutationRate()
 	{
-		if(m_mutationRate < 0.000001){
-			m_mutationRate = 0.000000;
+		if(m_mutationRate < 0.000001f){
+			m_mutationRate = 0.000000f;
 		}
-		setMutationRate(m_mutationRate / 1.1);
+		setMutationRate(m_mutationRate / 1.1f);
 	}
 
 	void setBreadingPoolFraction(float breadingPoolFraction)
@@ -233,7 +233,7 @@ public:
 		return m_prelimWinners.size() == m_phenotypes.size() || m_winnerPerPrelim == 0;
 	}
 
-	int size()
+	size_t size()
 	{
 		return m_phenotypes.size();
 	}
@@ -274,7 +274,7 @@ private:
 	float m_selectionBias;
 	float m_breadingPoolFraction;
 	unsigned int m_elites;
-	float m_winnerPerPrelim;
+	int m_winnerPerPrelim;
 	vector<sGenome> m_prelimWinners;
 
 
@@ -284,7 +284,7 @@ private:
 	vector<int> breadingDistribution;
 	void printBreadingDistribution()
 	{
-		for(int i = 0; i < size(); i++){
+		for(size_t i = 0; i < size(); i++){
 			printf("%i : %i\n", i, breadingDistribution[i]);
 		}
 	}

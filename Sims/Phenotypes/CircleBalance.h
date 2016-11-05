@@ -44,7 +44,7 @@ public:
 			add(&circles[i]);
 		}
 
-		genome.setUseMutationRateGene(true, 0.0005,0.01);
+		genome.setUseMutationRateGene(true, 0.0005f, 0.01f);
 
 		neuralNet.setLayerCount(3);
 		neuralNet.setNeuronLayer(0,10, false, false);
@@ -76,7 +76,7 @@ public:
 
 			if(i){
 				circles[i].setType(DYNAMIC_BODY);
-				float a = sRandom::getFloat(-0.1, 0.1);
+				float a = sRandom::getFloat(-0.1f, 0.1f);
 				b2Vec2 dv(0,radii[i-1] + radii[i]);
 				dv = b2Mul(b2Rot(a), dv);
 				dv.y += 1;
@@ -100,7 +100,7 @@ public:
 		rnd = sRandom::getFloat(0,1);	
 
 		if(isElite()){
-			genome.setValue("mutationRate", genome.getValue("mutationRate") * 0.99);
+			genome.setValue("mutationRate", genome.getValue("mutationRate") * 0.99f);
 		}
 		world.addContactListener(this, &circles[0], &circles[1]);
 		setAlpha(1);
@@ -132,16 +132,16 @@ public:
 
 			neuralNet.setInput(input_index++, dist / 30.f);
 		}
-		neuralNet.setInput(input_index++, (circles[0].getPosition().x - position.x) * 0.05);
-		neuralNet.setInput(input_index++, (circles[0].getPosition().y - position.y) * 0.05);
-		neuralNet.setInput(input_index++, (circles[0].getLinearVelocity().x) * 0.05);
-		neuralNet.setInput(input_index++, (circles[0].getLinearVelocity().y) * 0.05);
-		neuralNet.setInput(input_index++, (circles[1].getLinearVelocity().x) * 0.05);
-		neuralNet.setInput(input_index++, (circles[1].getLinearVelocity().y) * 0.05);
-		neuralNet.setInput(input_index++, contact ? 1 : -1);
+		neuralNet.setInput(input_index++, (circles[0].getPosition().x - position.x) * 0.05f);
+		neuralNet.setInput(input_index++, (circles[0].getPosition().y - position.y) * 0.05f);
+		neuralNet.setInput(input_index++, (circles[0].getLinearVelocity().x) * 0.05f);
+		neuralNet.setInput(input_index++, (circles[0].getLinearVelocity().y) * 0.05f);
+		neuralNet.setInput(input_index++, (circles[1].getLinearVelocity().x) * 0.05f);
+		neuralNet.setInput(input_index++, (circles[1].getLinearVelocity().y) * 0.05f);
+		neuralNet.setInput(input_index++, contact ? 1.f : -1.f);
 
 		for(int i = 1; i < num_circles; i++){
-			neuralNet.setInput(input_index++, circles[i].getAngularVelocity() * 0.1);
+			neuralNet.setInput(input_index++, circles[i].getAngularVelocity() * 0.1f);
 		}
 		neuralNet.run();
 
@@ -152,7 +152,7 @@ public:
 		b2Vec2 origin_dist = circles[0].getPosition() - position;
 		b2Vec2 balls_dist = circles[1].getPosition() - circles[0].getPosition();
 
-		if(lifeTime >= 10000 || origin_dist.LengthSquared() > 500 || balls_dist.LengthSquared() > 3000){
+		if(lifeTime >= 10000 || origin_dist.LengthSquared() > 500.f || balls_dist.LengthSquared() > 3000.f){
 			//fitnessModifier =  (20000 - totalForce) / 10000;
 			
 			die();
